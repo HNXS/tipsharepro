@@ -1,0 +1,2214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tip Share Pro - Restaurant Tip Pool Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1e3a5f;
+            --primary-light: #2d5a8a;
+            --accent: #22c55e;
+            --accent-hover: #16a34a;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .logo {
+            padding: 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .nav-menu {
+            padding: 16px 0;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border-left: 3px solid var(--accent);
+        }
+
+        .nav-icon {
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 16px 24px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+        }
+
+        /* Header */
+        .header {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header-selects {
+            display: flex;
+            gap: 12px;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper select {
+            appearance: none;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 36px 8px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            min-width: 180px;
+        }
+
+        .select-wrapper::after {
+            content: "▼";
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+            color: var(--text-light);
+            pointer-events: none;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg);
+            padding: 8px 16px;
+            border-radius: 24px;
+            font-size: 0.9rem;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        /* Page Content */
+        .page-content {
+            padding: 32px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Dashboard Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 24px;
+        }
+
+        .stat-card.highlight {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .stat-card.highlight .stat-label {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-change.positive {
+            color: var(--accent);
+        }
+
+        .stat-change.negative {
+            color: #ef4444;
+        }
+
+        .stat-card.highlight .stat-change {
+            color: rgba(255,255,255,0.9);
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 2px solid var(--border);
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table tr:hover {
+            background: var(--bg);
+        }
+
+        .data-table .number {
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+        }
+
+        .data-table .total-row {
+            font-weight: 600;
+            background: var(--bg);
+        }
+
+        .data-table .total-row td {
+            border-bottom: none;
+            border-top: 2px solid var(--primary);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-success {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-outline:hover {
+            background: var(--bg);
+        }
+
+        /* Daily Entry */
+        .date-navigator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            padding: 20px;
+            background: var(--bg);
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .date-navigator button {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .date-navigator button:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .current-date {
+            font-size: 1.25rem;
+            font-weight: 600;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .entry-form {
+            display: grid;
+            gap: 16px;
+        }
+
+        .entry-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 16px;
+            align-items: center;
+            padding: 16px;
+            background: var(--bg);
+            border-radius: 8px;
+        }
+
+        .entry-row input, .entry-row select {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .entry-row input:focus, .entry-row select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30,58,95,0.1);
+        }
+
+        .calculated-field {
+            background: var(--card);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #64748b;
+            text-align: right;
+        }
+
+        .actual-input {
+            background: #ecfdf5;
+            border: 2px solid var(--accent) !important;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .remove-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .add-entry-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 16px;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-entry-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(30,58,95,0.05);
+        }
+
+        .entry-totals {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 16px;
+            padding: 20px 16px;
+            background: var(--primary);
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .entry-totals .total-label {
+            font-size: 1rem;
+        }
+
+        .entry-totals .total-value {
+            text-align: right;
+            font-size: 1.1rem;
+        }
+
+        /* Pool Calculation */
+        .pool-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .pool-summary-card {
+            background: var(--card);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .pool-summary-card.main {
+            background: linear-gradient(135deg, var(--accent) 0%, #16a34a 100%);
+            color: white;
+        }
+
+        .pool-summary-card .label {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            opacity: 0.8;
+        }
+
+        .pool-summary-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .variance-input {
+            width: 70px;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .variance-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .share-amount {
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        .percentage-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .percentage-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* View Toggle */
+        .view-toggle {
+            display: flex;
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .view-toggle button {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .view-toggle button.active {
+            background: var(--card);
+            color: var(--text);
+            box-shadow: var(--shadow);
+        }
+
+        /* Activity Feed */
+        .activity-feed {
+            list-style: none;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--bg);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .activity-time {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        /* Print Styles */
+        @media print {
+            .sidebar, .header, .btn, .view-toggle, .add-entry-btn, .remove-btn, .variance-input {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+            }
+
+            .page-content {
+                padding: 0 !important;
+            }
+
+            .card {
+                box-shadow: none !important;
+                border: 1px solid #ccc;
+                page-break-inside: avoid;
+            }
+
+            .stats-grid, .pool-summary {
+                display: none !important;
+            }
+
+            body {
+                background: white !important;
+            }
+
+            .print-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 24px;
+                padding-bottom: 16px;
+                border-bottom: 2px solid var(--primary);
+            }
+
+            .data-table th {
+                background: var(--bg) !important;
+            }
+        }
+
+        .print-header {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pool-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .entry-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--primary);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            background: var(--accent);
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Job Category Badge */
+        .job-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .job-badge.server {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .job-badge.cook {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .job-badge.busser {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .job-badge.host {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+
+        /* Hidden basis column styling */
+        .basis-hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>
+                    <span class="logo-icon">$</span>
+                    Tip Share Pro
+                </h1>
+            </div>
+            <nav class="nav-menu">
+                <a class="nav-item active" data-page="dashboard">
+                    <span class="nav-icon">📊</span>
+                    Dashboard
+                </a>
+                <a class="nav-item" data-page="daily-entry">
+                    <span class="nav-icon">📝</span>
+                    Daily Entry
+                </a>
+                <a class="nav-item" data-page="daily-tips">
+                    <span class="nav-icon">💵</span>
+                    Daily Tip Grid
+                </a>
+                <a class="nav-item" data-page="pay-period">
+                    <span class="nav-icon">📋</span>
+                    Pay Period Summary
+                </a>
+                <a class="nav-item" data-page="pool-calc">
+                    <span class="nav-icon">🧮</span>
+                    Pool Calculation
+                </a>
+                <a class="nav-item" data-page="ytd-reports">
+                    <span class="nav-icon">📈</span>
+                    YTD Reports
+                </a>
+                <a class="nav-item" data-page="settings">
+                    <span class="nav-icon">⚙️</span>
+                    Settings
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <p>Tip Share Pro v1.0</p>
+                <p>© 2025 Restaurant Solutions</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h2 class="page-title" id="pageTitle">Dashboard</h2>
+                    <div class="header-selects">
+                        <div class="select-wrapper">
+                            <select id="payPeriodSelect">
+                                <option>PPE: Dec 27, 2025</option>
+                                <option>PPE: Dec 13, 2025</option>
+                                <option>PPE: Nov 29, 2025</option>
+                            </select>
+                        </div>
+                        <div class="select-wrapper">
+                            <select id="locationSelect">
+                                <option value="all">All Locations</option>
+                                <option value="28">Location #28 - Downtown</option>
+                                <option value="17">Location #17 - Riverside</option>
+                                <option value="12">Location #12 - Airport</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="user-badge">
+                        <div class="user-avatar">TL</div>
+                        <span>Tom LaChaussee</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Dashboard Page -->
+                <div class="page active" id="page-dashboard">
+                    <div class="stats-grid">
+                        <div class="stat-card highlight">
+                            <div class="stat-label">Total Pool This Period</div>
+                            <div class="stat-value">$1,340.69</div>
+                            <div class="stat-change positive" id="poolChange">↑ 8.2% vs last period</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Total Sales</div>
+                            <div class="stat-value">$41,252</div>
+                            <div class="stat-change positive" id="salesChange">↑ 5.4% vs last period</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Pool Participants</div>
+                            <div class="stat-value">14</div>
+                            <div class="stat-change">Across 3 locations</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Days Entered</div>
+                            <div class="stat-value">12/14</div>
+                            <div class="stat-change">2 days remaining</div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Top Contributors This Period</h3>
+                                <button class="btn btn-outline" onclick="navigateTo('pay-period')">View All</button>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Server</th>
+                                        <th>Location</th>
+                                        <th class="number">Total Sales</th>
+                                        <th class="number">Contribution</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Sarah Johnson</strong></td>
+                                        <td>#28</td>
+                                        <td class="number">$12,450.00</td>
+                                        <td class="number">$404.63</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Mike Chen</strong></td>
+                                        <td>#17</td>
+                                        <td class="number">$10,895.00</td>
+                                        <td class="number">$354.09</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Lisa Park</strong></td>
+                                        <td>#28</td>
+                                        <td class="number">$9,672.50</td>
+                                        <td class="number">$314.36</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Rene Mungia</strong></td>
+                                        <td>#17</td>
+                                        <td class="number">$8,429.67</td>
+                                        <td class="number">$273.96</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Recent Activity</h3>
+                            </div>
+                            <ul class="activity-feed">
+                                <li class="activity-item">
+                                    <div class="activity-icon">📝</div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">Dec 23 entries added</div>
+                                        <div class="activity-time">2 hours ago</div>
+                                    </div>
+                                </li>
+                                <li class="activity-item">
+                                    <div class="activity-icon">👤</div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">New employee: Amy Rodriguez</div>
+                                        <div class="activity-time">Yesterday</div>
+                                    </div>
+                                </li>
+                                <li class="activity-item">
+                                    <div class="activity-icon">✅</div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">PPE Nov 29 finalized</div>
+                                        <div class="activity-time">Dec 1, 2025</div>
+                                    </div>
+                                </li>
+                                <li class="activity-item">
+                                    <div class="activity-icon">📊</div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">W2 report exported</div>
+                                        <div class="activity-time">Nov 30, 2025</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Entry Page -->
+                <div class="page" id="page-daily-entry">
+                    <div class="date-navigator">
+                        <button onclick="changeDate(-1)">◀ Previous Day</button>
+                        <div class="current-date" id="currentDate">December 23, 2025</div>
+                        <button onclick="changeDate(1)">Next Day ▶</button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Server Daily Contributions</h3>
+                            <div style="display: flex; gap: 12px;">
+                                <button class="btn btn-outline" onclick="copyPreviousDay()">📋 Copy Previous Day</button>
+                            </div>
+                        </div>
+
+                        <div class="entry-form" id="entryForm">
+                            <div class="entry-row entry-header" style="background: transparent; padding: 0 16px;">
+                                <strong>Server Name</strong>
+                                <strong style="text-align: right;">Sales Amount</strong>
+                                <strong style="text-align: right;">Calculated (3.25%)</strong>
+                                <strong style="text-align: right;">Actual Tip Contrib.</strong>
+                                <span></span>
+                            </div>
+                            <div class="entry-row" data-id="1">
+                                <select>
+                                    <option>Sarah Johnson</option>
+                                    <option>Mike Chen</option>
+                                    <option>Lisa Park</option>
+                                    <option>Tom Wilson</option>
+                                    <option>Katie Middleton</option>
+                                    <option>Stacey Smith</option>
+                                </select>
+                                <input type="number" class="sales-input" value="1245.00" placeholder="Sales $" onchange="calculateContribution(this)">
+                                <div class="calculated-field">$40.46</div>
+                                <input type="number" class="actual-input" value="42.00" placeholder="Actual $" onchange="updateActualTotals()">
+                                <button class="remove-btn" onclick="removeEntry(this)">×</button>
+                            </div>
+                            <div class="entry-row" data-id="2">
+                                <select>
+                                    <option>Mike Chen</option>
+                                    <option>Sarah Johnson</option>
+                                    <option>Lisa Park</option>
+                                    <option>Tom Wilson</option>
+                                </select>
+                                <input type="number" class="sales-input" value="1089.50" placeholder="Sales $" onchange="calculateContribution(this)">
+                                <div class="calculated-field">$35.41</div>
+                                <input type="number" class="actual-input" value="38.00" placeholder="Actual $" onchange="updateActualTotals()">
+                                <button class="remove-btn" onclick="removeEntry(this)">×</button>
+                            </div>
+                            <div class="entry-row" data-id="3">
+                                <select>
+                                    <option>Lisa Park</option>
+                                    <option>Sarah Johnson</option>
+                                    <option>Mike Chen</option>
+                                    <option>Tom Wilson</option>
+                                </select>
+                                <input type="number" class="sales-input" value="967.25" placeholder="Sales $" onchange="calculateContribution(this)">
+                                <div class="calculated-field">$31.44</div>
+                                <input type="number" class="actual-input" value="35.00" placeholder="Actual $" onchange="updateActualTotals()">
+                                <button class="remove-btn" onclick="removeEntry(this)">×</button>
+                            </div>
+                            <div class="entry-row" data-id="4">
+                                <select>
+                                    <option>Tom Wilson</option>
+                                    <option>Sarah Johnson</option>
+                                    <option>Mike Chen</option>
+                                    <option>Lisa Park</option>
+                                </select>
+                                <input type="number" class="sales-input" value="823.40" placeholder="Sales $" onchange="calculateContribution(this)">
+                                <div class="calculated-field">$26.76</div>
+                                <input type="number" class="actual-input" value="28.00" placeholder="Actual $" onchange="updateActualTotals()">
+                                <button class="remove-btn" onclick="removeEntry(this)">×</button>
+                            </div>
+
+                            <div class="add-entry-btn" onclick="addEntry()">
+                                <span>+</span> Add Server Entry
+                            </div>
+
+                            <div class="entry-totals">
+                                <div class="total-label">DAILY TOTALS</div>
+                                <div class="total-value" id="totalSales">$4,125.15</div>
+                                <div class="total-value" id="totalContribution">$134.07</div>
+                                <div class="total-value" id="totalActual" style="color: var(--accent); font-weight: 700;">$143.00</div>
+                                <span></span>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 16px; padding: 12px 16px; background: #e0f2fe; border-radius: 8px; font-size: 0.85rem;">
+                            <strong>💡 Tip Pool Basis:</strong> The <strong>Actual Tip Contribution</strong> column is what gets added to the tip pool for distribution.
+                            The calculated amount (3.25% of sales) is shown for reference only.
+                        </div>
+
+                        <div style="display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end;">
+                            <button class="btn btn-outline">Cancel</button>
+                            <button class="btn btn-primary" onclick="saveDay()">Save Day</button>
+                            <button class="btn btn-success" onclick="saveAndNext()">Save & Next Day ▶</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pay Period Summary Page -->
+                <div class="page" id="page-pay-period">
+                    <div class="print-header">
+                        <h1>Tip Share Pro</h1>
+                        <h2>Pay Period Contribution Summary</h2>
+                        <p id="payPeriodHeader">Pay Period Ending: December 27, 2025 | All Locations</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Server Pay Period Contributions</h3>
+                            <div style="display: flex; gap: 12px;">
+                                <button class="btn btn-outline" onclick="window.print()">🖨️ Print Report</button>
+                                <button class="btn btn-primary">📥 Export PDF</button>
+                            </div>
+                        </div>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Server Name</th>
+                                    <th>Location</th>
+                                    <th class="number">Total Sales</th>
+                                    <th class="number">Rate</th>
+                                    <th class="number">Calc. Contrib.</th>
+                                    <th class="number" style="background: #ecfdf5;">Actual Contrib.</th>
+                                    <th>Attested</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payPeriodTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Daily Tip Grid Page -->
+                <div class="page" id="page-daily-tips">
+                    <div class="print-header">
+                        <h1>Tip Share Pro</h1>
+                        <h2>Daily Tip Contributions</h2>
+                        <p id="dailyTipsHeader">Pay Period Ending: December 27, 2025 | All Locations</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Daily Tip Contribution Grid</h3>
+                            <div style="display: flex; gap: 12px;">
+                                <button class="btn btn-outline" onclick="window.print()">🖨️ Print Report</button>
+                                <button class="btn btn-primary">📥 Export CSV</button>
+                            </div>
+                        </div>
+
+                        <div style="overflow-x: auto;">
+                            <table class="data-table" id="dailyTipsTable" style="width: auto;">
+                                <thead id="dailyTipsHead">
+                                </thead>
+                                <tbody id="dailyTipsBody">
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div style="margin-top: 16px; padding: 12px 16px; background: #e0f2fe; border-radius: 8px; font-size: 0.85rem;">
+                            <strong>💡 Note:</strong> This grid shows actual tip contributions entered daily by each server for the selected pay period.
+                            The Grand Total column shows the daily pool amount from all servers.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pool Calculation Page -->
+                <div class="page" id="page-pool-calc">
+                    <div class="print-header">
+                        <h1>Tip Share Pro</h1>
+                        <h2>Tip Pool Share Distribution</h2>
+                        <p id="poolCalcHeader">Pay Period Ending: December 27, 2025 | All Locations</p>
+                    </div>
+
+                    <div class="pool-summary">
+                        <div class="pool-summary-card main">
+                            <div class="label">Total Pool Available</div>
+                            <div class="value">$1,340.69</div>
+                            <div style="font-size: 0.75rem; margin-top: 4px; opacity: 0.8;">Sum of actual tip contributions</div>
+                        </div>
+                        <div class="pool-summary-card">
+                            <div class="label">Total Participants</div>
+                            <div class="value">14</div>
+                        </div>
+                        <div class="pool-summary-card">
+                            <div class="label">Total Hours</div>
+                            <div class="value">827</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Pool Share Calculation</h3>
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <div class="view-toggle">
+                                    <button class="active" onclick="toggleView('simple')">Simple View</button>
+                                    <button onclick="toggleView('detailed')">Detailed View</button>
+                                </div>
+                                <button class="btn btn-outline" onclick="window.print()">🖨️ Print</button>
+                                <button class="btn btn-success">✅ Finalize Period</button>
+                            </div>
+                        </div>
+
+                        <table class="data-table" id="poolTable">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Location</th>
+                                    <th>Role</th>
+                                    <th class="number">Hours</th>
+                                    <th class="number">Rate</th>
+                                    <th class="number">Variance</th>
+                                    <th class="number basis-col basis-hidden">Basis</th>
+                                    <th class="number">Share %</th>
+                                    <th class="number">Share</th>
+                                    <th class="number" style="background: #ecfdf5;">Received</th>
+                                </tr>
+                            </thead>
+                            <tbody id="poolTableBody">
+                                <!-- Data populated by JavaScript -->
+                            </tbody>
+                        </table>
+
+                        <div style="margin-top: 20px; padding: 16px; background: var(--bg); border-radius: 8px; font-size: 0.9rem; color: var(--text-light);">
+                            <strong>How shares are calculated:</strong> Each employee's share is determined by their Hours × Rate × Variance factor,
+                            which creates a weighted "basis" value. The percentage is each person's basis divided by the total basis,
+                            ensuring fair distribution based on contribution, experience, and role impact.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- YTD Reports Page -->
+                <div class="page" id="page-ytd-reports">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title" id="ytdTitle">Year-to-Date Summary - 2025 | All Locations</h3>
+                            <div style="display: flex; gap: 12px;">
+                                <button class="btn btn-outline">📥 Export CSV</button>
+                                <button class="btn btn-primary">📋 W2 Report</button>
+                            </div>
+                        </div>
+
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Location</th>
+                                    <th class="number">Pay Periods</th>
+                                    <th class="number">Total Hours</th>
+                                    <th class="number">Total Contributed</th>
+                                    <th class="number">Total Received</th>
+                                    <th class="number">Net +/-</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ytdTableBody">
+                            </tbody>
+                        </table>
+
+                        <div style="margin-top: 20px; padding: 16px; background: #fef3c7; border-radius: 8px; font-size: 0.9rem;">
+                            <strong>📋 Tax Note:</strong> Server contributions are tracked and reported, reducing their taxable tip income.
+                            This data is ready for W2 reporting to your payroll service.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Page -->
+                <div class="page" id="page-settings">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Organization Settings</h3>
+                        </div>
+                        <div style="display: grid; gap: 20px; max-width: 500px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Company Name</label>
+                                <input type="text" value="Tom's Restaurant Group" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Default Tip Contribution Rate</label>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="number" value="3.25" step="0.25" style="width: 100px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;">
+                                    <span>%</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Pay Period Type</label>
+                                <select style="width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;">
+                                    <option selected>Bi-Weekly (14 days)</option>
+                                    <option>Weekly (7 days)</option>
+                                    <option>Semi-Monthly</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" style="width: fit-content;">Save Settings</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Locations</h3>
+                            <button class="btn btn-primary">+ Add Location</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Location #</th>
+                                    <th>Name</th>
+                                    <th>Employees</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#28</td>
+                                    <td>Downtown</td>
+                                    <td>6</td>
+                                    <td><span style="color: var(--accent);">● Active</span></td>
+                                    <td><button class="btn btn-outline" style="padding: 6px 12px;">Edit</button></td>
+                                </tr>
+                                <tr>
+                                    <td>#17</td>
+                                    <td>Riverside</td>
+                                    <td>5</td>
+                                    <td><span style="color: var(--accent);">● Active</span></td>
+                                    <td><button class="btn btn-outline" style="padding: 6px 12px;">Edit</button></td>
+                                </tr>
+                                <tr>
+                                    <td>#12</td>
+                                    <td>Airport</td>
+                                    <td>3</td>
+                                    <td><span style="color: var(--accent);">● Active</span></td>
+                                    <td><button class="btn btn-outline" style="padding: 6px 12px;">Edit</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">Changes saved successfully!</div>
+
+    <script>
+        // Pool calculation data (this would be server-side in production - THE SECRET SAUCE)
+        // Location #28 Downtown: 6 employees, #17 Riverside: 5 employees, #12 Airport: 3 employees = 14 total
+        const poolData = [
+            // Location #28 - Downtown (6 employees)
+            { name: 'Sarah Johnson', role: 'Server', roleClass: 'server', hours: 72, rate: 18.00, variance: 1.2, location: '28' },
+            { name: 'Lisa Park', role: 'Server', roleClass: 'server', hours: 64, rate: 16.00, variance: 1.0, location: '28' },
+            { name: 'Tom Wilson', role: 'Server', roleClass: 'server', hours: 56, rate: 15.50, variance: 0.9, location: '28' },
+            { name: 'Juan Martinez', role: 'Cook', roleClass: 'cook', hours: 80, rate: 22.00, variance: 0.8, location: '28' },
+            { name: 'Amy Rodriguez', role: 'Busser', roleClass: 'busser', hours: 60, rate: 15.00, variance: 0.9, location: '28' },
+            { name: 'Dan Torres', role: 'Host', roleClass: 'host', hours: 45, rate: 14.00, variance: 0.7, location: '28' },
+            // Location #17 - Riverside (5 employees)
+            { name: 'Mike Chen', role: 'Server', roleClass: 'server', hours: 68, rate: 17.50, variance: 1.1, location: '17' },
+            { name: 'Rene Mungia', role: 'Server', roleClass: 'server', hours: 60, rate: 17.00, variance: 1.1, location: '17' },
+            { name: 'Edgar Ponce', role: 'Cook', roleClass: 'cook', hours: 76, rate: 20.00, variance: 0.7, location: '17' },
+            { name: 'Salvador Pantaleon', role: 'Cook', roleClass: 'cook', hours: 64, rate: 21.00, variance: 0.8, location: '17' },
+            { name: 'Victoria Tamblyn', role: 'Busser', roleClass: 'busser', hours: 38, rate: 14.50, variance: 0.8, location: '17' },
+            // Location #12 - Airport (3 employees)
+            { name: 'Katie Middleton', role: 'Server', roleClass: 'server', hours: 52, rate: 16.50, variance: 1.0, location: '12' },
+            { name: 'Stacey Smith', role: 'Server', roleClass: 'server', hours: 48, rate: 15.00, variance: 0.9, location: '12' },
+            { name: 'Cheyenne Brooks', role: 'Server', roleClass: 'server', hours: 44, rate: 16.00, variance: 1.0, location: '12' }
+        ];
+
+        // Pay period data for different periods - with per-location pool breakdown
+        const payPeriodData = {
+            'PPE: Dec 27, 2025': {
+                totalPool: 1340.69,
+                salesMultiplier: 1.0,
+                locationPools: { '28': 587.50, '17': 478.25, '12': 274.94 }  // Proportional to location size/sales
+            },
+            'PPE: Dec 13, 2025': {
+                totalPool: 1238.45,
+                salesMultiplier: 0.92,
+                locationPools: { '28': 542.75, '17': 441.80, '12': 253.90 }
+            },
+            'PPE: Nov 29, 2025': {
+                totalPool: 1456.23,
+                salesMultiplier: 1.08,
+                locationPools: { '28': 638.12, '17': 519.45, '12': 298.66 }
+            }
+        };
+
+        let currentPayPeriod = 'PPE: Dec 27, 2025';
+        let currentLocation = 'all';
+        let showDetailedView = false;
+
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const page = this.getAttribute('data-page');
+                navigateTo(page);
+            });
+        });
+
+        function navigateTo(page) {
+            // Update nav
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelector(`[data-page="${page}"]`).classList.add('active');
+
+            // Update page
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(`page-${page}`).classList.add('active');
+
+            // Update title
+            const titles = {
+                'dashboard': 'Dashboard',
+                'daily-entry': 'Daily Entry',
+                'pay-period': 'Pay Period Summary',
+                'pool-calc': 'Pool Calculation',
+                'ytd-reports': 'YTD Reports',
+                'settings': 'Settings'
+            };
+            document.getElementById('pageTitle').textContent = titles[page];
+
+            // Recalculate pool if on that page
+            if (page === 'pool-calc') {
+                calculatePool();
+            }
+        }
+
+        // Pool Calculation (THE HIDDEN ALGORITHM - users only see results!)
+        function calculatePool() {
+            // Filter by location
+            const filteredData = currentLocation === 'all'
+                ? poolData
+                : poolData.filter(emp => emp.location === currentLocation);
+
+            // Get pool amount from ACTUAL contributions (sum of what servers contributed)
+            const totalPool = getTotalActualContributions();
+
+            // Update the pool calc header
+            const locationNames = { '28': 'Location #28 - Downtown', '17': 'Location #17 - Riverside', '12': 'Location #12 - Airport', 'all': 'All Locations' };
+            const ppeDateText = currentPayPeriod.replace('PPE: ', '');
+            document.getElementById('poolCalcHeader').textContent = 'Pay Period Ending: ' + ppeDateText + ' | ' + locationNames[currentLocation];
+
+            const periodData = payPeriodData[currentPayPeriod];
+
+            // Apply pay period multiplier to hours (simulating different periods)
+            let totalBasis = 0;
+            const calculated = filteredData.map(emp => {
+                const adjustedHours = Math.round(emp.hours * periodData.salesMultiplier);
+                const basis = adjustedHours * emp.rate * emp.variance;
+                totalBasis += basis;
+                return { ...emp, hours: adjustedHours, basis };
+            });
+
+            const withShares = calculated.map(emp => ({
+                ...emp,
+                percentage: (emp.basis / totalBasis) * 100,
+                share: totalPool * (emp.basis / totalBasis)
+            }));
+
+            // Update summary cards
+            updatePoolSummary(filteredData.length, calculated.reduce((sum, e) => sum + e.hours, 0), totalPool);
+
+            renderPoolTable(withShares, totalBasis);
+        }
+
+        function updatePoolSummary(participants, totalHours, totalPool) {
+            const summaryCards = document.querySelectorAll('.pool-summary-card .value');
+            if (summaryCards.length >= 3) {
+                summaryCards[0].textContent = '$' + totalPool.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                summaryCards[1].textContent = participants;
+                summaryCards[2].textContent = totalHours;
+            }
+        }
+
+        // Filter change handlers
+        document.getElementById('payPeriodSelect').addEventListener('change', function() {
+            currentPayPeriod = this.value;
+            // Update currentDate to be within the new pay period's data range
+            const periodTips = dailyTipsData[currentPayPeriod];
+            if (periodTips && periodTips.dates.length > 0) {
+                // Parse the first date in the period to set a reasonable starting date
+                const firstDateStr = periodTips.dates[Math.floor(periodTips.dates.length / 2)]; // Mid-period
+                const [month, day] = firstDateStr.split('/').map(Number);
+                currentDate = new Date(2025, month - 1, day);
+                document.getElementById('currentDate').textContent = formatDate(currentDate);
+            }
+            updateDashboardStats();
+            calculatePool();
+            renderPayPeriodSummary();
+            renderDailyTipsGrid();
+            renderDailyEntries();
+            renderYTDReport();
+            renderTopContributors();
+            showToast('Switched to ' + currentPayPeriod);
+        });
+
+        document.getElementById('locationSelect').addEventListener('change', function() {
+            currentLocation = this.value;
+            const locationName = this.options[this.selectedIndex].text;
+            updateDashboardStats();
+            calculatePool();
+            renderPayPeriodSummary();
+            renderDailyTipsGrid();
+            renderDailyEntries();
+            renderYTDReport();
+            renderTopContributors();
+            showToast('Filtering by ' + locationName);
+        });
+
+        function updateDashboardStats() {
+            const periodData = payPeriodData[currentPayPeriod];
+            const filteredData = currentLocation === 'all'
+                ? poolData
+                : poolData.filter(emp => emp.location === currentLocation);
+
+            // Get pool amount from ACTUAL contributions
+            const poolAmount = getTotalActualContributions();
+
+            // Get previous period pool amount for comparison
+            const periodKeys = Object.keys(actualContribData);
+            const currentIndex = periodKeys.indexOf(currentPayPeriod);
+            const previousPeriod = currentIndex < periodKeys.length - 1 ? periodKeys[currentIndex + 1] : null;
+
+            let previousPoolAmount = 0;
+            if (previousPeriod) {
+                const prevContribs = actualContribData[previousPeriod] || {};
+                const filteredServers = currentLocation === 'all'
+                    ? poolData.filter(emp => emp.role === 'Server')
+                    : poolData.filter(emp => emp.location === currentLocation && emp.role === 'Server');
+                filteredServers.forEach(emp => {
+                    previousPoolAmount += prevContribs[emp.name] || 0;
+                });
+            }
+
+            // Update dashboard stat cards
+            const statValues = document.querySelectorAll('.stat-card .stat-value');
+            if (statValues.length >= 4) {
+                statValues[0].textContent = '$' + poolAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                const sales = Math.round(poolAmount / 0.0325);
+                statValues[1].textContent = '$' + sales.toLocaleString('en-US');
+                statValues[2].textContent = filteredData.length;
+            }
+
+            // Calculate and update percentage changes
+            const poolChangeEl = document.getElementById('poolChange');
+            const salesChangeEl = document.getElementById('salesChange');
+
+            if (previousPoolAmount > 0) {
+                const poolPctChange = ((poolAmount - previousPoolAmount) / previousPoolAmount) * 100;
+                const arrow = poolPctChange >= 0 ? '↑' : '↓';
+                const sign = poolPctChange >= 0 ? 'positive' : 'negative';
+                poolChangeEl.textContent = `${arrow} ${Math.abs(poolPctChange).toFixed(1)}% vs last period`;
+                poolChangeEl.className = 'stat-change ' + sign;
+
+                // Sales change mirrors pool change (since sales = pool / 0.0325)
+                salesChangeEl.textContent = `${arrow} ${Math.abs(poolPctChange).toFixed(1)}% vs last period`;
+                salesChangeEl.className = 'stat-change ' + sign;
+            } else {
+                poolChangeEl.textContent = 'No prior period data';
+                poolChangeEl.className = 'stat-change';
+                salesChangeEl.textContent = 'No prior period data';
+                salesChangeEl.className = 'stat-change';
+            }
+
+            // Update location subtitle
+            const statChanges = document.querySelectorAll('.stat-card .stat-change');
+            if (statChanges.length >= 3) {
+                const locationText = currentLocation === 'all' ? 'Across 3 locations' : 'Location #' + currentLocation;
+                statChanges[2].textContent = locationText;
+            }
+        }
+
+        // Round to whole dollar with coin flip for exactly 0.5
+        function roundWithCoinFlip(value) {
+            const decimal = value - Math.floor(value);
+            if (Math.abs(decimal - 0.5) < 0.001) {
+                // Exactly 0.5 - coin flip
+                return Math.random() < 0.5 ? Math.floor(value) : Math.ceil(value);
+            }
+            return Math.round(value);
+        }
+
+        // Calculate received amounts that round to whole dollars but match total
+        function calculateReceivedAmounts(data, totalPool) {
+            // First pass: round each share with coin flip for 0.5
+            const received = data.map(emp => ({
+                name: emp.name,
+                share: emp.share,
+                received: roundWithCoinFlip(emp.share)
+            }));
+
+            // Calculate the difference between total pool and sum of rounded amounts
+            let totalRounded = received.reduce((sum, r) => sum + r.received, 0);
+            let diff = Math.round(totalPool) - totalRounded;
+
+            // Adjust to make totals match - add/subtract $1 from entries with largest rounding error
+            if (diff !== 0) {
+                // Sort by rounding error (how much was lost/gained by rounding)
+                const withError = received.map(r => ({
+                    ...r,
+                    error: r.share - r.received // positive = rounded down, negative = rounded up
+                }));
+
+                if (diff > 0) {
+                    // Need to add dollars - prioritize those that were rounded down the most
+                    withError.sort((a, b) => b.error - a.error);
+                } else {
+                    // Need to subtract dollars - prioritize those that were rounded up the most
+                    withError.sort((a, b) => a.error - b.error);
+                }
+
+                // Apply adjustments
+                for (let i = 0; i < Math.abs(diff) && i < withError.length; i++) {
+                    withError[i].received += (diff > 0 ? 1 : -1);
+                }
+
+                // Convert back to map
+                const result = {};
+                withError.forEach(r => result[r.name] = r.received);
+                return result;
+            }
+
+            // Convert to map
+            const result = {};
+            received.forEach(r => result[r.name] = r.received);
+            return result;
+        }
+
+        function renderPoolTable(data, totalBasis) {
+            const tbody = document.getElementById('poolTableBody');
+            let html = '';
+            let totalHours = 0;
+            let totalShare = 0;
+            let totalReceived = 0;
+
+            const locationNames = { '28': '#28 Downtown', '17': '#17 Riverside', '12': '#12 Airport' };
+
+            // Calculate received amounts (rounded to whole dollars, totals match)
+            const totalPool = data.reduce((sum, emp) => sum + emp.share, 0);
+            const receivedAmounts = calculateReceivedAmounts(data, totalPool);
+
+            data.forEach((emp, idx) => {
+                totalHours += emp.hours;
+                totalShare += emp.share;
+                const received = receivedAmounts[emp.name] || 0;
+                totalReceived += received;
+                html += `
+                    <tr>
+                        <td><strong>${emp.name}</strong></td>
+                        <td>${locationNames[emp.location] || '#' + emp.location}</td>
+                        <td><span class="job-badge ${emp.roleClass}">${emp.role}</span></td>
+                        <td class="number">${emp.hours}</td>
+                        <td class="number">$${emp.rate.toFixed(2)}</td>
+                        <td class="number">
+                            <input type="number" class="variance-input" value="${emp.variance}"
+                                   step="0.1" min="0.1" max="3" onchange="updateVariance(${idx}, this.value)">
+                        </td>
+                        <td class="number basis-col ${showDetailedView ? '' : 'basis-hidden'}">$${emp.basis.toFixed(2)}</td>
+                        <td class="number">
+                            ${emp.percentage.toFixed(1)}%
+                            <div class="percentage-bar"><div class="percentage-fill" style="width: ${emp.percentage}%"></div></div>
+                        </td>
+                        <td class="number share-amount">$${emp.share.toFixed(2)}</td>
+                        <td class="number" style="background: #ecfdf5; font-weight: 600; color: var(--accent);">$${received.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                <tr class="total-row">
+                    <td><strong>TOTALS</strong></td>
+                    <td></td>
+                    <td></td>
+                    <td class="number"><strong>${totalHours}</strong></td>
+                    <td class="number">-</td>
+                    <td class="number">-</td>
+                    <td class="number basis-col ${showDetailedView ? '' : 'basis-hidden'}"><strong>$${totalBasis.toFixed(2)}</strong></td>
+                    <td class="number"><strong>100%</strong></td>
+                    <td class="number share-amount"><strong>$${totalShare.toFixed(2)}</strong></td>
+                    <td class="number" style="background: #d1fae5; font-weight: 700;"><strong>$${totalReceived.toFixed(2)}</strong></td>
+                </tr>
+            `;
+
+            tbody.innerHTML = html;
+        }
+
+        function updateVariance(idx, value) {
+            poolData[idx].variance = parseFloat(value);
+            calculatePool();
+            showToast('Variance updated - shares recalculated');
+        }
+
+        function toggleView(view) {
+            showDetailedView = view === 'detailed';
+            document.querySelectorAll('.view-toggle button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.querySelectorAll('.basis-col').forEach(col => {
+                col.classList.toggle('basis-hidden', !showDetailedView);
+            });
+        }
+
+        // Daily Entry Functions
+        let currentDate = new Date(2025, 11, 20); // Dec 20, 2025 (within PPE Dec 27 data range)
+
+        function formatDate(date) {
+            return date.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function changeDate(days) {
+            currentDate.setDate(currentDate.getDate() + days);
+            document.getElementById('currentDate').textContent = formatDate(currentDate);
+            renderDailyEntries();
+        }
+
+        // Render daily entry form based on current date and dailyTipsData
+        function renderDailyEntries() {
+            const periodTips = dailyTipsData[currentPayPeriod];
+            if (!periodTips) return;
+
+            // Format current date to match dailyTipsData format (M/DD)
+            const month = currentDate.getMonth() + 1;
+            const day = currentDate.getDate();
+            const dateKey = `${month}/${day.toString().padStart(2, '0')}`;
+
+            // Find the index of this date in the period
+            const dateIndex = periodTips.dates.indexOf(dateKey);
+
+            // Filter servers by location
+            const filteredServers = currentLocation === 'all'
+                ? poolData.filter(emp => emp.role === 'Server')
+                : poolData.filter(emp => emp.location === currentLocation && emp.role === 'Server');
+
+            // Build the entry rows
+            const form = document.getElementById('entryForm');
+            const header = form.querySelector('.entry-header');
+            const addBtn = form.querySelector('.add-entry-btn');
+            const totalsRow = form.querySelector('.entry-totals');
+
+            // Remove existing entry rows (but keep header, add btn, and totals)
+            const existingRows = form.querySelectorAll('.entry-row:not(.entry-header)');
+            existingRows.forEach(row => row.remove());
+
+            let totalSales = 0;
+            let totalCalc = 0;
+            let totalActual = 0;
+            let entryCount = 0;
+
+            // Add entries for servers who worked this day
+            filteredServers.forEach(emp => {
+                const serverData = periodTips.servers[emp.name];
+                if (!serverData) return;
+
+                const tipAmount = dateIndex >= 0 ? serverData[dateIndex] : null;
+                if (tipAmount === null || tipAmount === undefined) return; // Server didn't work this day
+
+                entryCount++;
+                // Simulate sales (tip amount / 0.0325 approximately, with some variance)
+                const sales = Math.round(tipAmount / 0.032 * (0.95 + Math.random() * 0.1) * 100) / 100;
+                const calcContrib = sales * 0.0325;
+
+                totalSales += sales;
+                totalCalc += calcContrib;
+                totalActual += tipAmount;
+
+                const newRow = document.createElement('div');
+                newRow.className = 'entry-row';
+                newRow.setAttribute('data-id', entryCount);
+                newRow.innerHTML = `
+                    <select>
+                        <option selected>${emp.name}</option>
+                        ${filteredServers.filter(s => s.name !== emp.name).map(s => `<option>${s.name}</option>`).join('')}
+                    </select>
+                    <input type="number" class="sales-input" value="${sales.toFixed(2)}" placeholder="Sales $" onchange="calculateContribution(this)">
+                    <div class="calculated-field">$${calcContrib.toFixed(2)}</div>
+                    <input type="number" class="actual-input" value="${tipAmount.toFixed(2)}" placeholder="Actual $" onchange="updateActualTotals()">
+                    <button class="remove-btn" onclick="removeEntry(this)">×</button>
+                `;
+                form.insertBefore(newRow, addBtn);
+            });
+
+            // If no entries for this day, show a message or empty state
+            if (entryCount === 0) {
+                const emptyRow = document.createElement('div');
+                emptyRow.className = 'entry-row';
+                emptyRow.style.justifyContent = 'center';
+                emptyRow.style.color = '#94a3b8';
+                emptyRow.style.fontStyle = 'italic';
+                emptyRow.innerHTML = '<span style="grid-column: 1 / -1; text-align: center;">No entries for this day - servers were off or data not available</span>';
+                form.insertBefore(emptyRow, addBtn);
+            }
+
+            // Update totals
+            document.getElementById('totalSales').textContent = '$' + totalSales.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('totalContribution').textContent = '$' + totalCalc.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('totalActual').textContent = '$' + totalActual.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
+        function calculateContribution(input) {
+            const sales = parseFloat(input.value) || 0;
+            const contribution = sales * 0.0325;
+            input.parentElement.querySelector('.calculated-field').textContent = '$' + contribution.toFixed(2);
+            updateTotals();
+        }
+
+        function updateTotals() {
+            let totalSales = 0;
+            let totalContrib = 0;
+            document.querySelectorAll('.sales-input').forEach(input => {
+                const sales = parseFloat(input.value) || 0;
+                totalSales += sales;
+                totalContrib += sales * 0.0325;
+            });
+            document.getElementById('totalSales').textContent = '$' + totalSales.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('totalContribution').textContent = '$' + totalContrib.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            updateActualTotals();
+        }
+
+        function updateActualTotals() {
+            let totalActual = 0;
+            document.querySelectorAll('.actual-input').forEach(input => {
+                totalActual += parseFloat(input.value) || 0;
+            });
+            document.getElementById('totalActual').textContent = '$' + totalActual.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
+        function addEntry() {
+            const form = document.getElementById('entryForm');
+            const addBtn = form.querySelector('.add-entry-btn');
+            const newRow = document.createElement('div');
+            newRow.className = 'entry-row';
+            newRow.innerHTML = `
+                <select>
+                    <option>Select Server...</option>
+                    <option>Sarah Johnson</option>
+                    <option>Mike Chen</option>
+                    <option>Lisa Park</option>
+                    <option>Tom Wilson</option>
+                    <option>Katie Middleton</option>
+                    <option>Stacey Smith</option>
+                </select>
+                <input type="number" class="sales-input" placeholder="Sales $" onchange="calculateContribution(this)">
+                <div class="calculated-field">$0.00</div>
+                <input type="number" class="actual-input" placeholder="Actual $" onchange="updateActualTotals()">
+                <button class="remove-btn" onclick="removeEntry(this)">×</button>
+            `;
+            form.insertBefore(newRow, addBtn);
+        }
+
+        function removeEntry(btn) {
+            btn.parentElement.remove();
+            updateTotals();
+            updateActualTotals();
+        }
+
+        function copyPreviousDay() {
+            showToast('Previous day entries copied!');
+        }
+
+        function saveDay() {
+            showToast('Day saved successfully!');
+        }
+
+        function saveAndNext() {
+            showToast('Day saved! Moving to next day...');
+            setTimeout(() => changeDate(1), 500);
+        }
+
+        // YTD Data for each employee (simulated yearly data)
+        // 'contributed' is ACTUAL tips contributed (pool basis), 'calculatedContrib' is 3.25% of sales (for reference)
+        const ytdData = {
+            'Sarah Johnson': { periods: 26, hours: 1872, calculatedContrib: 4892.50, contributed: 5234.00, received: 3234.18 },
+            'Lisa Park': { periods: 26, hours: 1664, calculatedContrib: 3892.00, contributed: 4156.00, received: 2567.23 },
+            'Tom Wilson': { periods: 26, hours: 1456, calculatedContrib: 3456.00, contributed: 3678.00, received: 2234.56 },
+            'Juan Martinez': { periods: 26, hours: 2080, calculatedContrib: 0, contributed: 0, received: 5234.56 },
+            'Amy Rodriguez': { periods: 24, hours: 1440, calculatedContrib: 0, contributed: 0, received: 2567.23 },
+            'Dan Torres': { periods: 26, hours: 1040, calculatedContrib: 0, contributed: 0, received: 1456.78 },
+            'Mike Chen': { periods: 26, hours: 1768, calculatedContrib: 4234.00, contributed: 4512.00, received: 2892.34 },
+            'Rene Mungia': { periods: 26, hours: 1560, calculatedContrib: 3678.00, contributed: 3945.00, received: 2456.78 },
+            'Edgar Ponce': { periods: 26, hours: 1976, calculatedContrib: 0, contributed: 0, received: 4567.89 },
+            'Salvador Pantaleon': { periods: 26, hours: 1664, calculatedContrib: 0, contributed: 0, received: 4123.45 },
+            'Victoria Tamblyn': { periods: 22, hours: 836, calculatedContrib: 0, contributed: 0, received: 1234.56 },
+            'Katie Middleton': { periods: 24, hours: 1248, calculatedContrib: 2987.00, contributed: 3198.00, received: 1945.67 },
+            'Stacey Smith': { periods: 22, hours: 1056, calculatedContrib: 2567.00, contributed: 2756.00, received: 1678.90 },
+            'Cheyenne Brooks': { periods: 20, hours: 880, calculatedContrib: 2123.00, contributed: 2289.00, received: 1345.67 }
+        };
+
+        // Per pay-period actual contributions by server (simulated) - varies by pay period
+        const actualContribData = {
+            'PPE: Dec 27, 2025': {
+                'Sarah Johnson': 195.00,
+                'Lisa Park': 162.00,
+                'Tom Wilson': 138.00,
+                'Mike Chen': 178.00,
+                'Rene Mungia': 156.00,
+                'Katie Middleton': 118.00,
+                'Stacey Smith': 98.00,
+                'Cheyenne Brooks': 89.00
+            },
+            'PPE: Dec 13, 2025': {
+                'Sarah Johnson': 178.50,
+                'Lisa Park': 149.00,
+                'Tom Wilson': 125.00,
+                'Mike Chen': 162.00,
+                'Rene Mungia': 142.00,
+                'Katie Middleton': 105.00,
+                'Stacey Smith': 88.00,
+                'Cheyenne Brooks': 78.00
+            },
+            'PPE: Nov 29, 2025': {
+                'Sarah Johnson': 215.00,
+                'Lisa Park': 182.00,
+                'Tom Wilson': 156.00,
+                'Mike Chen': 198.00,
+                'Rene Mungia': 175.00,
+                'Katie Middleton': 132.00,
+                'Stacey Smith': 112.00,
+                'Cheyenne Brooks': 102.00
+            }
+        };
+
+        // Daily tip contributions grid data - daily breakdown per server per pay period
+        // Totals must match actualContribData: Dec27: Sarah=195, Lisa=162, Tom=138, Mike=178, Rene=156, Katie=118, Stacey=98, Cheyenne=89
+        const dailyTipsData = {
+            'PPE: Dec 27, 2025': {
+                dates: ['12/14', '12/15', '12/16', '12/17', '12/18', '12/19', '12/20', '12/21', '12/22', '12/23', '12/24', '12/25', '12/26', '12/27'],
+                servers: {
+                    // Sarah Johnson = 195.00
+                    'Sarah Johnson': [18.00, 22.00, null, 19.00, null, 21.00, 28.00, null, 24.00, 18.00, null, null, 20.00, 25.00],
+                    // Lisa Park = 162.00
+                    'Lisa Park': [15.00, 18.00, null, 16.00, null, 14.00, 22.00, 17.00, 19.00, null, null, null, 20.00, 21.00],
+                    // Tom Wilson = 138.00
+                    'Tom Wilson': [12.00, 14.00, null, null, 16.00, null, 18.00, 15.00, 17.00, 13.00, 11.00, null, null, 22.00],
+                    // Mike Chen = 178.00
+                    'Mike Chen': [19.00, 21.00, 15.00, null, 18.00, null, 26.00, 22.00, 24.00, 18.00, null, null, null, 15.00],
+                    // Rene Mungia = 156.00
+                    'Rene Mungia': [null, 17.00, 14.00, 15.00, 18.00, 16.00, null, 19.00, 17.00, null, null, 12.00, 14.00, 14.00],
+                    // Katie Middleton = 118.00
+                    'Katie Middleton': [11.00, 13.00, 10.00, 12.00, null, null, 18.00, 14.00, null, 12.00, 9.00, null, 8.00, 11.00],
+                    // Stacey Smith = 98.00
+                    'Stacey Smith': [9.00, 11.00, 8.00, null, null, 10.00, 14.00, 12.00, 11.00, null, null, 7.00, null, 16.00],
+                    // Cheyenne Brooks = 89.00
+                    'Cheyenne Brooks': [null, null, null, 8.00, 12.00, 10.00, 15.00, null, null, 9.00, null, null, 14.00, 21.00]
+                }
+            },
+            'PPE: Dec 13, 2025': {
+                // Totals: Sarah=178.50, Lisa=149, Tom=125, Mike=162, Rene=142, Katie=105, Stacey=88, Cheyenne=78
+                dates: ['11/30', '12/01', '12/02', '12/03', '12/04', '12/05', '12/06', '12/07', '12/08', '12/09', '12/10', '12/11', '12/12', '12/13'],
+                servers: {
+                    // Sarah Johnson = 178.50
+                    'Sarah Johnson': [16.00, 20.00, null, 17.50, null, 19.00, 26.00, null, 22.00, 16.00, null, null, 18.00, 24.00],
+                    // Lisa Park = 149.00
+                    'Lisa Park': [14.00, 16.00, null, 15.00, null, 12.00, 20.00, 15.00, 17.00, null, null, null, 18.00, 22.00],
+                    // Tom Wilson = 125.00
+                    'Tom Wilson': [11.00, 12.00, null, null, 14.00, null, 16.00, 13.00, 15.00, 12.00, 10.00, null, null, 22.00],
+                    // Mike Chen = 162.00
+                    'Mike Chen': [17.00, 19.00, 14.00, null, 16.00, null, 24.00, 20.00, 22.00, 16.00, null, null, null, 14.00],
+                    // Rene Mungia = 142.00
+                    'Rene Mungia': [null, 15.00, 12.00, 14.00, 16.00, 14.00, null, 17.00, 15.00, null, null, 11.00, 13.00, 15.00],
+                    // Katie Middleton = 105.00
+                    'Katie Middleton': [10.00, 11.00, 9.00, 10.00, null, null, 16.00, 12.00, null, 11.00, 8.00, null, 7.00, 11.00],
+                    // Stacey Smith = 88.00
+                    'Stacey Smith': [8.00, 10.00, 7.00, null, null, 9.00, 12.00, 11.00, 10.00, null, null, 6.00, null, 15.00],
+                    // Cheyenne Brooks = 78.00
+                    'Cheyenne Brooks': [null, null, null, 7.00, 10.00, 9.00, 13.00, null, null, 8.00, null, null, 12.00, 19.00]
+                }
+            },
+            'PPE: Nov 29, 2025': {
+                // Totals: Sarah=215, Lisa=182, Tom=156, Mike=198, Rene=175, Katie=132, Stacey=112, Cheyenne=102
+                dates: ['11/16', '11/17', '11/18', '11/19', '11/20', '11/21', '11/22', '11/23', '11/24', '11/25', '11/26', '11/27', '11/28', '11/29'],
+                servers: {
+                    // Sarah Johnson = 215.00
+                    'Sarah Johnson': [20.00, 24.00, null, 21.00, null, 23.00, 32.00, null, 26.00, 20.00, null, null, 22.00, 27.00],
+                    // Lisa Park = 182.00
+                    'Lisa Park': [17.00, 20.00, null, 18.00, null, 16.00, 26.00, 19.00, 21.00, null, null, null, 22.00, 23.00],
+                    // Tom Wilson = 156.00
+                    'Tom Wilson': [14.00, 16.00, null, null, 18.00, null, 22.00, 17.00, 19.00, 15.00, 13.00, null, null, 22.00],
+                    // Mike Chen = 198.00
+                    'Mike Chen': [21.00, 23.00, 17.00, null, 20.00, null, 30.00, 24.00, 26.00, 20.00, null, null, null, 17.00],
+                    // Rene Mungia = 175.00
+                    'Rene Mungia': [null, 19.00, 16.00, 17.00, 20.00, 18.00, null, 21.00, 19.00, null, null, 14.00, 15.00, 16.00],
+                    // Katie Middleton = 132.00
+                    'Katie Middleton': [12.00, 15.00, 12.00, 14.00, null, null, 22.00, 16.00, null, 14.00, 11.00, null, 10.00, 6.00],
+                    // Stacey Smith = 112.00
+                    'Stacey Smith': [10.00, 13.00, 10.00, null, null, 12.00, 16.00, 14.00, 13.00, null, null, 8.00, null, 16.00],
+                    // Cheyenne Brooks = 102.00
+                    'Cheyenne Brooks': [null, null, null, 10.00, 14.00, 12.00, 17.00, null, null, 11.00, null, null, 16.00, 22.00]
+                }
+            }
+        };
+
+        // Daily Tips Grid rendering
+        function renderDailyTipsGrid() {
+            const locationNames = { '28': 'Location #28 - Downtown', '17': 'Location #17 - Riverside', '12': 'Location #12 - Airport', 'all': 'All Locations' };
+            const ppeDateText = currentPayPeriod.replace('PPE: ', '');
+
+            // Update header
+            document.getElementById('dailyTipsHeader').textContent = 'Pay Period Ending: ' + ppeDateText + ' | ' + locationNames[currentLocation];
+
+            const periodTips = dailyTipsData[currentPayPeriod];
+            if (!periodTips) return;
+
+            // Filter servers by location
+            const filteredServers = currentLocation === 'all'
+                ? poolData.filter(emp => emp.role === 'Server')
+                : poolData.filter(emp => emp.location === currentLocation && emp.role === 'Server');
+
+            const serverNames = filteredServers.map(emp => emp.name).filter(name => periodTips.servers[name]);
+
+            // Build header row
+            let headHtml = '<tr><th>Date</th>';
+            serverNames.forEach(name => {
+                const firstName = name.split(' ')[0];
+                const lastName = name.split(' ')[1] || '';
+                headHtml += `<th class="number" style="min-width: 70px;">${firstName}<br><small>${lastName}</small></th>`;
+            });
+            headHtml += '<th class="number" style="background: #ecfdf5; min-width: 80px;">GRAND<br>TOTAL</th></tr>';
+            document.getElementById('dailyTipsHead').innerHTML = headHtml;
+
+            // Build data rows
+            let bodyHtml = '';
+            const serverTotals = {};
+            serverNames.forEach(name => serverTotals[name] = 0);
+            let grandTotal = 0;
+
+            periodTips.dates.forEach((date, idx) => {
+                let rowTotal = 0;
+                bodyHtml += `<tr><td><strong>${date}</strong></td>`;
+
+                serverNames.forEach(name => {
+                    const amount = periodTips.servers[name] ? periodTips.servers[name][idx] : null;
+                    if (amount !== null && amount !== undefined) {
+                        bodyHtml += `<td class="number">${amount.toFixed(2)}</td>`;
+                        serverTotals[name] += amount;
+                        rowTotal += amount;
+                    } else {
+                        bodyHtml += `<td class="number" style="color: #cbd5e1;">-</td>`;
+                    }
+                });
+
+                grandTotal += rowTotal;
+                bodyHtml += `<td class="number" style="background: #ecfdf5; font-weight: 600;">$${rowTotal.toFixed(2)}</td></tr>`;
+            });
+
+            // Add totals row
+            bodyHtml += '<tr class="total-row"><td><strong>Total</strong></td>';
+            serverNames.forEach(name => {
+                bodyHtml += `<td class="number"><strong>${serverTotals[name].toFixed(2)}</strong></td>`;
+            });
+            bodyHtml += `<td class="number" style="background: #d1fae5; font-weight: 700;"><strong>$${grandTotal.toFixed(2)}</strong></td></tr>`;
+
+            document.getElementById('dailyTipsBody').innerHTML = bodyHtml;
+        }
+
+        // Calculate total actual contributions for current filters (used by pool calc)
+        function getTotalActualContributions() {
+            const periodContribs = actualContribData[currentPayPeriod] || {};
+
+            // Filter servers by location
+            const filteredServers = currentLocation === 'all'
+                ? poolData.filter(emp => emp.role === 'Server')
+                : poolData.filter(emp => emp.location === currentLocation && emp.role === 'Server');
+
+            let total = 0;
+            filteredServers.forEach(emp => {
+                total += periodContribs[emp.name] || 0;
+            });
+            return total;
+        }
+
+        // Pay Period Summary rendering
+        function renderPayPeriodSummary() {
+            const locationNames = { '28': 'Location #28 - Downtown', '17': 'Location #17 - Riverside', '12': 'Location #12 - Airport', 'all': 'All Locations' };
+            const locationShortNames = { '28': '#28 Downtown', '17': '#17 Riverside', '12': '#12 Airport' };
+            const ppeDateText = currentPayPeriod.replace('PPE: ', '');
+
+            // Update header
+            document.getElementById('payPeriodHeader').textContent = 'Pay Period Ending: ' + ppeDateText + ' | ' + locationNames[currentLocation];
+
+            // Filter servers only (those who contribute)
+            const filteredData = currentLocation === 'all'
+                ? poolData.filter(emp => emp.role === 'Server')
+                : poolData.filter(emp => emp.location === currentLocation && emp.role === 'Server');
+
+            const periodData = payPeriodData[currentPayPeriod];
+            const periodContribs = actualContribData[currentPayPeriod] || {};
+            const tbody = document.getElementById('payPeriodTableBody');
+            let html = '';
+            let totalSales = 0;
+            let totalCalcContrib = 0;
+            let totalActualContrib = 0;
+
+            filteredData.forEach(emp => {
+                // Simulate sales based on hours and rate
+                const sales = emp.hours * emp.rate * 8 * periodData.salesMultiplier;
+                const calcContribution = sales * 0.0325;
+                // Get actual contribution from per-period data
+                const actualContrib = periodContribs[emp.name] || 0;
+                totalSales += sales;
+                totalCalcContrib += calcContribution;
+                totalActualContrib += actualContrib;
+                const initials = emp.name.split(' ').map(n => n[0]).join('');
+
+                html += `
+                    <tr>
+                        <td><strong>${emp.name}</strong></td>
+                        <td>${locationShortNames[emp.location]}</td>
+                        <td class="number">$${sales.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td class="number">3.25%</td>
+                        <td class="number" style="color: #64748b;">$${calcContribution.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td class="number" style="background: #ecfdf5; font-weight: 700; color: var(--accent);">$${actualContrib.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td>✅ ${initials}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                <tr class="total-row">
+                    <td><strong>TOTALS</strong></td>
+                    <td></td>
+                    <td class="number"><strong>$${totalSales.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
+                    <td class="number">-</td>
+                    <td class="number" style="color: #94a3b8;"><strong>$${totalCalcContrib.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
+                    <td class="number" style="background: #d1fae5; font-weight: 700;"><strong>$${totalActualContrib.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td>
+                    <td></td>
+                </tr>
+            `;
+
+            tbody.innerHTML = html;
+
+            return totalActualContrib; // Return for use in pool calculation
+        }
+
+        // YTD Report rendering
+        function renderYTDReport() {
+            const locationNames = { '28': 'Location #28 - Downtown', '17': 'Location #17 - Riverside', '12': 'Location #12 - Airport', 'all': 'All Locations' };
+            const locationShortNames = { '28': '#28 Downtown', '17': '#17 Riverside', '12': '#12 Airport' };
+
+            // Update title
+            document.getElementById('ytdTitle').textContent = 'Year-to-Date Summary - 2025 | ' + locationNames[currentLocation];
+
+            // Filter by location
+            const filteredData = currentLocation === 'all'
+                ? poolData
+                : poolData.filter(emp => emp.location === currentLocation);
+
+            const tbody = document.getElementById('ytdTableBody');
+            let html = '';
+
+            filteredData.forEach(emp => {
+                const ytd = ytdData[emp.name] || { periods: 0, hours: 0, contributed: 0, received: 0 };
+                const net = ytd.received - ytd.contributed;
+                const netColor = net >= 0 ? 'var(--accent)' : '#ef4444';
+                const netSign = net >= 0 ? '+' : '';
+
+                html += `
+                    <tr>
+                        <td><strong>${emp.name}</strong> <span class="job-badge ${emp.roleClass}">${emp.role}</span></td>
+                        <td>${locationShortNames[emp.location]}</td>
+                        <td class="number">${ytd.periods}</td>
+                        <td class="number">${ytd.hours.toLocaleString('en-US')}</td>
+                        <td class="number">$${ytd.contributed.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td class="number">$${ytd.received.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td class="number" style="color: ${netColor};">${netSign}$${Math.abs(net).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // Top Contributors rendering for Dashboard
+        function renderTopContributors() {
+            const periodContribs = actualContribData[currentPayPeriod] || {};
+            const locationShortNames = { '28': '#28', '17': '#17', '12': '#12' };
+
+            // Filter servers by location and get their contributions
+            const filteredServers = currentLocation === 'all'
+                ? poolData.filter(emp => emp.role === 'Server')
+                : poolData.filter(emp => emp.location === currentLocation && emp.role === 'Server');
+
+            // Build contribution data with estimated sales
+            const contribList = filteredServers.map(emp => {
+                const actualContrib = periodContribs[emp.name] || 0;
+                // Estimate sales from contribution (contribution / 0.0325 approximately)
+                const estimatedSales = actualContrib > 0 ? Math.round(actualContrib / 0.0325 * 100) / 100 : 0;
+                return {
+                    name: emp.name,
+                    location: emp.location,
+                    sales: estimatedSales,
+                    contribution: actualContrib
+                };
+            });
+
+            // Sort by contribution descending and take top 4
+            contribList.sort((a, b) => b.contribution - a.contribution);
+            const top4 = contribList.slice(0, 4);
+
+            // Update the dashboard table
+            const tbody = document.querySelector('#page-dashboard .data-table tbody');
+            if (!tbody) return;
+
+            let html = '';
+            top4.forEach(emp => {
+                html += `
+                    <tr>
+                        <td><strong>${emp.name}</strong></td>
+                        <td>${locationShortNames[emp.location]}</td>
+                        <td class="number">$${emp.sales.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td class="number">$${emp.contribution.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // Toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show', 'success');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDashboardStats();
+            calculatePool();
+            renderPayPeriodSummary();
+            renderDailyTipsGrid();
+            renderDailyEntries();
+            renderYTDReport();
+            renderTopContributors();
+            document.getElementById('currentDate').textContent = formatDate(currentDate);
+        });
+    </script>
+</body>
+</html>

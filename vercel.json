@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "name": "tip-share-pro",
+  "builds": [
+    {
+      "src": "tip-share-pro-mockup.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/tip-share-pro-mockup.html"
+    }
+  ]
+}
