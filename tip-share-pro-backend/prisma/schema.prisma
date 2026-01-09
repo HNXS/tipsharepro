@@ -1,0 +1,302 @@
+// Tip Share Pro - Database Schema
+// This schema defines the multi-tenant SaaS platform for restaurant tip pooling
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum SubscriptionStatus {
+  DEMO
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+}
+
+enum LocationStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  DESIGNEE
+}
+
+enum TwoFactorMethod {
+  EMAIL
+  SMS
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  TERMINATED
+}
+
+enum PayPeriodStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+// ============================================================================
+// ORGANIZATION & MULTI-TENANCY
+// ============================================================================
+
+model Organization {
+  id                 String             @id @default(uuid()) @db.Uuid
+  name               String
+  subscriptionStatus SubscriptionStatus @default(DEMO) @map("subscription_status")
+  stripeCustomerId   String?            @unique @map("stripe_customer_id")
+  trialEndsAt        DateTime?          @map("trial_ends_at")
+  settings           Json               @default("{}")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  // Relations
+  locations     Location[]
+  users         User[]
+  employees     Employee[]
+  jobCategories JobCategory[]
+  payPeriods    PayPeriod[]
+  auditLogs     AuditLog[]
+
+  @@map("organizations")
+}
+
+model Location {
+  id             String         @id @default(uuid()) @db.Uuid
+  organizationId String         @map("organization_id") @db.Uuid
+  name           String
+  number         String?
+  status         LocationStatus @default(ACTIVE)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  users        User[]
+  employees    Employee[]
+  payPeriods   PayPeriod[]
+
+  @@unique([organizationId, number])
+  @@map("locations")
+}
+
+// ============================================================================
+// USERS & AUTHENTICATION
+// ============================================================================
+
+model User {
+  id               String          @id @default(uuid()) @db.Uuid
+  organizationId   String          @map("organization_id") @db.Uuid
+  locationId       String?         @map("location_id") @db.Uuid
+  email            String
+  passwordHash     String          @map("password_hash")
+  role             UserRole        @default(DESIGNEE)
+  twoFactorEnabled Boolean         @default(false) @map("two_factor_enabled")
+  twoFactorMethod  TwoFactorMethod? @map("two_factor_method")
+  phone            String?
+  lastLoginAt      DateTime?       @map("last_login_at")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  location       Location?        @relation(fields: [locationId], references: [id])
+  refreshTokens  RefreshToken[]
+  twoFactorCodes TwoFactorCode[]
+  auditLogs      AuditLog[]
+  dailyEntries   DailyEntry[]     @relation("EnteredBy")
+
+  @@unique([organizationId, email])
+  @@index([email])
+  @@map("users")
+}
+
+model RefreshToken {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  tokenHash  String   @map("token_hash")
+  deviceInfo String?  @map("device_info")
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@map("refresh_tokens")
+}
+
+model TwoFactorCode {
+  id        String          @id @default(uuid()) @db.Uuid
+  userId    String          @map("user_id") @db.Uuid
+  codeHash  String          @map("code_hash")
+  method    TwoFactorMethod
+  expiresAt DateTime        @map("expires_at")
+  attempts  Int             @default(0)
+  createdAt DateTime        @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("two_factor_codes")
+}
+
+// ============================================================================
+// EMPLOYEES & JOB CATEGORIES
+// ============================================================================
+
+model JobCategory {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  name           String
+  weight         Decimal  @db.Decimal(3, 2) // 1.00 to 5.00
+  badgeColor     String   @map("badge_color") // hex color
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  employees    Employee[]
+
+  @@unique([organizationId, name])
+  @@map("job_categories")
+}
+
+model Employee {
+  id              String         @id @default(uuid()) @db.Uuid
+  organizationId  String         @map("organization_id") @db.Uuid
+  locationId      String         @map("location_id") @db.Uuid
+  jobCategoryId   String         @map("job_category_id") @db.Uuid
+  name            String
+  hourlyRateCents Int            @map("hourly_rate_cents") // Store as cents for precision
+  status          EmployeeStatus @default(ACTIVE)
+  hiredAt         DateTime       @map("hired_at")
+  terminatedAt    DateTime?      @map("terminated_at")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  organization  Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  location      Location       @relation(fields: [locationId], references: [id])
+  jobCategory   JobCategory    @relation(fields: [jobCategoryId], references: [id])
+  dailyEntries  DailyEntry[]
+  distributions Distribution[]
+
+  @@index([organizationId, locationId])
+  @@index([organizationId, status])
+  @@map("employees")
+}
+
+// ============================================================================
+// PAY PERIODS & ENTRIES
+// ============================================================================
+
+model PayPeriod {
+  id             String          @id @default(uuid()) @db.Uuid
+  organizationId String          @map("organization_id") @db.Uuid
+  locationId     String          @map("location_id") @db.Uuid
+  startDate      DateTime        @map("start_date") @db.Date
+  endDate        DateTime        @map("end_date") @db.Date
+  status         PayPeriodStatus @default(DRAFT)
+  totalPoolCents Int?            @map("total_pool_cents")
+  calculatedAt   DateTime?       @map("calculated_at")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  organization  Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  location      Location       @relation(fields: [locationId], references: [id])
+  dailyEntries  DailyEntry[]
+  distributions Distribution[]
+
+  @@unique([organizationId, locationId, startDate, endDate])
+  @@index([organizationId, status])
+  @@map("pay_periods")
+}
+
+model DailyEntry {
+  id                     String   @id @default(uuid()) @db.Uuid
+  payPeriodId            String   @map("pay_period_id") @db.Uuid
+  employeeId             String   @map("employee_id") @db.Uuid
+  date                   DateTime @db.Date
+  salesCents             Int?     @map("sales_cents")
+  calculatedContribCents Int?     @map("calculated_contrib_cents")
+  actualContribCents     Int?     @map("actual_contrib_cents")
+  enteredById            String?  @map("entered_by_id") @db.Uuid
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  payPeriod PayPeriod @relation(fields: [payPeriodId], references: [id], onDelete: Cascade)
+  employee  Employee  @relation(fields: [employeeId], references: [id])
+  enteredBy User?     @relation("EnteredBy", fields: [enteredById], references: [id])
+
+  @@unique([payPeriodId, employeeId, date])
+  @@index([payPeriodId, date])
+  @@map("daily_entries")
+}
+
+// ============================================================================
+// DISTRIBUTIONS (CALCULATION RESULTS)
+// ============================================================================
+
+model Distribution {
+  id              String   @id @default(uuid()) @db.Uuid
+  payPeriodId     String   @map("pay_period_id") @db.Uuid
+  employeeId      String   @map("employee_id") @db.Uuid
+  hoursWorked     Decimal  @map("hours_worked") @db.Decimal(5, 2)
+  rateAtTimeCents Int      @map("rate_at_time_cents")
+  weightAtTime    Decimal  @map("weight_at_time") @db.Decimal(3, 2)
+  // CRITICAL: 'basis' is stored for audit purposes but NEVER exposed via API
+  basis           Int      @map("basis")
+  percentage      Decimal  @db.Decimal(7, 4) // e.g., 0.1234 = 12.34%
+  shareCents      Int      @map("share_cents")
+  receivedCents   Int      @map("received_cents") // After rounding
+  varianceCents   Int      @default(0) @map("variance_cents") // Manual adjustments
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  payPeriod PayPeriod @relation(fields: [payPeriodId], references: [id], onDelete: Cascade)
+  employee  Employee  @relation(fields: [employeeId], references: [id])
+
+  @@unique([payPeriodId, employeeId])
+  @@map("distributions")
+}
+
+// ============================================================================
+// AUDIT LOGGING
+// ============================================================================
+
+model AuditLog {
+  id             String   @id @default(uuid()) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  userId         String?  @map("user_id") @db.Uuid
+  action         String
+  entityType     String   @map("entity_type")
+  entityId       String   @map("entity_id") @db.Uuid
+  beforeValues   Json?    @map("before_values")
+  afterValues    Json?    @map("after_values")
+  ipAddress      String?  @map("ip_address")
+  userAgent      String?  @map("user_agent")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}

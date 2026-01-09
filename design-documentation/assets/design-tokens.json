@@ -1,0 +1,445 @@
+{
+  "$schema": "https://design-tokens.org/schema.json",
+  "name": "Tip Share Pro Design Tokens",
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-08",
+
+  "color": {
+    "background": {
+      "midnight": {
+        "value": "#0C0A07",
+        "type": "color",
+        "description": "Primary background, body"
+      },
+      "espresso": {
+        "value": "#1A1510",
+        "type": "color",
+        "description": "Elevated surfaces, cards"
+      },
+      "mahogany": {
+        "value": "#2A2318",
+        "type": "color",
+        "description": "Hover states, secondary surfaces"
+      },
+      "walnut": {
+        "value": "#3D3225",
+        "type": "color",
+        "description": "Borders, dividers"
+      }
+    },
+    "text": {
+      "cream": {
+        "value": "#F7F3EA",
+        "type": "color",
+        "description": "Primary text, headings"
+      },
+      "linen": {
+        "value": "#C4B9A4",
+        "type": "color",
+        "description": "Secondary text, labels"
+      },
+      "stone": {
+        "value": "#8B7B65",
+        "type": "color",
+        "description": "Tertiary text, placeholders"
+      },
+      "ash": {
+        "value": "#5C5145",
+        "type": "color",
+        "description": "Disabled text"
+      }
+    },
+    "accent": {
+      "brass": {
+        "value": "#D4A420",
+        "type": "color",
+        "description": "Primary CTA, success, money/tips"
+      },
+      "brassLight": {
+        "value": "#E8C150",
+        "type": "color",
+        "description": "Hover states on brass"
+      },
+      "brassGlow": {
+        "value": "rgba(212, 164, 32, 0.15)",
+        "type": "color",
+        "description": "Glow effects, focus rings"
+      },
+      "ember": {
+        "value": "#E85D35",
+        "type": "color",
+        "description": "Notifications, important actions"
+      },
+      "emberDark": {
+        "value": "#C44A28",
+        "type": "color",
+        "description": "Active states on ember"
+      },
+      "sage": {
+        "value": "#2D9B6E",
+        "type": "color",
+        "description": "Success states, positive values"
+      },
+      "sageDark": {
+        "value": "#248558",
+        "type": "color",
+        "description": "Hover on success"
+      },
+      "sienna": {
+        "value": "#C74B4B",
+        "type": "color",
+        "description": "Errors, destructive actions"
+      },
+      "siennaDark": {
+        "value": "#A33B3B",
+        "type": "color",
+        "description": "Active error states"
+      },
+      "info": {
+        "value": "#6B8CAE",
+        "type": "color",
+        "description": "Informational, neutral alerts"
+      }
+    },
+    "semantic": {
+      "success": {
+        "value": "{color.accent.sage}",
+        "type": "color",
+        "description": "Success states"
+      },
+      "warning": {
+        "value": "{color.accent.brass}",
+        "type": "color",
+        "description": "Warning states"
+      },
+      "error": {
+        "value": "{color.accent.sienna}",
+        "type": "color",
+        "description": "Error states"
+      },
+      "info": {
+        "value": "{color.accent.info}",
+        "type": "color",
+        "description": "Info states"
+      }
+    }
+  },
+
+  "typography": {
+    "fontFamily": {
+      "display": {
+        "value": "'Fraunces', Georgia, 'Times New Roman', serif",
+        "type": "fontFamily",
+        "description": "Display and heading font"
+      },
+      "body": {
+        "value": "'Newsreader', Georgia, 'Times New Roman', serif",
+        "type": "fontFamily",
+        "description": "Body text font"
+      },
+      "mono": {
+        "value": "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
+        "type": "fontFamily",
+        "description": "Monospace font for numbers and data"
+      }
+    },
+    "fontSize": {
+      "display": {
+        "value": "48px",
+        "type": "dimension",
+        "description": "Hero sections, major stats"
+      },
+      "h1": {
+        "value": "36px",
+        "type": "dimension",
+        "description": "Page titles"
+      },
+      "h2": {
+        "value": "28px",
+        "type": "dimension",
+        "description": "Section headers"
+      },
+      "h3": {
+        "value": "22px",
+        "type": "dimension",
+        "description": "Card titles, subsections"
+      },
+      "h4": {
+        "value": "18px",
+        "type": "dimension",
+        "description": "Minor headers"
+      },
+      "bodyLarge": {
+        "value": "18px",
+        "type": "dimension",
+        "description": "Lead paragraphs"
+      },
+      "body": {
+        "value": "16px",
+        "type": "dimension",
+        "description": "Body text"
+      },
+      "bodySmall": {
+        "value": "14px",
+        "type": "dimension",
+        "description": "Secondary text"
+      },
+      "caption": {
+        "value": "12px",
+        "type": "dimension",
+        "description": "Captions, timestamps"
+      },
+      "label": {
+        "value": "11px",
+        "type": "dimension",
+        "description": "Form labels, uppercase"
+      },
+      "monoLarge": {
+        "value": "24px",
+        "type": "dimension",
+        "description": "Large dollar amounts"
+      },
+      "mono": {
+        "value": "16px",
+        "type": "dimension",
+        "description": "Table data, numbers"
+      },
+      "monoSmall": {
+        "value": "13px",
+        "type": "dimension",
+        "description": "Small data points"
+      }
+    },
+    "fontWeight": {
+      "regular": {
+        "value": "400",
+        "type": "fontWeight"
+      },
+      "medium": {
+        "value": "500",
+        "type": "fontWeight"
+      },
+      "semibold": {
+        "value": "600",
+        "type": "fontWeight"
+      },
+      "bold": {
+        "value": "700",
+        "type": "fontWeight"
+      }
+    },
+    "lineHeight": {
+      "tight": {
+        "value": "1.1",
+        "type": "number",
+        "description": "Display text"
+      },
+      "snug": {
+        "value": "1.25",
+        "type": "number",
+        "description": "Headings"
+      },
+      "normal": {
+        "value": "1.5",
+        "type": "number",
+        "description": "Body text"
+      },
+      "relaxed": {
+        "value": "1.6",
+        "type": "number",
+        "description": "Long-form text"
+      }
+    },
+    "letterSpacing": {
+      "tight": {
+        "value": "-0.02em",
+        "type": "dimension",
+        "description": "Headings"
+      },
+      "normal": {
+        "value": "0",
+        "type": "dimension",
+        "description": "Body text"
+      },
+      "wide": {
+        "value": "0.05em",
+        "type": "dimension",
+        "description": "Labels, uppercase"
+      }
+    }
+  },
+
+  "spacing": {
+    "1": {
+      "value": "6px",
+      "type": "dimension",
+      "description": "Micro spacing, icon gaps"
+    },
+    "2": {
+      "value": "12px",
+      "type": "dimension",
+      "description": "Tight padding, small gaps"
+    },
+    "3": {
+      "value": "18px",
+      "type": "dimension",
+      "description": "Default element spacing"
+    },
+    "4": {
+      "value": "24px",
+      "type": "dimension",
+      "description": "Card padding, medium gaps"
+    },
+    "5": {
+      "value": "30px",
+      "type": "dimension",
+      "description": "Section padding"
+    },
+    "6": {
+      "value": "36px",
+      "type": "dimension",
+      "description": "Large gaps"
+    },
+    "8": {
+      "value": "48px",
+      "type": "dimension",
+      "description": "Major section breaks"
+    },
+    "10": {
+      "value": "60px",
+      "type": "dimension",
+      "description": "Page margins"
+    },
+    "12": {
+      "value": "72px",
+      "type": "dimension",
+      "description": "Hero spacing"
+    }
+  },
+
+  "borderRadius": {
+    "small": {
+      "value": "4px",
+      "type": "dimension",
+      "description": "Buttons, inputs"
+    },
+    "medium": {
+      "value": "8px",
+      "type": "dimension",
+      "description": "Cards, modals"
+    },
+    "large": {
+      "value": "12px",
+      "type": "dimension",
+      "description": "Large containers"
+    },
+    "full": {
+      "value": "9999px",
+      "type": "dimension",
+      "description": "Pills, avatars"
+    }
+  },
+
+  "shadow": {
+    "small": {
+      "value": "0 1px 2px rgba(12, 10, 7, 0.4)",
+      "type": "shadow",
+      "description": "Buttons, minor elevation"
+    },
+    "medium": {
+      "value": "0 4px 8px rgba(12, 10, 7, 0.5), 0 1px 2px rgba(12, 10, 7, 0.3)",
+      "type": "shadow",
+      "description": "Cards, dropdowns"
+    },
+    "large": {
+      "value": "0 12px 24px rgba(12, 10, 7, 0.6), 0 4px 8px rgba(12, 10, 7, 0.4)",
+      "type": "shadow",
+      "description": "Modals, overlays"
+    },
+    "glow": {
+      "value": "0 0 20px rgba(212, 164, 32, 0.25)",
+      "type": "shadow",
+      "description": "Focus states, highlights"
+    }
+  },
+
+  "animation": {
+    "easing": {
+      "out": {
+        "value": "cubic-bezier(0.0, 0, 0.2, 1)",
+        "type": "cubicBezier",
+        "description": "Quick start, smooth finish"
+      },
+      "inOut": {
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "type": "cubicBezier",
+        "description": "Balanced, professional"
+      },
+      "snap": {
+        "value": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "type": "cubicBezier",
+        "description": "Slight overshoot, satisfying"
+      },
+      "settle": {
+        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "type": "cubicBezier",
+        "description": "Quick then settles"
+      }
+    },
+    "duration": {
+      "instant": {
+        "value": "100ms",
+        "type": "duration",
+        "description": "State changes, hover"
+      },
+      "fast": {
+        "value": "200ms",
+        "type": "duration",
+        "description": "Micro-interactions"
+      },
+      "normal": {
+        "value": "300ms",
+        "type": "duration",
+        "description": "Standard transitions"
+      },
+      "slow": {
+        "value": "500ms",
+        "type": "duration",
+        "description": "Page elements"
+      },
+      "reveal": {
+        "value": "700ms",
+        "type": "duration",
+        "description": "Staggered reveals"
+      }
+    }
+  },
+
+  "breakpoint": {
+    "sm": {
+      "value": "480px",
+      "type": "dimension",
+      "description": "Large phones"
+    },
+    "md": {
+      "value": "768px",
+      "type": "dimension",
+      "description": "Tablets"
+    },
+    "lg": {
+      "value": "1024px",
+      "type": "dimension",
+      "description": "Small desktops"
+    },
+    "xl": {
+      "value": "1280px",
+      "type": "dimension",
+      "description": "Large desktops"
+    },
+    "2xl": {
+      "value": "1536px",
+      "type": "dimension",
+      "description": "Extra large screens"
+    }
+  }
+}

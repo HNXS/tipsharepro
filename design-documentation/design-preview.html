@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tip Share Pro — Design System Preview</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400;9..144,600;9..144,700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ========================================
+       DESIGN TOKENS
+       ======================================== */
+    :root {
+      /* Backgrounds */
+      --midnight: #0C0A07;
+      --espresso: #1A1510;
+      --mahogany: #2A2318;
+      --walnut: #3D3225;
+
+      /* Text */
+      --cream: #F7F3EA;
+      --linen: #C4B9A4;
+      --stone: #8B7B65;
+      --ash: #5C5145;
+
+      /* Accents */
+      --brass: #D4A420;
+      --brass-light: #E8C150;
+      --brass-glow: rgba(212, 164, 32, 0.15);
+      --ember: #E85D35;
+      --ember-dark: #C44A28;
+      --sage: #2D9B6E;
+      --sage-dark: #248558;
+      --sienna: #C74B4B;
+      --sienna-dark: #A33B3B;
+      --info: #6B8CAE;
+
+      /* Typography */
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body: 'Newsreader', Georgia, serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Spacing */
+      --space-1: 6px;
+      --space-2: 12px;
+      --space-3: 18px;
+      --space-4: 24px;
+      --space-5: 36px;
+      --space-6: 48px;
+      --space-7: 72px;
+      --space-8: 96px;
+
+      /* Radius */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 12px;
+      --radius-xl: 18px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px rgba(12, 10, 7, 0.3), 0 1px 3px rgba(12, 10, 7, 0.15);
+      --shadow-md: 0 4px 6px rgba(12, 10, 7, 0.3), 0 2px 4px rgba(12, 10, 7, 0.2);
+      --shadow-lg: 0 10px 15px rgba(12, 10, 7, 0.4), 0 4px 6px rgba(12, 10, 7, 0.2);
+      --shadow-glow: 0 0 0 3px var(--brass-glow), 0 0 20px rgba(212, 164, 32, 0.15);
+
+      /* Timing */
+      --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-settle: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --duration-fast: 100ms;
+      --duration-normal: 200ms;
+      --duration-slow: 300ms;
+    }
+
+    /* ========================================
+       BASE STYLES
+       ======================================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-body);
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--cream);
+      background: var(--midnight);
+      min-height: 100vh;
+    }
+
+    /* Subtle texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.015;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* ========================================
+       TYPOGRAPHY
+       ======================================== */
+    h1, h2, h3, h4 {
+      font-family: var(--font-display);
+      font-variation-settings: 'SOFT' 50, 'WONK' 1;
+      letter-spacing: -0.02em;
+      color: var(--cream);
+      line-height: 1.2;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    h2 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      margin-bottom: var(--space-4);
+    }
+
+    h3 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: var(--space-3);
+    }
+
+    h4 {
+      font-size: 1.375rem;
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+    }
+
+    p {
+      margin-bottom: var(--space-3);
+      color: var(--linen);
+    }
+
+    .lead {
+      font-size: 1.125rem;
+      line-height: 1.7;
+      color: var(--linen);
+    }
+
+    .caption {
+      font-size: 0.75rem;
+      color: var(--stone);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    /* Monospace for data */
+    .mono {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ========================================
+       LAYOUT
+       ======================================== */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--space-4);
+    }
+
+    section {
+      padding: var(--space-7) 0;
+      border-bottom: 1px solid var(--walnut);
+    }
+
+    section:last-child {
+      border-bottom: none;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-4);
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+    }
+
+    @media (max-width: 768px) {
+      .grid-2, .grid-3, .grid-4 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ========================================
+       HERO SECTION
+       ======================================== */
+    .hero {
+      padding: var(--space-8) 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(ellipse, var(--brass-glow) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .hero-title {
+      font-size: 4rem;
+      margin-bottom: var(--space-4);
+      position: relative;
+    }
+
+    .hero-title .accent {
+      color: var(--brass);
+    }
+
+    .hero-subtitle {
+      font-family: var(--font-body);
+      font-size: 1.5rem;
+      color: var(--linen);
+      font-weight: 400;
+      font-style: italic;
+      max-width: 600px;
+      margin: 0 auto var(--space-5);
+    }
+
+    .hero-tagline {
+      display: inline-block;
+      background: var(--espresso);
+      border: 1px solid var(--walnut);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-md);
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--brass);
+    }
+
+    /* ========================================
+       CARDS
+       ======================================== */
+    .card {
+      background: var(--espresso);
+      border: 1px solid var(--walnut);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      transition: transform var(--duration-normal) var(--ease-standard),
+                  box-shadow var(--duration-normal) var(--ease-standard),
+                  border-color var(--duration-normal) var(--ease-standard);
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--brass);
+    }
+
+    .card-header {
+      margin-bottom: var(--space-3);
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--walnut);
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1.375rem;
+      font-weight: 600;
+      margin-bottom: var(--space-1);
+    }
+
+    /* ========================================
+       COLOR SWATCHES
+       ======================================== */
+    .swatch-group {
+      margin-bottom: var(--space-5);
+    }
+
+    .swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: var(--space-3);
+    }
+
+    .swatch {
+      aspect-ratio: 1;
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: var(--space-2);
+      border: 1px solid var(--walnut);
+      transition: transform var(--duration-fast) var(--ease-standard);
+    }
+
+    .swatch:hover {
+      transform: scale(1.02);
+    }
+
+    .swatch-name {
+      font-family: var(--font-display);
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .swatch-hex {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      opacity: 0.8;
+    }
+
+    .swatch.light-text { color: var(--cream); }
+    .swatch.dark-text { color: var(--midnight); }
+
+    /* ========================================
+       TYPOGRAPHY SHOWCASE
+       ======================================== */
+    .type-specimen {
+      padding: var(--space-5);
+      background: var(--espresso);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-4);
+    }
+
+    .type-specimen-label {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      color: var(--stone);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: var(--space-2);
+    }
+
+    .type-display {
+      font-family: var(--font-display);
+      font-size: 3.5rem;
+      font-weight: 700;
+      font-variation-settings: 'SOFT' 50, 'WONK' 1;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: var(--cream);
+    }
+
+    .type-body {
+      font-family: var(--font-body);
+      font-size: 1.125rem;
+      line-height: 1.7;
+      color: var(--linen);
+    }
+
+    .type-mono {
+      font-family: var(--font-mono);
+      font-size: 2rem;
+      color: var(--brass);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ========================================
+       BUTTONS
+       ======================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: transform var(--duration-fast) var(--ease-standard),
+                  background-color var(--duration-fast) var(--ease-standard),
+                  box-shadow var(--duration-fast) var(--ease-standard);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background: var(--brass);
+      color: var(--midnight);
+    }
+
+    .btn-primary:hover {
+      background: var(--brass-light);
+      box-shadow: 0 4px 12px var(--brass-glow);
+    }
+
+    .btn-secondary {
+      background: var(--mahogany);
+      color: var(--cream);
+      border: 1px solid var(--walnut);
+    }
+
+    .btn-secondary:hover {
+      background: var(--walnut);
+      border-color: var(--stone);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--linen);
+      border: 1px solid var(--walnut);
+    }
+
+    .btn-ghost:hover {
+      background: var(--mahogany);
+      color: var(--cream);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+    }
+
+    /* ========================================
+       FORMS
+       ======================================== */
+    .form-group {
+      margin-bottom: var(--space-4);
+    }
+
+    .form-label {
+      display: block;
+      font-family: var(--font-body);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: var(--linen);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--space-1);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: var(--space-2) var(--space-3);
+      background: var(--midnight);
+      border: 1px solid var(--walnut);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      color: var(--cream);
+      transition: border-color var(--duration-fast) var(--ease-standard),
+                  box-shadow var(--duration-fast) var(--ease-standard);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--brass);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .form-input::placeholder {
+      color: var(--stone);
+    }
+
+    .form-input-currency {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ========================================
+       TABLES
+       ======================================== */
+    .table-container {
+      background: var(--espresso);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--walnut);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table th {
+      font-family: var(--font-body);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--stone);
+      text-align: left;
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--walnut);
+      background: var(--mahogany);
+    }
+
+    .table td {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--walnut);
+      color: var(--linen);
+    }
+
+    .table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .table tr:hover td {
+      background: var(--mahogany);
+    }
+
+    .table .currency {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      color: var(--brass);
+      text-align: right;
+    }
+
+    .table .total-row td {
+      font-weight: 600;
+      background: rgba(212, 164, 32, 0.05);
+      border-top: 2px solid var(--brass);
+    }
+
+    /* ========================================
+       STAT CARDS
+       ======================================== */
+    .stat-card {
+      background: var(--espresso);
+      border: 1px solid var(--walnut);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      text-align: center;
+      transition: border-color var(--duration-fast) var(--ease-standard);
+    }
+
+    .stat-card:hover {
+      border-color: var(--brass);
+    }
+
+    .stat-label {
+      font-family: var(--font-body);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--stone);
+      margin-bottom: var(--space-2);
+    }
+
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 2.5rem;
+      font-weight: 500;
+      color: var(--brass);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .stat-change {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      margin-top: var(--space-2);
+    }
+
+    .stat-change.positive {
+      color: var(--sage);
+    }
+
+    .stat-change.positive::before {
+      content: '+';
+    }
+
+    .stat-change.negative {
+      color: var(--sienna);
+    }
+
+    /* ========================================
+       FOOTER
+       ======================================== */
+    footer {
+      padding: var(--space-6) 0;
+      text-align: center;
+      color: var(--stone);
+      font-size: 0.875rem;
+    }
+
+    footer .tagline {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 1.25rem;
+      color: var(--linen);
+      margin-bottom: var(--space-3);
+    }
+
+    /* ========================================
+       ANIMATIONS
+       ======================================== */
+    @keyframes cash-settle {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+      }
+      60% {
+        opacity: 1;
+        transform: translateY(2px) scale(1.01);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes brass-shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+
+    .animate-settle {
+      animation: cash-settle 0.4s var(--ease-settle);
+    }
+
+    .shimmer {
+      background: linear-gradient(
+        90deg,
+        var(--brass) 0%,
+        var(--brass-light) 50%,
+        var(--brass) 100%
+      );
+      background-size: 200% auto;
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: brass-shimmer 3s ease-in-out infinite;
+    }
+
+    /* ========================================
+       UTILITY CLASSES
+       ======================================== */
+    .text-brass { color: var(--brass); }
+    .text-ember { color: var(--ember); }
+    .text-sage { color: var(--sage); }
+    .text-sienna { color: var(--sienna); }
+    .text-stone { color: var(--stone); }
+
+    .mb-0 { margin-bottom: 0; }
+    .mb-2 { margin-bottom: var(--space-2); }
+    .mb-4 { margin-bottom: var(--space-4); }
+    .mb-6 { margin-bottom: var(--space-6); }
+
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+  </style>
+</head>
+<body>
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <div class="container">
+      <h1 class="hero-title animate-settle">
+        Tip Share <span class="accent shimmer">Pro</span>
+      </h1>
+      <p class="hero-subtitle">
+        "It's 11:47 PM. The last table just left. Under warm amber light, the real work begins."
+      </p>
+      <span class="hero-tagline">The "After Hours" Design System</span>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Philosophy Section -->
+    <section>
+      <h2>Design Philosophy</h2>
+      <p class="lead">
+        Every restaurant has two faces: the polished front-of-house where guests dine, and the honest, no-nonsense back-of-house where the real work happens. Our design embraces the BOH aesthetic—functional, warm, unpretentious, and built for people who work with their hands.
+      </p>
+
+      <div class="grid-3" style="margin-top: var(--space-5);">
+        <div class="card">
+          <h4>Warm Professionalism</h4>
+          <p class="mb-0 text-stone">Financial precision wrapped in hospitality warmth. Not cold corporate software.</p>
+        </div>
+        <div class="card">
+          <h4>Honest Utility</h4>
+          <p class="mb-0 text-stone">Every element earns its place. Nothing decorative without function.</p>
+        </div>
+        <div class="card">
+          <h4>Night-Shift Friendly</h4>
+          <p class="mb-0 text-stone">Dark theme by default, easy on tired eyes at 1 AM when counting tips.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Color Palette Section -->
+    <section>
+      <h2>The "Amber Hour" Palette</h2>
+      <p class="lead mb-6">
+        Named for the warm, intimate lighting of a restaurant after hours—when the team gathers under brass fixtures and amber bulbs.
+      </p>
+
+      <div class="swatch-group">
+        <h4>Foundations</h4>
+        <div class="swatch-grid">
+          <div class="swatch light-text" style="background: var(--midnight);">
+            <span class="swatch-name">Midnight</span>
+            <span class="swatch-hex">#0C0A07</span>
+          </div>
+          <div class="swatch light-text" style="background: var(--espresso);">
+            <span class="swatch-name">Espresso</span>
+            <span class="swatch-hex">#1A1510</span>
+          </div>
+          <div class="swatch light-text" style="background: var(--mahogany);">
+            <span class="swatch-name">Mahogany</span>
+            <span class="swatch-hex">#2A2318</span>
+          </div>
+          <div class="swatch light-text" style="background: var(--walnut);">
+            <span class="swatch-name">Walnut</span>
+            <span class="swatch-hex">#3D3225</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="swatch-group">
+        <h4>Text Colors</h4>
+        <div class="swatch-grid">
+          <div class="swatch dark-text" style="background: var(--cream);">
+            <span class="swatch-name">Cream</span>
+            <span class="swatch-hex">#F7F3EA</span>
+          </div>
+          <div class="swatch dark-text" style="background: var(--linen);">
+            <span class="swatch-name">Linen</span>
+            <span class="swatch-hex">#C4B9A4</span>
+          </div>
+          <div class="swatch dark-text" style="background: var(--stone);">
+            <span class="swatch-name">Stone</span>
+            <span class="swatch-hex">#8B7B65</span>
+          </div>
+          <div class="swatch light-text" style="background: var(--ash);">
+            <span class="swatch-name">Ash</span>
+            <span class="swatch-hex">#5C5145</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="swatch-group">
+        <h4>Accents</h4>
+        <div class="swatch-grid">
+          <div class="swatch dark-text" style="background: var(--brass);">
+            <span class="swatch-name">Brass</span>
+            <span class="swatch-hex">#D4A420</span>
+          </div>
+          <div class="swatch dark-text" style="background: var(--ember);">
+            <span class="swatch-name">Ember</span>
+            <span class="swatch-hex">#E85D35</span>
+          </div>
+          <div class="swatch light-text" style="background: var(--sage);">
+            <span class="swatch-name">Sage</span>
+            <span class="swatch-hex">#2D9B6E</span>
+          </div>
+          <div class="swatch light-text" style="background: var(--sienna);">
+            <span class="swatch-name">Sienna</span>
+            <span class="swatch-hex">#C74B4B</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Typography Section -->
+    <section>
+      <h2>Typography</h2>
+      <p class="lead mb-6">
+        Three carefully selected typefaces that together create a distinctive, warm, and professional voice.
+      </p>
+
+      <div class="type-specimen">
+        <div class="type-specimen-label">Fraunces — Display & Headings</div>
+        <div class="type-display">The Golden Standard</div>
+        <p class="text-stone" style="margin-top: var(--space-2); margin-bottom: 0;">
+          Warm, wonky, handcrafted. Like hand-painted signage at a beloved neighborhood restaurant.
+        </p>
+      </div>
+
+      <div class="type-specimen">
+        <div class="type-specimen-label">Newsreader — Body Text</div>
+        <div class="type-body">
+          Restaurant people are busy. They need information they can scan quickly at 1 AM when they're counting the night's tips. Our typography respects that—clear, readable, professional without being cold.
+        </div>
+      </div>
+
+      <div class="type-specimen">
+        <div class="type-specimen-label">JetBrains Mono — Numbers & Data</div>
+        <div class="type-mono">$2,847.50</div>
+        <p class="text-stone" style="margin-top: var(--space-2); margin-bottom: 0;">
+          Tabular figures for perfectly aligned columns. Every dollar and cent crystal clear.
+        </p>
+      </div>
+    </section>
+
+    <!-- Components Section -->
+    <section>
+      <h2>Components</h2>
+
+      <h4>Buttons</h4>
+      <div class="btn-group mb-6">
+        <button class="btn btn-primary">Calculate Tips</button>
+        <button class="btn btn-secondary">Save Draft</button>
+        <button class="btn btn-ghost">Cancel</button>
+      </div>
+
+      <h4>Form Inputs</h4>
+      <div class="grid-2 mb-6">
+        <div class="form-group">
+          <label class="form-label">Total Tips</label>
+          <input type="text" class="form-input form-input-currency" value="$2,847.50" placeholder="$0.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hours Worked</label>
+          <input type="text" class="form-input form-input-currency" value="127.5" placeholder="0.0">
+        </div>
+      </div>
+
+      <h4>Stat Cards</h4>
+      <div class="grid-4 mb-6">
+        <div class="stat-card">
+          <div class="stat-label">Total Pool</div>
+          <div class="stat-value">$4,892</div>
+          <div class="stat-change positive">12.4%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Team Hours</div>
+          <div class="stat-value">284.5</div>
+          <div class="stat-change positive">3.2%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Hourly Rate</div>
+          <div class="stat-value">$17.19</div>
+          <div class="stat-change negative">-2.1%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Team Members</div>
+          <div class="stat-value">12</div>
+        </div>
+      </div>
+
+      <h4>Data Tables</h4>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Team Member</th>
+              <th>Position</th>
+              <th>Hours</th>
+              <th class="text-right">Rate</th>
+              <th class="text-right">Tip Share</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Maria Santos</td>
+              <td class="text-stone">Server</td>
+              <td class="mono">32.5</td>
+              <td class="currency">1.0x</td>
+              <td class="currency">$558.28</td>
+            </tr>
+            <tr>
+              <td>James Chen</td>
+              <td class="text-stone">Bartender</td>
+              <td class="mono">28.0</td>
+              <td class="currency">1.2x</td>
+              <td class="currency">$577.46</td>
+            </tr>
+            <tr>
+              <td>Sarah Williams</td>
+              <td class="text-stone">Host</td>
+              <td class="mono">24.5</td>
+              <td class="currency">0.8x</td>
+              <td class="currency">$337.06</td>
+            </tr>
+            <tr>
+              <td>Miguel Rodriguez</td>
+              <td class="text-stone">Busser</td>
+              <td class="mono">18.0</td>
+              <td class="currency">0.6x</td>
+              <td class="currency">$185.76</td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="2"><strong>Period Total</strong></td>
+              <td class="mono"><strong>103.0</strong></td>
+              <td></td>
+              <td class="currency"><strong>$1,658.56</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Motion Section -->
+    <section>
+      <h2>Motion & Animation</h2>
+      <p class="lead mb-6">
+        The "Cash Flow" philosophy—animations tell the story of money moving through the system. Every motion is purposeful, satisfying, and grounded in the physical world.
+      </p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h4 class="text-brass">Physical Weight</h4>
+          <p class="mb-0 text-stone">Elements have mass. Larger elements move slower. Money feels substantial.</p>
+        </div>
+        <div class="card">
+          <h4 class="text-brass">Sequential Flow</h4>
+          <p class="mb-0 text-stone">Related elements animate in sequence, like bills being counted.</p>
+        </div>
+        <div class="card">
+          <h4 class="text-brass">Night-Shift Safe</h4>
+          <p class="mb-0 text-stone">Smooth, non-jarring animations appropriate for tired eyes.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container">
+      <p class="tagline">"Fair share, every time."</p>
+      <p>Tip Share Pro Design System v1.0.0</p>
+    </div>
+  </footer>
+
+</body>
+</html>
