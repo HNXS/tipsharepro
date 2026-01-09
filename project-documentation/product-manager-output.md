@@ -1,10 +1,11 @@
 # Tip Share Pro - Product Requirements Document
 
-**Document Version:** 1.0
-**Date:** January 8, 2026
+**Document Version:** 2.0
+**Date:** January 9, 2026
 **Author:** Product Management
 **Client:** Tom LaChaussee (tlachaussee)
 **Developer:** Tim Heineccius (Heineccius Consulting)
+**Last Updated:** January 9, 2026 - Incorporated Tom's feedback and detailed specifications
 
 ---
 
@@ -112,7 +113,99 @@ Results Preview         2FA Security                Multi-Location Support
 No Login Required       Cloud Storage               YTD Archiving
 Limited Functionality   Full Calculations           W2 Reporting
 Marketing Tool          45-Day Trial                Admin Command Center
+                        Scenario Sand Box           Expert Portal
 ```
+
+---
+
+### Application Page Flow (9 Pages)
+
+Based on Tom's flow chart, the full application consists of 9 pages:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        FULL APPLICATION FLOW                            │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  PAGE 1: Login                    PAGE 2: Navigation Hub               │
+│  ┌─────────────────┐              ┌─────────────────────┐              │
+│  │ TipSharePro     │              │ Where to Next?      │              │
+│  │ Logo            │              │ - All Page Links    │              │
+│  │                 │      →       │ - By Log In         │              │
+│  │ Log In:         │              │   Permissions       │              │
+│  │ Password:       │              │ - Data & Archived   │              │
+│  └─────────────────┘              └─────────────────────┘              │
+│           │                                │                           │
+│           ▼                                ▼                           │
+│  PAGE 3: Settings                 PAGE 4: Scenario Sand Box            │
+│  ┌─────────────────┐              ┌─────────────────────┐              │
+│  │ Admin Only or   │              │ New Scenario        │              │
+│  │ Designee w/     │              │ Sand Box            │              │
+│  │ Permission      │              │ Admin Only or       │              │
+│  └─────────────────┘              │ Designee w/Perm     │              │
+│                                   └─────────────────────┘              │
+│           │                                                            │
+│           ▼                                                            │
+│  PAGE 5: Daily Contributions      PAGE 6: PPE Contributions Log        │
+│  ┌─────────────────┐              ┌─────────────────────┐              │
+│  │ Daily           │              │ PPE                 │              │
+│  │ Contributions   │      →       │ Contributions Log   │              │
+│  │ Log             │              │ Some Auto Fill      │              │
+│  │ Some Auto Fill  │              │ Some Data Entry     │              │
+│  │ Data Entry      │              │ All Permissions     │              │
+│  │ All Permissions │              └─────────────────────┘              │
+│  └─────────────────┘                       │                           │
+│                                            ▼                           │
+│  PAGE 7: PPE Distribution         PAGE 8: YTD Data                     │
+│  ┌─────────────────┐              ┌─────────────────────┐              │
+│  │ PPE             │              │ YTD Data            │              │
+│  │ Distribution    │      →       │ Contributions &     │              │
+│  │ Log             │              │ Distributions       │              │
+│  │ Some Auto Fill  │              │ All Auto Fill       │              │
+│  │ Data Entry      │              │ All Permissions     │              │
+│  │ All Permissions │              │ Print For Payroll & │              │
+│  └─────────────────┘              │ Auto Archive at EOY │              │
+│                                   └─────────────────────┘              │
+│                                            │                           │
+│                                            ▼                           │
+│                          PAGE 9: All Allocations                       │
+│                          ┌─────────────────────┐                       │
+│                          │ All Allocations     │                       │
+│                          │ Contributors and    │                       │
+│                          │ Recipients          │                       │
+│                          │ Some Auto Fill      │                       │
+│                          │ Some Data Entry     │                       │
+│                          │ All Permissions     │                       │
+│                          │ PDF Library         │                       │
+│                          └─────────────────────┘                       │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Demo Application Flow (Simplified):**
+```
+Page 1: Login (supplied by TipSharePro)
+    ↓
+Page 2: Settings (limited version of Page 3)
+    ↓
+Page 3: Distribution Table (scaled back version)
+```
+
+---
+
+### Help System: ?Notes and !!Notes
+
+The application uses two types of contextual help:
+
+| Type | Display | Behavior | Use Case |
+|------|---------|----------|----------|
+| **?Note** | Yellow highlighted "?" | Hover tooltip with explanation | General help, recommendations |
+| **!!Note** | Red/orange highlighted "!!" | Modal with "I Have Read and Agree" checkbox required | Critical compliance warnings, legal requirements |
+
+**!!Note Critical Requirements:**
+- Must be acknowledged before proceeding with that setting
+- Should only appear after Launch Date for certain compliance warnings
+- Log acknowledgment with timestamp and user ID
+- Examples: Changing contribution rate, modifying job category weights
 
 ---
 
@@ -334,26 +427,77 @@ As a multi-unit restaurant owner, I want to manage all my locations from one log
 
 ---
 
-#### Feature 8: Scenario Sandbox
+#### Feature 8: Scenario Sand Box (Detailed Specification)
 
 **User Story:**
-As a manager, I want to test different contribution rates or weight changes without affecting live data, so that I can see the impact before committing.
+As a manager, I want to test different contribution rates or weight changes without affecting live data, so that I can see the impact before committing. I also want to use this to calculate corrections for missed employees or terminated employees.
 
 **Acceptance Criteria:**
-- Given the Scenario Sandbox (formerly "Demo" mode within full app)
+- Given the Scenario Sand Box module
 - When I modify settings or data
 - Then calculations run on sandbox data only
 - And I can see "what if" scenarios
 - And no changes affect production data
 - And I can load the last saved distribution for quick mistake calculations
 
+**Critical Data Flow Rules:**
+
+| Phase | Data Flow Direction | Allowed |
+|-------|---------------------|---------|
+| Before Launch Date | Sandbox → Production | ONE TIME ONLY via "Upload To Free Trial/Full Version" button |
+| After Launch Date | Sandbox → Production | NEVER - changes cannot flow to live data |
+| After Each Payday | Production → Sandbox | AUTOMATIC - archiving replaces sandbox data |
+
+**Key Functionality:**
+
+1. **Experimentation After Launch Date:**
+   - Admin/Manager can test effect of new contribution % on complete pay period data
+   - Can test changes to job category weights
+   - NO effect on live pages or current data
+   - Changes stay in Sandbox until replaced by next archive
+
+2. **Automatic Data Refresh:**
+   - Day after payday: current data is archived
+   - Archived data (last paid distribution pool + settings) flows TO Scenario Sand Box
+   - Sandbox data becomes changeable but has no effect on archived data
+
+3. **Mistake Rectification Use Cases:**
+
+   **Use Case A: Forgotten Employee (e.g., Johnny the dishwasher left out)**
+   - Load last paid pool in Sandbox
+   - Add Johnny's Wage, Hours, Job Role
+   - See what his share would have been
+   - Print for documentation
+   - Options for correction:
+     - Option 1: Pay Johnny from house funds, enter as prepaid in next pool
+     - Option 2: Pay Johnny, add forgotten hours to next pool, note on report
+
+   **Use Case B: Employee Terminates Before First Pool**
+   - Plug new employee's Hours, Wage, Job Role into last period's Sandbox data
+   - Calculate estimated share
+   - Print as proof of estimated earnings
+   - Include in final check
+
+4. **Final Pool Payout Calculations (Without Sandbox):**
+   - Employee in last pool: Calculate $/Hr from last pool, multiply by current hours
+   - Employee before first pool: Use average $/Hr from same job category/wage level
+
 **Edge Cases:**
-- Sandbox auto-loads last distribution when opened
-- Changes in sandbox are not saved unless explicitly exported
+- Demo data can upload to Sandbox multiple times until Demo expires
+- Sandbox can only upload to Production ONCE (before Launch Date)
+- After experimenting, Sandbox data stays as changed until next archive replaces it
+- Terminated employees MUST be paid pool money on FINAL CHECK (check state rules)
+- Prepaid entries must track to YTD and EOY totals
 
-**Priority Justification:** Valuable for training and experimentation.
+**Priority Justification:** Critical for mistake correction, experimentation, and training. "This is why Scenario Sand Box is a handy tool."
 
-**Dependencies:** Core calculation engine
+**Dependencies:** Core calculation engine, archiving system
+
+**UX Considerations:**
+- Clear visual indicator that user is in Sandbox mode (not live data)
+- "Upload To Free Trial/Full Version" button only active before Launch Date
+- Print capability for documentation purposes
+- Warning dialogs when data would be lost
 
 ---
 
@@ -782,35 +926,139 @@ Audit_Log
   - Web-first, responsive design, PDF generation in browser
   - Future: Mobile app for staff to view their share (not in scope currently)
 
-### Gaps Requiring Clarification
+### Gaps Requiring Clarification - UPDATED WITH TOM'S ANSWERS
 
-1. **Prepaid Entry Handling:**
+#### Resolved Questions (January 9, 2026):
+
+1. **Scenario Sand Box Purpose (Q1):**
+   - **Answer:** See "Scenario Sand Box" PDF for detailed explanation
+   - The Demo focus should be on the Distribution page next so Demo is ready
+   - Don't get too far ahead - Tom will provide page-by-page specifications
+
+2. **Multiple Job Categories / Same Employee Different Positions (Q2):**
+   - **Answer:** YES, this happens (e.g., Juan Valdez working as both server and busser)
+   - **Posted Distribution Report:** Keep earnings SEPARATED by position so employee can see what they earned in each role
+   - **YTD/EOY Totals:** COMBINE into single employee line (one entry per employee)
+   - Payroll departments handle duplicate names already; this follows same pattern
+
+3. **Historical Rate Changes / Mid-Period Raises (Q3):**
+   - **Answer:** Make another entry on the Distribution Table with new rate
+   - **Policy:** Tell managers NOT to give raises mid pay period
+   - Can verbally tell employee about raise, but effective date should be next pay period start
+   - Mostly unnecessary for payroll department
+
+4. **Cloud Storage Costs (Q4):**
+   - **Answer:** Tom needs advice on this area
+   - Initial plan: Pay per GB
+   - Future goal: Flat fee per TB (more cost effective at scale)
+   - Subscription fee should cover storage + legal fees + accounting fees + employees + advertising
+   - Request: Suggest how to "start slow on storage and build"
+
+#### Remaining Gaps:
+
+5. **Prepaid Entry Handling:**
    - Exact workflow for adjustments via prepaid line needs detailed specification
-   - How does prepaid interact with pool calculation?
+   - Prepaid amounts must flow to YTD and EOY totals
+   - Employees in prepaid section "reside outside the normal table"
 
-2. **Terminated Employee Payouts:**
-   - Are shares calculated pro-rata for partial pay periods?
-   - How is final payout handled in the system vs. manually?
-
-3. **Multiple Job Categories:**
-   - Can an employee work multiple roles in one period (e.g., server + host)?
-   - If yes, how are hours split and weighted?
-
-4. **Historical Rate Changes:**
-   - If an employee gets a raise mid-period, which rate is used?
-   - Snapshot at entry time vs. recalculate?
-
-5. **Cloud Storage Costs:**
-   - "Storage will be an ongoing separate charge" per contract
-   - Need to define storage tiers and pricing
-
-6. **Contribution Override Rules:**
-   - When actual contribution differs from calculated, who has authority to enter?
-   - Is approval workflow needed?
+6. **Trial Period Implementation:**
+   - Free Trial IS the Full Version (no "Free Trial" label visible to customer)
+   - Daily countdown display in last 10 days (or similar)
+   - Last 5 days: Email and text alerts to Administrator
+   - Functionality end date set by TipSharePro when sending trial
 
 7. **Trial-to-Paid Data Migration:**
-   - Does trial data persist when converting to paid?
+   - Does trial data persist when converting to paid? (Assumed YES)
    - Any cleanup or verification required?
+
+---
+
+## The Administrator Role (Critical Specification)
+
+The Administrator has FULL responsibility for setting:
+- Contribution Rate
+- Job Roles
+- Each Job Role's variable "weight" based on overall contribution to customer satisfaction
+
+### Admin Responsibilities
+
+**Legal Accountability:**
+- Tip pools may be analyzed for reasonableness and fairness by state Labor Boards
+- Admin may be required to justify reasoning and methods
+- Must keep Contribution Rate, Job Roles, and Weights FAIR and REASONABLE
+- Changes require proper notification to affected employees
+
+### Change Notification Requirements
+
+| Change Type | Who to Notify | Notice Period | Method |
+|-------------|---------------|---------------|--------|
+| **Contribution Rate Increase** | All Contributors (servers) | 30 days written | Signed acknowledgment form |
+| **Contribution Rate Decrease** | All Distribution Beneficiaries (recipients) | 30 days written | Signed acknowledgment form |
+| **Individual Job Category Change** (negatively affects 1 person) | That individual | 1 full pay period | Face-to-face, documented |
+| **Individual Weight Change** (negatively affects 1 person) | That individual | 1 full pay period | Face-to-face, documented |
+| **Multiple Weight Changes** (negatively affects multiple recipients) | All negatively affected | 1 full pay period written | Signed acknowledgment form |
+
+**Critical Admin Warning (!!Note):**
+> "Do not give Admin privileges to anyone you do not trust to keep you out of trouble from Labor Department scrutiny."
+
+### Audit Trail Requirements
+
+The system MUST log all Admin Settings changes:
+- Date of change
+- Location affected
+- What critical area was changed
+- Who made the change
+- Before/after values
+- UN-EDITABLE record (for legal protection)
+
+Tom's note: "If someone goes in and changes a variable and thinks it wise to blame my program I can produce the entries through my portal."
+
+---
+
+## Job Categories & Weights (Detailed Specification)
+
+### Predefined Job Categories
+
+| Kitchen (BOH) | Front of House | Bar |
+|---------------|----------------|-----|
+| Lead Cook | Maitre D | Barista |
+| Line Cook | Host/Hostess | Bartender |
+| Pastry Chef | Cashier | Sommelier |
+| Prep Cook | Runner | Bar Back |
+| Pantry Chef | Busser | Dishwasher |
+
+**Plus 5 write-in positions** for custom roles not listed.
+
+### Weight System
+
+- Range: 1 – 5 in 0.25 increments (17 options)
+- Weight 1: Lowest share component in pool
+- Weight 5: Highest share component in pool
+- Everyone in same Job Category gets same weight
+
+**Example Scenario (Clam Shuckers):**
+- Regular shuckers: Weight 3
+- Lead Shucker (super star, non-supervisory): Weight 5, own category
+- Combined with higher hourly wage = appropriately larger share
+
+### Key Principles
+
+1. **Hours x Rate x Weight** formula rewards:
+   - Experience (reflected in hourly rate)
+   - Hours worked
+   - Job category impact on customer satisfaction
+
+2. **TipSharePro differentiator:** Wages as a factor
+   - "The single biggest determining factor of who is contributing most to the Chain of Service"
+
+3. **Fairness over equality:**
+   - "If the pool was done on a straight hours worked times a single job category weight, the Doctor and the Nurses would get the same rate per hour. That would be weird and frankly un-American."
+
+### Estimated Impact
+
+- $100K monthly sales → ~$1,000 pool per pay period
+- Annual: ~$26,000 in additional compensation for pool recipients
+- Benefit: Reduced turnover = reward for management
 
 ---
 
@@ -856,6 +1104,67 @@ All requirements derived from:
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2026-01-08 | PM | Initial comprehensive PRD |
+| 2.0 | 2026-01-09 | PM | Added Tom's feedback: 9-page flow chart, Scenario Sand Box detailed specs, Admin Role specifications, Job Categories & Weights detail, ?Note/!!Note help system, resolved Q&A items, detailed contribution criteria explanation |
+
+---
+
+## Appendix D: Why Use All Sales as Contribution Factor
+
+### IRS Alignment
+
+"All Sales" is adjusted for (by IRS standards):
+- Sales tax
+- Take-out orders
+- Retail sales
+- Non-tipped meals (employee meals)
+- Owner meals (if tracking available)
+
+### Why NOT Use CC Tips or All Tips
+
+| Method | Problem |
+|--------|---------|
+| CC Sales | Cash tips not properly accounted |
+| CC Tips | Understates actual tips received |
+| All Tips | Directly tipped workers easily hide cash tips |
+| Cash Apps | Customers using to bypass accounting |
+
+### Benefits of Sales-Based Calculation
+
+1. **8% IRS Rule:** Taxing authorities require 8% of sales reported for tip income (year-end allocations)
+2. **TipSharePro aligns:** Uses same criteria as IRS
+3. **Fair taxation:** Employees not overtaxed
+4. **Employer protection:** Not overpaying matching payroll taxes
+
+### Purpose of Chain of Service Pool
+
+> "The whole reason for doing a Chain of Service pool is to put more income into the hands of BOH workers who management can't afford to get significant raises to because minimum wage eats up labor dollars first."
+
+---
+
+## Appendix E: Design Feedback from Tom (January 9, 2026)
+
+### Color Preferences
+
+| Element | Tom's Feedback |
+|---------|----------------|
+| Foundation colors | "Mostly cool" - approved |
+| Text colors | "Like it" - approved |
+| "Mahogany" color | Came through as dark olive - "I like the dark olive" |
+| Pastel accents | "Don't get too enamored" - wants more bold color |
+| Overall | "Throw in some color or I'll fade off to sleep" |
+| Logo reference | "Take a look at my Logo. Not bashful." |
+
+### Logo Colors to Reference
+- **Orange** (#E85D04 approximate) - Bold, primary brand color
+- **Lime Green** (#82B536 approximate) - Growth, success, transparency
+- **Navy Blue** (#1A5276 approximate) - Trust, professionalism
+- **Light Blue/Cyan** (#3498DB approximate) - Accessibility, friendliness
+
+### Design Direction
+- Less pastel, more bold colors
+- Match energy of the TipSharePro logo
+- "Powerful * Fair * Transparent" tagline sets the tone
+- Restaurant/kitchen imagery in hero sections
 
 ---
 
