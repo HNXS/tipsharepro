@@ -2,154 +2,252 @@
 
 import { useState } from 'react';
 import { useDemo } from '@/lib/DemoContext';
-import { VARIABLE_WEIGHT_OPTIONS, HELP_TEXT, JobCategory, VariableWeight } from '@/lib/types';
+import {
+  VARIABLE_WEIGHT_OPTIONS,
+  HELP_TEXT,
+  VariableWeight,
+  ContributionMethod,
+  PREDEFINED_CATEGORIES,
+  getContributionRateOptions,
+} from '@/lib/types';
 import HelpTooltip from './HelpTooltip';
-import { Plus, Trash2, Lock, ChevronRight } from 'lucide-react';
+import { Lock, ChevronRight, Plus } from 'lucide-react';
+
+// Contribution method display labels
+const METHOD_LABELS: Record<ContributionMethod, string> = {
+  CC_SALES: 'CC Sales',
+  CC_TIPS: 'CC Tips',
+  ALL_TIPS: 'All Tips',
+  ALL_SALES: 'All Sales',
+};
 
 export default function SettingsPage() {
-  const { state, updateSettings, updateJobCategory, addJobCategory, removeJobCategory, setCurrentStep } = useDemo();
-  const [newCategoryName, setNewCategoryName] = useState('');
+  const {
+    state,
+    updateSettings,
+    setContributionMethod,
+    toggleCategorySelection,
+    updateJobCategory,
+    addCustomCategory,
+    setCurrentStep,
+  } = useDemo();
 
-  const handleAddCategory = () => {
-    if (newCategoryName.trim()) {
-      const newCategory: JobCategory = {
-        id: newCategoryName.toLowerCase().replace(/\s+/g, '-'),
-        name: newCategoryName.trim(),
-        variableWeight: 2.5,
-      };
-      addJobCategory(newCategory);
-      setNewCategoryName('');
+  const [customCategoryInputs, setCustomCategoryInputs] = useState<string[]>(['', '', '', '', '']);
+
+  const { settings } = state;
+  const contributionRateOptions = getContributionRateOptions(settings.contributionMethod);
+
+  // Handle custom category input
+  const handleCustomCategoryChange = (index: number, value: string) => {
+    const newInputs = [...customCategoryInputs];
+    newInputs[index] = value;
+    setCustomCategoryInputs(newInputs);
+  };
+
+  // Add custom category on Enter or blur
+  const handleAddCustomCategory = (index: number) => {
+    const name = customCategoryInputs[index].trim();
+    if (name) {
+      addCustomCategory(name);
+      const newInputs = [...customCategoryInputs];
+      newInputs[index] = '';
+      setCustomCategoryInputs(newInputs);
     }
   };
 
+  // Get custom categories from jobCategories
+  const customCategories = settings.jobCategories.filter(cat => cat.group === 'custom');
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Contribution Rate Card */}
-      <div className="bg-[var(--background-secondary)] rounded-xl p-6 border border-[var(--border)]">
-        <div className="flex items-center gap-2 mb-6">
-          <h2 className="text-xl font-semibold text-white">Tip Pool Settings</h2>
-          <HelpTooltip text="Configure how your tip pool operates. These settings affect how contributions are calculated and distributed." />
+    <div className="content-container">
+      {/* Step 1: Contribution Method */}
+      <div className="card">
+        <div className="card-header">
+          <h2 className="card-title">Step 1: Method for Contribution %</h2>
+          <HelpTooltip text={HELP_TEXT.contributionMethod} />
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Contribution Rate */}
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <label className="text-sm font-medium text-[var(--foreground-muted)]">
-                Contribution Rate
-              </label>
-              <HelpTooltip text={HELP_TEXT.contributionRate} />
-            </div>
-            <div className="flex items-center gap-2">
-              <select
-                value={state.settings.contributionRate}
-                onChange={(e) => updateSettings({ contributionRate: parseFloat(e.target.value) as VariableWeight })}
-                className="flex-1 bg-[var(--background-tertiary)] border border-[var(--border)] rounded-lg px-4 py-3 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-colors"
-              >
-                {VARIABLE_WEIGHT_OPTIONS.map((rate) => (
-                  <option key={rate} value={rate}>
-                    {rate.toFixed(2)}
-                  </option>
-                ))}
-              </select>
-              <span className="text-xl font-bold text-[var(--accent)]">%</span>
-            </div>
-            <p className="mt-2 text-xs text-[var(--foreground-dim)]">
-              Percentage of sales contributed to the tip pool
-            </p>
-          </div>
-
-          {/* Pay Period Type */}
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <label className="text-sm font-medium text-[var(--foreground-muted)]">
-                Pay Period Type
-              </label>
-              <HelpTooltip text={HELP_TEXT.payPeriodType} />
-            </div>
-            <select
-              value={state.settings.payPeriodType}
-              onChange={(e) => updateSettings({ payPeriodType: e.target.value as 'weekly' | 'bi-weekly' | 'semi-monthly' | 'monthly' })}
-              className="w-full bg-[var(--background-tertiary)] border border-[var(--border)] rounded-lg px-4 py-3 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-colors"
-            >
-              <option value="weekly">Weekly (7 days)</option>
-              <option value="bi-weekly">Bi-Weekly (14 days)</option>
-              <option value="semi-monthly">Semi-Monthly</option>
-              <option value="monthly">Monthly</option>
-            </select>
-          </div>
-
-          {/* Date Settings (Blocked in Demo) */}
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-2">
-              <label className="text-sm font-medium text-[var(--foreground-muted)]">
-                Pay Period Start Date
-              </label>
-              <Lock size={14} className="text-[var(--foreground-dim)]" />
-            </div>
-            <input
-              type="date"
-              disabled
-              className="w-full bg-[var(--background-tertiary)] border border-[var(--border)] rounded-lg px-4 py-3 text-[var(--foreground-dim)] cursor-not-allowed opacity-60"
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-[var(--background-tertiary)]/50 rounded-lg">
-              <span className="text-xs text-[var(--accent)] bg-[var(--background-secondary)] px-2 py-1 rounded">
-                Full Version
-              </span>
-            </div>
-          </div>
-
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-2">
-              <label className="text-sm font-medium text-[var(--foreground-muted)]">
-                Pay Period End Date
-              </label>
-              <Lock size={14} className="text-[var(--foreground-dim)]" />
-            </div>
-            <input
-              type="date"
-              disabled
-              className="w-full bg-[var(--background-tertiary)] border border-[var(--border)] rounded-lg px-4 py-3 text-[var(--foreground-dim)] cursor-not-allowed opacity-60"
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-[var(--background-tertiary)]/50 rounded-lg">
-              <span className="text-xs text-[var(--accent)] bg-[var(--background-secondary)] px-2 py-1 rounded">
-                Full Version
-              </span>
-            </div>
-          </div>
+        <div className="method-selector">
+          {(Object.keys(METHOD_LABELS) as ContributionMethod[]).map((method) => (
+            <label key={method} className="method-option">
+              <input
+                type="radio"
+                name="contributionMethod"
+                value={method}
+                checked={settings.contributionMethod === method}
+                onChange={() => setContributionMethod(method)}
+                className="method-radio"
+              />
+              <span className="method-label">{METHOD_LABELS[method]}</span>
+            </label>
+          ))}
         </div>
       </div>
 
-      {/* Job Categories Card */}
-      <div className="bg-[var(--background-secondary)] rounded-xl p-6 border border-[var(--border)]">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold text-white">Job Categories & Weights</h2>
-            <HelpTooltip text="Each job category has a variable weight (1-5) that reflects its impact on customer satisfaction. Higher weights result in a larger share of the tip pool." />
+      {/* Step 2: Estimated Monthly Amount */}
+      <div className="card">
+        <div className="card-header">
+          <h2 className="card-title">Step 2: Estimate Monthly $ Amount</h2>
+          <HelpTooltip text={HELP_TEXT.estimatedMonthlySales} />
+        </div>
+
+        <div className="form-group">
+          <div className="input-with-prefix">
+            <span className="input-prefix">$</span>
+            <input
+              type="number"
+              value={settings.estimatedMonthlySales}
+              onChange={(e) => updateSettings({ estimatedMonthlySales: parseInt(e.target.value) || 0 })}
+              className="form-input form-input-money"
+              placeholder="80000"
+              min={0}
+              step={1000}
+            />
+          </div>
+          <p className="form-help">Enter whole dollars only</p>
+        </div>
+      </div>
+
+      {/* Step 3: Contribution Percentage */}
+      <div className="card">
+        <div className="card-header">
+          <h2 className="card-title">Step 3: Enter Contribution %</h2>
+          <HelpTooltip
+            text={settings.contributionMethod === 'ALL_SALES'
+              ? HELP_TEXT.contributionRateSales
+              : HELP_TEXT.contributionRateTips}
+          />
+        </div>
+
+        <div className="form-group">
+          <div className="input-with-suffix">
+            <select
+              value={settings.contributionRate}
+              onChange={(e) => updateSettings({ contributionRate: parseFloat(e.target.value) })}
+              className="form-select"
+            >
+              {contributionRateOptions.map((rate) => (
+                <option key={rate} value={rate}>
+                  {rate.toFixed(rate % 1 === 0 ? 0 : rate % 0.5 === 0 ? 1 : 2)}
+                </option>
+              ))}
+            </select>
+            <span className="input-suffix">%</span>
+          </div>
+          <p className="form-help">
+            {settings.contributionMethod === 'ALL_SALES'
+              ? 'Range: 1% - 5% in 0.25% increments'
+              : 'Range: 5% - 25% in 0.5% increments'}
+          </p>
+        </div>
+      </div>
+
+      {/* Step 4: Job Categories */}
+      <div className="card">
+        <div className="card-header">
+          <h2 className="card-title">Step 4: Enter Job Categories</h2>
+          <HelpTooltip text={HELP_TEXT.jobCategories} />
+        </div>
+
+        <div className="category-grid">
+          {/* Kitchen (BOH) */}
+          <div className="category-group">
+            <h3 className="category-group-title">Kitchen (BOH)</h3>
+            {PREDEFINED_CATEGORIES.kitchen.map((cat) => (
+              <label key={cat.id} className="category-checkbox">
+                <input
+                  type="checkbox"
+                  checked={settings.selectedCategories.includes(cat.id)}
+                  onChange={() => toggleCategorySelection(cat.id)}
+                />
+                <span>{cat.name}</span>
+              </label>
+            ))}
+          </div>
+
+          {/* Front of House */}
+          <div className="category-group">
+            <h3 className="category-group-title">Front of House</h3>
+            {PREDEFINED_CATEGORIES.frontOfHouse.map((cat) => (
+              <label key={cat.id} className="category-checkbox">
+                <input
+                  type="checkbox"
+                  checked={settings.selectedCategories.includes(cat.id)}
+                  onChange={() => toggleCategorySelection(cat.id)}
+                />
+                <span>{cat.name}</span>
+              </label>
+            ))}
+          </div>
+
+          {/* Bar */}
+          <div className="category-group">
+            <h3 className="category-group-title">Bar</h3>
+            {PREDEFINED_CATEGORIES.bar.map((cat) => (
+              <label key={cat.id} className="category-checkbox">
+                <input
+                  type="checkbox"
+                  checked={settings.selectedCategories.includes(cat.id)}
+                  onChange={() => toggleCategorySelection(cat.id)}
+                />
+                <span>{cat.name}</span>
+              </label>
+            ))}
           </div>
         </div>
 
-        <div className="space-y-3">
-          {state.settings.jobCategories.map((category) => (
-            <div
-              key={category.id}
-              className="flex items-center gap-4 p-4 bg-[var(--background-tertiary)] rounded-lg border border-[var(--border)] hover:border-[var(--border-light)] transition-colors"
-            >
-              <div className="flex-1">
+        {/* Custom Categories */}
+        <div className="custom-categories">
+          <h3 className="category-group-title">Custom Categories</h3>
+          <div className="custom-category-inputs">
+            {customCategoryInputs.map((value, index) => (
+              <div key={index} className="custom-category-input-wrapper">
                 <input
                   type="text"
-                  value={category.name}
-                  onChange={(e) => updateJobCategory(category.id, { name: e.target.value })}
-                  className="bg-transparent text-white font-medium focus:outline-none focus:text-[var(--accent)] transition-colors w-full"
+                  value={value}
+                  onChange={(e) => handleCustomCategoryChange(index, e.target.value)}
+                  onBlur={() => handleAddCustomCategory(index)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddCustomCategory(index)}
+                  placeholder={`Custom ${index + 1}`}
+                  className="form-input form-input-dashed"
                 />
               </div>
+            ))}
+          </div>
+          {customCategories.length > 0 && (
+            <div className="custom-categories-list">
+              {customCategories.map((cat) => (
+                <span key={cat.id} className="custom-category-tag">
+                  {cat.name}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-[var(--foreground-muted)]">Weight:</span>
+      {/* Step 5: Job Category Weights */}
+      <div className="card">
+        <div className="card-header">
+          <h2 className="card-title">Step 5: Job Category Weights</h2>
+          <HelpTooltip text={HELP_TEXT.variableWeight} />
+        </div>
+
+        {settings.jobCategories.length === 0 ? (
+          <p className="form-help">Select job categories in Step 4 to assign weights.</p>
+        ) : (
+          <div className="weight-list">
+            {settings.jobCategories.map((category) => (
+              <div key={category.id} className="weight-item">
+                <span className="weight-item-name">{category.name}</span>
                 <select
                   value={category.variableWeight}
-                  onChange={(e) => updateJobCategory(category.id, { variableWeight: parseFloat(e.target.value) as VariableWeight })}
-                  className="bg-[var(--background-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-colors"
+                  onChange={(e) =>
+                    updateJobCategory(category.id, {
+                      variableWeight: parseFloat(e.target.value) as VariableWeight,
+                    })
+                  }
+                  className="form-select weight-select"
                 >
                   {VARIABLE_WEIGHT_OPTIONS.map((weight) => (
                     <option key={weight} value={weight}>
@@ -157,66 +255,51 @@ export default function SettingsPage() {
                     </option>
                   ))}
                 </select>
-                <HelpTooltip text={HELP_TEXT.variableWeight} position="left" />
               </div>
+            ))}
+          </div>
+        )}
 
-              <button
-                onClick={() => removeJobCategory(category.id)}
-                className="p-2 text-[var(--foreground-dim)] hover:text-[var(--error)] hover:bg-[var(--error)]/10 rounded-lg transition-colors"
-                aria-label="Remove category"
-              >
-                <Trash2 size={18} />
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {/* Add New Category */}
-        <div className="mt-4 flex gap-3">
-          <input
-            type="text"
-            value={newCategoryName}
-            onChange={(e) => setNewCategoryName(e.target.value)}
-            placeholder="Add new job category..."
-            className="flex-1 bg-[var(--background-tertiary)] border border-[var(--border)] border-dashed rounded-lg px-4 py-3 text-white placeholder-[var(--foreground-dim)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-colors"
-            onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
-          />
-          <button
-            onClick={handleAddCategory}
-            disabled={!newCategoryName.trim()}
-            className="px-4 py-3 bg-[var(--accent-muted)] text-[var(--accent)] rounded-lg hover:bg-[var(--accent)] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            <Plus size={18} />
-            Add
-          </button>
-        </div>
-
-        <p className="mt-4 text-xs text-[var(--foreground-dim)]">
-          Weight scale explanation: 1 = Low impact, 3 = Average, 5 = High impact on customer satisfaction
+        <p className="form-help mt-4">
+          Weight scale: 1 = Lowest share, 5 = Highest share of the tip pool
         </p>
       </div>
 
       {/* Blocked Features Teaser */}
-      <div className="bg-gradient-to-r from-[var(--accent-muted)] to-transparent rounded-xl p-6 border border-[var(--accent)]/30">
-        <div className="flex items-center gap-4">
-          <Lock size={24} className="text-[var(--accent)]" />
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-white">Unlock More Features</h3>
-            <p className="text-sm text-[var(--foreground-muted)]">
-              Full version includes: 2FA authentication, multi-location support, cloud storage, YTD reports, and audit logs.
-            </p>
+      <div className="card card-promo">
+        <div className="promo-header">
+          <Lock size={20} className="promo-icon" />
+          <h3 className="promo-title">Full Version Features</h3>
+        </div>
+        <div className="promo-features">
+          <div className="promo-feature">
+            <Lock size={14} className="text-muted" />
+            <span>Location Settings</span>
           </div>
-          <button className="px-4 py-2 bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-hover)] transition-colors">
-            Learn More
-          </button>
+          <div className="promo-feature">
+            <Lock size={14} className="text-muted" />
+            <span>Pay Period Start/End Dates</span>
+          </div>
+          <div className="promo-feature">
+            <Lock size={14} className="text-muted" />
+            <span>Launch Date</span>
+          </div>
+          <div className="promo-feature">
+            <Lock size={14} className="text-muted" />
+            <span>Users/Permissions</span>
+          </div>
+          <div className="promo-feature">
+            <Lock size={14} className="text-muted" />
+            <span>Scenario Sand Box</span>
+          </div>
         </div>
       </div>
 
       {/* Navigation Button */}
-      <div className="flex justify-end pt-4">
+      <div className="nav-buttons nav-buttons-end">
         <button
           onClick={() => setCurrentStep(2)}
-          className="px-6 py-3 bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-hover)] transition-colors font-medium flex items-center gap-2 shadow-lg"
+          className="btn btn-primary btn-lg"
         >
           Continue to Data Entry
           <ChevronRight size={20} />

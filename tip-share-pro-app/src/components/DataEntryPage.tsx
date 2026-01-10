@@ -12,7 +12,6 @@ export default function DataEntryPage() {
     updateEmployee,
     addEmployee,
     removeEmployee,
-    setEstimatedMonthlySales,
     setCurrentStep,
     calculateDistribution,
   } = useDemo();
@@ -46,165 +45,161 @@ export default function DataEntryPage() {
   };
 
   const totalHours = state.employees.reduce((sum, emp) => sum + emp.hoursWorked, 0);
+  const { estimatedMonthlySales, contributionRate } = state.settings;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* Estimated Sales & Projected Pool Card */}
-      <div className="bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] rounded-xl p-6 text-white shadow-lg">
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
+    <div className="content-container">
+      {/* Projected Pool Card (Read-only - configured in Settings) */}
+      <div className="card card-hero">
+        <div className="hero-grid">
+          <div className="hero-input-group">
+            <div className="hero-label">
               <DollarSign size={20} />
-              <label className="text-sm font-medium opacity-90">
-                Estimated Monthly Sales
-              </label>
-              <HelpTooltip text={HELP_TEXT.estimatedMonthlySales} position="right" />
+              <label>Estimated Monthly Sales</label>
+              <HelpTooltip text="Configured in Settings (Step 2)" position="right" />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold">$</span>
-              <input
-                type="number"
-                value={state.estimatedMonthlySales}
-                onChange={(e) => setEstimatedMonthlySales(parseFloat(e.target.value) || 0)}
-                className="text-3xl font-bold bg-white/10 border border-white/20 rounded-lg px-4 py-2 w-48 focus:bg-white/20 focus:border-white/40 transition-colors"
-                step="1000"
-              />
+            <div className="hero-amount hero-amount-muted">
+              {formatCurrency(estimatedMonthlySales)}
             </div>
           </div>
 
-          <div className="flex flex-col justify-center">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="hero-result">
+            <div className="hero-label">
               <TrendingUp size={20} />
-              <span className="text-sm font-medium opacity-90">Projected Pool (per pay period)</span>
+              <span>Projected Pool (per pay period)</span>
               <HelpTooltip text={HELP_TEXT.projectedPool} position="left" />
             </div>
-            <div className="text-4xl font-bold">
+            <div className="hero-amount">
               {formatCurrency(state.projectedPool)}
             </div>
-            <p className="text-sm opacity-75 mt-1">
-              = (${state.estimatedMonthlySales.toLocaleString()} / 2) × {state.settings.contributionRate}%
+            <p className="hero-formula">
+              = (${estimatedMonthlySales.toLocaleString()} / 2) x {contributionRate}%
             </p>
           </div>
         </div>
       </div>
 
       {/* Employee Data Entry */}
-      <div className="bg-[var(--background-secondary)] rounded-xl p-6 border border-[var(--border)]">
-        <div className="flex items-center justify-between mb-6">
+      <div className="card">
+        <div className="card-header">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold text-white">Employee Data</h2>
+            <h2 className="card-title">Employee Data</h2>
             <HelpTooltip text="Enter employee information for this pay period. Hours and rates are used to calculate each person's share of the tip pool." />
           </div>
-          <div className="text-sm text-[var(--foreground-muted)]">
+          <div className="card-subtitle">
             {state.employees.length} employees | {totalHours} total hours
           </div>
         </div>
 
-        {/* Table Header */}
-        <div className="grid grid-cols-12 gap-4 px-4 py-2 text-sm font-medium text-[var(--foreground-muted)] border-b border-[var(--border)]">
-          <div className="col-span-3">Employee Name</div>
-          <div className="col-span-3">Job Category</div>
-          <div className="col-span-2 flex items-center gap-1">
-            Hourly Rate
-            <HelpTooltip text={HELP_TEXT.hourlyRate} position="bottom" />
-          </div>
-          <div className="col-span-2 flex items-center gap-1">
-            Hours Worked
-            <HelpTooltip text={HELP_TEXT.hoursWorked} position="bottom" />
-          </div>
-          <div className="col-span-2 text-right">Actions</div>
-        </div>
-
-        {/* Employee Rows */}
-        <div className="space-y-2 mt-2">
-          {state.employees.map((employee) => {
-            const category = state.settings.jobCategories.find(c => c.id === employee.jobCategoryId);
-
-            return (
-              <div
-                key={employee.id}
-                className="grid grid-cols-12 gap-4 items-center p-4 bg-[var(--background-tertiary)] rounded-lg border border-[var(--border)] hover:border-[var(--border-light)] transition-colors"
-              >
-                <div className="col-span-3">
-                  <input
-                    type="text"
-                    value={employee.name}
-                    onChange={(e) => updateEmployee(employee.id, { name: e.target.value })}
-                    className="w-full bg-transparent text-white font-medium focus:outline-none focus:text-[var(--accent)]"
-                    placeholder="Employee name"
-                  />
-                </div>
-
-                <div className="col-span-3">
-                  <select
-                    value={employee.jobCategoryId}
-                    onChange={(e) => updateEmployee(employee.id, { jobCategoryId: e.target.value })}
-                    className="w-full bg-[var(--background-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
-                  >
-                    {state.settings.jobCategories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name} (×{cat.variableWeight.toFixed(2)})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-span-2">
-                  <div className="flex items-center gap-1">
-                    <span className="text-[var(--foreground-muted)]">$</span>
-                    <input
-                      type="number"
-                      value={employee.hourlyRate}
-                      onChange={(e) => updateEmployee(employee.id, { hourlyRate: parseFloat(e.target.value) || 0 })}
-                      className="w-full bg-[var(--background-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 text-white text-right focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] wage-column"
-                      step="0.25"
-                      min="0"
-                    />
-                  </div>
-                </div>
-
-                <div className="col-span-2">
-                  <input
-                    type="number"
-                    value={employee.hoursWorked}
-                    onChange={(e) => updateEmployee(employee.id, { hoursWorked: parseFloat(e.target.value) || 0 })}
-                    className="w-full bg-[var(--background-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 text-white text-right focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
-                    step="0.5"
-                    min="0"
-                  />
-                </div>
-
-                <div className="col-span-2 flex justify-end gap-2">
-                  <span className="text-sm text-[var(--foreground-dim)] px-2 py-1 bg-[var(--background-secondary)] rounded">
-                    ×{category?.variableWeight.toFixed(2) || '2.50'}
+        {/* Table */}
+        <div className="table-wrapper">
+          <table className="table table-distribution">
+            <thead>
+              <tr>
+                <th>Employee Name</th>
+                <th>Job Category</th>
+                <th className="hide-on-print">
+                  <span className="flex items-center gap-1">
+                    Hourly Rate
+                    <HelpTooltip text={HELP_TEXT.hourlyRate} position="bottom" />
                   </span>
-                  <button
-                    onClick={() => removeEmployee(employee.id)}
-                    className="p-2 text-[var(--foreground-dim)] hover:text-[var(--error)] hover:bg-[var(--error)]/10 rounded-lg transition-colors"
-                    aria-label="Remove employee"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+                </th>
+                <th>
+                  <span className="flex items-center gap-1">
+                    Hours Worked
+                    <HelpTooltip text={HELP_TEXT.hoursWorked} position="bottom" />
+                  </span>
+                </th>
+                <th>Weight</th>
+                <th className="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {state.employees.map((employee) => {
+                const category = state.settings.jobCategories.find(c => c.id === employee.jobCategoryId);
+
+                return (
+                  <tr key={employee.id}>
+                    <td>
+                      <input
+                        type="text"
+                        value={employee.name}
+                        onChange={(e) => updateEmployee(employee.id, { name: e.target.value })}
+                        className="table-input"
+                        placeholder="Employee name"
+                      />
+                    </td>
+                    <td>
+                      <select
+                        value={employee.jobCategoryId}
+                        onChange={(e) => updateEmployee(employee.id, { jobCategoryId: e.target.value })}
+                        className="form-select table-select"
+                      >
+                        {state.settings.jobCategories.map((cat) => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="hide-on-print">
+                      <div className="input-with-prefix">
+                        <span className="input-prefix">$</span>
+                        <input
+                          type="number"
+                          value={employee.hourlyRate}
+                          onChange={(e) => updateEmployee(employee.id, { hourlyRate: parseFloat(e.target.value) || 0 })}
+                          className="form-input form-input-currency table-input-number wage-column"
+                          step="0.25"
+                          min="0"
+                        />
+                      </div>
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        value={employee.hoursWorked}
+                        onChange={(e) => updateEmployee(employee.id, { hoursWorked: parseFloat(e.target.value) || 0 })}
+                        className="form-input form-input-currency table-input-number"
+                        step="0.5"
+                        min="0"
+                      />
+                    </td>
+                    <td>
+                      <span className="badge badge-weight">
+                        x{category?.variableWeight.toFixed(2) || '2.50'}
+                      </span>
+                    </td>
+                    <td className="text-right">
+                      <button
+                        onClick={() => removeEmployee(employee.id)}
+                        className="btn-icon btn-danger"
+                        aria-label="Remove employee"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
 
         {/* Add New Employee */}
-        <div className="mt-4 flex gap-3">
+        <div className="add-category-form">
           <input
             type="text"
             value={newEmployeeName}
             onChange={(e) => setNewEmployeeName(e.target.value)}
             placeholder="Add new employee..."
-            className="flex-1 bg-[var(--background-tertiary)] border border-[var(--border)] border-dashed rounded-lg px-4 py-3 text-white placeholder-[var(--foreground-dim)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-colors"
+            className="form-input form-input-dashed"
             onKeyDown={(e) => e.key === 'Enter' && handleAddEmployee()}
           />
           <button
             onClick={handleAddEmployee}
             disabled={!newEmployeeName.trim()}
-            className="px-4 py-3 bg-[var(--accent-muted)] text-[var(--accent)] rounded-lg hover:bg-[var(--accent)] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="btn btn-secondary"
           >
             <Plus size={18} />
             Add Employee
@@ -213,38 +208,38 @@ export default function DataEntryPage() {
       </div>
 
       {/* Summary Card */}
-      <div className="bg-[var(--background-secondary)] rounded-xl p-6 border border-[var(--border)]">
-        <h3 className="text-lg font-semibold text-white mb-4">Pay Period Summary</h3>
-        <div className="grid grid-cols-3 gap-6">
-          <div className="text-center p-4 bg-[var(--background-tertiary)] rounded-lg">
-            <div className="text-3xl font-bold text-white">{state.employees.length}</div>
-            <div className="text-sm text-[var(--foreground-muted)]">Employees</div>
+      <div className="card">
+        <h3 className="card-title mb-4">Pay Period Summary</h3>
+        <div className="summary-grid">
+          <div className="summary-stat">
+            <div className="summary-value">{state.employees.length}</div>
+            <div className="summary-label">Employees</div>
           </div>
-          <div className="text-center p-4 bg-[var(--background-tertiary)] rounded-lg">
-            <div className="text-3xl font-bold text-white">{totalHours}</div>
-            <div className="text-sm text-[var(--foreground-muted)]">Total Hours</div>
+          <div className="summary-stat">
+            <div className="summary-value">{totalHours}</div>
+            <div className="summary-label">Total Hours</div>
           </div>
-          <div className="text-center p-4 bg-[var(--success-bg)] rounded-lg border border-[var(--success)]/20">
-            <div className="text-3xl font-bold text-[var(--success)]">
+          <div className="summary-stat summary-stat-success">
+            <div className="summary-value text-success">
               {formatCurrency(state.projectedPool)}
             </div>
-            <div className="text-sm text-[var(--foreground-muted)]">Pool to Distribute</div>
+            <div className="summary-label">Pool to Distribute</div>
           </div>
         </div>
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between pt-4">
+      <div className="nav-buttons">
         <button
           onClick={() => setCurrentStep(1)}
-          className="px-6 py-3 bg-[var(--background-tertiary)] text-white rounded-lg hover:bg-[var(--border)] transition-colors font-medium flex items-center gap-2"
+          className="btn btn-ghost"
         >
           <ChevronLeft size={20} />
           Back to Settings
         </button>
         <button
           onClick={handleContinue}
-          className="px-6 py-3 bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-hover)] transition-colors font-medium flex items-center gap-2 shadow-lg"
+          className="btn btn-primary btn-lg"
         >
           Calculate Distribution
           <ChevronRight size={20} />

@@ -19,17 +19,17 @@ export default function HelpTooltip({ text, position = 'top' }: HelpTooltipProps
   };
 
   const arrowClasses = {
-    top: 'top-full left-1/2 -translate-x-1/2 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-[var(--background-tertiary)]',
-    bottom: 'bottom-full left-1/2 -translate-x-1/2 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-[var(--background-tertiary)]',
-    left: 'left-full top-1/2 -translate-y-1/2 border-t-8 border-b-8 border-l-8 border-t-transparent border-b-transparent border-l-[var(--background-tertiary)]',
-    right: 'right-full top-1/2 -translate-y-1/2 border-t-8 border-b-8 border-r-8 border-t-transparent border-b-transparent border-r-[var(--background-tertiary)]',
+    top: 'top-full left-1/2 -translate-x-1/2 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-[var(--color-secondary)]',
+    bottom: 'bottom-full left-1/2 -translate-x-1/2 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-[var(--color-secondary)]',
+    left: 'left-full top-1/2 -translate-y-1/2 border-t-8 border-b-8 border-l-8 border-t-transparent border-b-transparent border-l-[var(--color-secondary)]',
+    right: 'right-full top-1/2 -translate-y-1/2 border-t-8 border-b-8 border-r-8 border-t-transparent border-b-transparent border-r-[var(--color-secondary)]',
   };
 
   return (
     <div className="relative inline-flex">
       <button
         type="button"
-        className="text-[var(--foreground-muted)] hover:text-[var(--accent)] transition-colors p-1 rounded-full hover:bg-[var(--accent-muted)]"
+        className="tooltip-trigger"
         onMouseEnter={() => setIsVisible(true)}
         onMouseLeave={() => setIsVisible(false)}
         onClick={() => setIsVisible(!isVisible)}
@@ -39,15 +39,7 @@ export default function HelpTooltip({ text, position = 'top' }: HelpTooltipProps
       </button>
 
       {isVisible && (
-        <div
-          className={`
-            absolute z-50 w-64 px-3 py-2 text-sm rounded-lg shadow-lg
-            bg-[var(--background-tertiary)] text-[var(--foreground)]
-            border border-[var(--border-light)]
-            tooltip-enter
-            ${positionClasses[position]}
-          `}
-        >
+        <div className={`tooltip ${positionClasses[position]}`}>
           <div className={`absolute w-0 h-0 ${arrowClasses[position]}`} />
           {text}
         </div>

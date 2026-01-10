@@ -163,6 +163,94 @@ export interface BulkDailyEntryRequest {
 }
 
 // ============================================================================
+// Daily Entry Response Types
+// ============================================================================
+
+/**
+ * Formatted daily entry for API response
+ */
+export interface DailyEntryResponse {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  jobCategory: {
+    id: string;
+    name: string;
+    badgeColor: string;
+  };
+  date: string;                          // YYYY-MM-DD format
+  sales: number | null;                   // Dollars for display
+  calculatedContribution: number | null;  // Dollars for display
+  actualContribution: number | null;      // Dollars for display
+  enteredBy: string | null;               // Email of user who entered
+  updatedAt: string;                      // ISO timestamp
+}
+
+/**
+ * Summary statistics for daily entries
+ */
+export interface DailyEntrySummary {
+  totalSalesCents: number;
+  totalCalculatedContribCents: number;
+  totalActualContribCents: number;
+  daysEntered: number;
+  daysTotal: number;
+}
+
+/**
+ * Date navigation info for daily entry view
+ */
+export interface DateNavigationInfo {
+  currentDate: string;
+  previousDate: string | null;
+  nextDate: string | null;
+  isFirstDay: boolean;
+  isLastDay: boolean;
+  dayNumber: number;
+  totalDays: number;
+}
+
+/**
+ * Response for getting entries for a pay period
+ */
+export interface DailyEntriesForPeriodResponse {
+  payPeriod: {
+    id: string;
+    startDate: string;
+    endDate: string;
+    status: string;
+  };
+  entries: DailyEntryResponse[];
+  summary: DailyEntrySummary;
+}
+
+/**
+ * Response for getting entries for a specific date
+ */
+export interface DailyEntriesForDateResponse {
+  payPeriod: {
+    id: string;
+    startDate: string;
+    endDate: string;
+    status: string;
+  };
+  date: string;
+  entries: DailyEntryResponse[];
+  navigation: DateNavigationInfo;
+  runningTotals: DailyEntrySummary;
+}
+
+/**
+ * Response for bulk upsert operation
+ */
+export interface BulkUpsertEntriesResponse {
+  created: number;
+  updated: number;
+  entries: DailyEntryResponse[];
+  runningTotals: DailyEntrySummary;
+}
+
+// ============================================================================
 // Settings Types
 // ============================================================================
 
