@@ -1,23 +1,24 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
+  "name": "tip-share-pro-api",
   "builds": [
     {
-      "src": "api/**/*.ts",
+      "src": "api/index.ts",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/test",
-      "dest": "api/test.ts"
+      "src": "/api/v1/(.*)",
+      "dest": "/api/index.ts"
     },
     {
-      "src": "/db-test",
-      "dest": "api/db-test.ts"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "api/index.ts"
+      "src": "/api/(.*)",
+      "dest": "/api/index.ts"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }

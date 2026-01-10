@@ -27,8 +27,8 @@ export const config = {
   // Redis
   redisUrl: process.env.REDIS_URL,
 
-  // CORS
-  allowedOrigins: (process.env.ALLOWED_ORIGINS || 'http://localhost:3000').split(','),
+  // CORS - include Vercel URLs by default
+  allowedOrigins: (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,https://tip-share-pro-app.vercel.app,https://tip-share-pro-api.vercel.app').split(',').map(s => s.trim()),
 
   // Rate limiting
   rateLimit: {
