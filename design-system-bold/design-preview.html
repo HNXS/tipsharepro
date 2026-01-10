@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TipSharePro — Bold Design System Preview</title>
+  <link rel="icon" type="image/png" href="../data/20260109/icononly_transparent_nobuffer.png">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ========================================
+       DESIGN TOKENS - BOLD EDITION
+       ======================================== */
+    :root {
+      /* Primary Brand Colors */
+      --primary: #E85D04;
+      --primary-hover: #D14D00;
+      --primary-active: #C04500;
+      --primary-light: #FFF3E6;
+      --primary-glow: rgba(232, 93, 4, 0.25);
+
+      /* Success / Growth (Lime Green) */
+      --success: #82B536;
+      --success-hover: #6B9A2A;
+      --success-light: #F0F7E6;
+
+      /* Secondary / Trust (Navy Blue) */
+      --secondary: #1A4B7C;
+      --secondary-hover: #153D66;
+      --secondary-light: #E6EEF5;
+
+      /* Accent / Interactive (Cyan) */
+      --accent: #35A0D2;
+      --accent-hover: #2B8AB8;
+      --accent-light: #E6F4FA;
+
+      /* Semantic */
+      --error: #DC2626;
+      --error-light: #FEF2F2;
+      --warning: #F59E0B;
+      --warning-light: #FFFBEB;
+
+      /* Foundation - Dark */
+      --charcoal: #1F2937;
+      --slate: #374151;
+      --graphite: #4B5563;
+
+      /* Foundation - Light */
+      --white: #FFFFFF;
+      --snow: #FAFAFA;
+      --stone: #F5F5F4;
+      --fog: #E5E5E5;
+
+      /* Text */
+      --text-primary: #1F2937;
+      --text-secondary: #6B7280;
+      --text-muted: #9CA3AF;
+      --text-inverse: #FFFFFF;
+
+      /* Typography */
+      --font-primary: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+
+      /* Spacing */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 48px;
+      --space-8: 64px;
+      --space-9: 96px;
+
+      /* Radius */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --radius-full: 9999px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+      --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15), 0 10px 10px rgba(0, 0, 0, 0.04);
+      --shadow-glow: 0 0 20px var(--primary-glow);
+
+      /* Timing */
+      --ease-out: cubic-bezier(0.0, 0, 0.2, 1);
+      --ease-in-out: cubic-bezier(0.4, 0, 0.6, 1);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --duration-fast: 150ms;
+      --duration-normal: 250ms;
+      --duration-slow: 400ms;
+    }
+
+    /* ========================================
+       BASE STYLES
+       ======================================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--text-primary);
+      background: var(--white);
+      min-height: 100vh;
+    }
+
+    /* ========================================
+       TYPOGRAPHY
+       ======================================== */
+    h1, h2, h3, h4, h5 {
+      font-family: var(--font-primary);
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    h1 {
+      font-size: 3rem;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 2.25rem;
+      letter-spacing: -0.015em;
+      margin-bottom: var(--space-5);
+    }
+
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: var(--space-4);
+    }
+
+    h4 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: var(--space-3);
+    }
+
+    p {
+      margin-bottom: var(--space-4);
+      color: var(--text-secondary);
+    }
+
+    .lead {
+      font-size: 1.125rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    .caption {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ========================================
+       LAYOUT
+       ======================================== */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--space-5);
+    }
+
+    section {
+      padding: var(--space-8) 0;
+      border-bottom: 1px solid var(--fog);
+    }
+
+    section:last-of-type {
+      border-bottom: none;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-5);
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-5);
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-5);
+    }
+
+    @media (max-width: 768px) {
+      .grid-2, .grid-3, .grid-4 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ========================================
+       HERO SECTION
+       ======================================== */
+    .hero {
+      background: linear-gradient(135deg, var(--charcoal) 0%, var(--slate) 100%);
+      padding: var(--space-7) 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: 0.5;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-logo {
+      max-width: 400px;
+      width: 100%;
+      height: auto;
+      margin-bottom: var(--space-4);
+    }
+
+    @media (max-width: 768px) {
+      .hero {
+        padding: var(--space-6) 0;
+      }
+      .hero-logo {
+        max-width: 280px;
+      }
+    }
+
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 400;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* ========================================
+       NAVIGATION
+       ======================================== */
+    .toc {
+      background: var(--white);
+      border-bottom: 1px solid var(--fog);
+      padding: var(--space-4) var(--space-5);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .toc-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .toc a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: var(--radius-md);
+      transition: all 0.15s ease-out;
+    }
+
+    .toc a:hover {
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    @media (max-width: 768px) {
+      .toc {
+        display: none;
+      }
+    }
+
+    /* ========================================
+       CARDS
+       ======================================== */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--fog);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      transition: transform var(--duration-normal) var(--ease-out),
+                  box-shadow var(--duration-normal) var(--ease-out);
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .card-featured {
+      border-left: 4px solid var(--primary);
+    }
+
+    .card-header {
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--fog);
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--primary-light);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-4);
+      color: var(--primary);
+    }
+
+    /* ========================================
+       COLOR SWATCHES
+       ======================================== */
+    .swatch-group {
+      margin-bottom: var(--space-6);
+    }
+
+    .swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .swatch {
+      aspect-ratio: 1.2;
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: var(--space-3);
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--duration-fast) var(--ease-out);
+    }
+
+    .swatch:hover {
+      transform: scale(1.02);
+    }
+
+    .swatch-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .swatch-hex {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      opacity: 0.8;
+    }
+
+    .swatch.light-text { color: var(--white); }
+    .swatch.dark-text { color: var(--text-primary); }
+
+    /* ========================================
+       TYPOGRAPHY SHOWCASE
+       ======================================== */
+    .type-specimen {
+      padding: var(--space-6);
+      background: var(--stone);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-5);
+    }
+
+    .type-specimen-label {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: var(--space-3);
+    }
+
+    .type-display {
+      font-family: var(--font-primary);
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--text-primary);
+    }
+
+    .type-body {
+      font-family: var(--font-primary);
+      font-size: 1.125rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    .type-mono {
+      font-family: var(--font-mono);
+      font-size: 2.5rem;
+      font-weight: 500;
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ========================================
+       BUTTONS
+       ======================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-5);
+      border-radius: var(--radius-md);
+      font-family: var(--font-primary);
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all var(--duration-fast) var(--ease-out);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+      color: var(--white);
+    }
+
+    .btn-secondary:hover {
+      background: var(--secondary-hover);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: var(--white);
+    }
+
+    .btn-success:hover {
+      background: var(--success-hover);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+
+    .btn-ghost:hover {
+      background: var(--primary-light);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    /* ========================================
+       FORMS
+       ======================================== */
+    .form-group {
+      margin-bottom: var(--space-5);
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--space-2);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: var(--space-3) var(--space-4);
+      background: var(--white);
+      border: 1px solid var(--fog);
+      border-radius: var(--radius-md);
+      font-family: var(--font-primary);
+      font-size: 1rem;
+      color: var(--text-primary);
+      transition: border-color var(--duration-fast) var(--ease-out),
+                  box-shadow var(--duration-fast) var(--ease-out);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .form-input-currency {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .form-input-error {
+      border-color: var(--error);
+    }
+
+    .form-input-error:focus {
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+    }
+
+    /* ========================================
+       TABLES
+       ======================================== */
+    .table-container {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table th {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      text-align: left;
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--fog);
+      background: var(--stone);
+    }
+
+    .table td {
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--fog);
+      color: var(--text-primary);
+    }
+
+    .table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .table tr:hover td {
+      background: var(--primary-light);
+    }
+
+    .table .currency {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      color: var(--primary);
+      text-align: right;
+      font-weight: 500;
+    }
+
+    .table .total-row td {
+      font-weight: 600;
+      background: var(--primary-light);
+      border-top: 2px solid var(--primary);
+    }
+
+    /* Role badges */
+    .badge {
+      display: inline-block;
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-sm);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .badge-server { background: var(--accent-light); color: var(--accent); }
+    .badge-cook { background: var(--warning-light); color: #B45309; }
+    .badge-busser { background: var(--success-light); color: var(--success-hover); }
+    .badge-host { background: #F3E8FF; color: #7C3AED; }
+    .badge-bartender { background: var(--secondary-light); color: var(--secondary); }
+
+    /* ========================================
+       STAT CARDS
+       ======================================== */
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--fog);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      text-align: center;
+      transition: border-color var(--duration-fast) var(--ease-out),
+                  box-shadow var(--duration-fast) var(--ease-out);
+    }
+
+    .stat-card:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: var(--space-2);
+    }
+
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .stat-change {
+      font-family: var(--font-mono);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      margin-top: var(--space-2);
+    }
+
+    .stat-change.positive {
+      color: var(--success);
+    }
+
+    .stat-change.positive::before {
+      content: '+';
+    }
+
+    .stat-change.negative {
+      color: var(--error);
+    }
+
+    /* ========================================
+       ALERTS / NOTES
+       ======================================== */
+    .alert {
+      padding: var(--space-4);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-4);
+      display: flex;
+      gap: var(--space-3);
+    }
+
+    .alert-info {
+      background: var(--accent-light);
+      border: 1px solid var(--accent);
+      color: var(--secondary);
+    }
+
+    .alert-warning {
+      background: var(--warning-light);
+      border: 1px solid var(--warning);
+      color: #92400E;
+    }
+
+    .alert-error {
+      background: var(--error-light);
+      border: 1px solid var(--error);
+      color: #991B1B;
+    }
+
+    .alert-icon {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+    }
+
+    /* ========================================
+       FOOTER
+       ======================================== */
+    footer {
+      background: var(--charcoal);
+      padding: var(--space-8) 0;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    footer .tagline {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: var(--space-3);
+    }
+
+    footer .tagline .accent {
+      color: var(--primary);
+    }
+
+    footer .version {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+    }
+
+    /* ========================================
+       ANIMATIONS
+       ======================================== */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.7;
+      }
+    }
+
+    .animate-fadeIn {
+      animation: fadeInUp 0.5s var(--ease-out);
+    }
+
+    /* ========================================
+       UTILITY CLASSES
+       ======================================== */
+    .text-primary-brand { color: var(--primary); }
+    .text-success { color: var(--success); }
+    .text-secondary-brand { color: var(--secondary); }
+    .text-accent { color: var(--accent); }
+    .text-muted { color: var(--text-muted); }
+
+    .bg-stone { background: var(--stone); }
+    .bg-primary-light { background: var(--primary-light); }
+
+    .mb-0 { margin-bottom: 0; }
+    .mb-2 { margin-bottom: var(--space-2); }
+    .mb-4 { margin-bottom: var(--space-4); }
+    .mb-6 { margin-bottom: var(--space-6); }
+
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+  </style>
+</head>
+<body>
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <div class="container hero-content">
+      <img src="../data/20260109/fulllogo_transparent.png" alt="TipSharePro - Powerful * Fair * Transparent" class="hero-logo animate-fadeIn">
+      <p class="hero-subtitle">
+        Bold Design System Preview
+      </p>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="toc">
+    <div class="toc-inner">
+      <a href="#philosophy">Philosophy</a>
+      <a href="#colors">Colors</a>
+      <a href="#typography">Typography</a>
+      <a href="#components">Components</a>
+      <a href="#badges">Badges</a>
+    </div>
+  </nav>
+
+  <main class="container">
+
+    <!-- Philosophy Section -->
+    <section id="philosophy">
+      <h2>Design Philosophy</h2>
+      <p class="lead">
+        TipSharePro's design is <strong>bold, not bashful</strong>—matching the energy of the logo and the confidence of restaurant professionals who use it. High-contrast colors command attention, while clean layouts ensure clarity for financial data.
+      </p>
+
+      <div class="grid-3" style="margin-top: var(--space-6);">
+        <div class="card card-featured">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+          </div>
+          <h4>Powerful</h4>
+          <p class="mb-0 text-muted">Bold orange CTAs that demand action. No subtle hints—clear direction.</p>
+        </div>
+        <div class="card card-featured">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M8 12l2 2 4-4"/>
+            </svg>
+          </div>
+          <h4>Fair</h4>
+          <p class="mb-0 text-muted">Clean data tables and transparent calculations. Every number justified.</p>
+        </div>
+        <div class="card card-featured">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </div>
+          <h4>Transparent</h4>
+          <p class="mb-0 text-muted">Lime green success states show positive outcomes clearly. No hidden surprises.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Color Palette Section -->
+    <section id="colors">
+      <h2>The Bold Palette</h2>
+      <p class="lead mb-6">
+        Colors drawn directly from the TipSharePro logo—burnt orange for action, lime green for success, navy for trust, and cyan for interactivity.
+      </p>
+
+      <div class="swatch-group">
+        <h4>Primary Brand Colors</h4>
+        <div class="swatch-grid">
+          <div class="swatch light-text" style="background: var(--primary);">
+            <span class="swatch-name">Burnt Orange</span>
+            <span class="swatch-hex">#E85D04</span>
+          </div>
+          <div class="swatch light-text" style="background: var(--success);">
+            <span class="swatch-name">Lime Green</span>
+            <span class="swatch-hex">#82B536</span>
+          </div>
+          <div class="swatch light-text" style="background: var(--secondary);">
+            <span class="swatch-name">Navy Blue</span>
+            <span class="swatch-hex">#1A4B7C</span>
+          </div>
+          <div class="swatch light-text" style="background: var(--accent);">
+            <span class="swatch-name">Cyan</span>
+            <span class="swatch-hex">#35A0D2</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="swatch-group">
+        <h4>Light Variants (Backgrounds)</h4>
+        <div class="swatch-grid">
+          <div class="swatch dark-text" style="background: var(--primary-light);">
+            <span class="swatch-name">Orange Light</span>
+            <span class="swatch-hex">#FFF3E6</span>
+          </div>
+          <div class="swatch dark-text" style="background: var(--success-light);">
+            <span class="swatch-name">Green Light</span>
+            <span class="swatch-hex">#F0F7E6</span>
+          </div>
+          <div class="swatch dark-text" style="background: var(--secondary-light);">
+            <span class="swatch-name">Blue Light</span>
+            <span class="swatch-hex">#E6EEF5</span>
+          </div>
+          <div class="swatch dark-text" style="background: var(--accent-light);">
+            <span class="swatch-name">Cyan Light</span>
+            <span class="swatch-hex">#E6F4FA</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="swatch-group">
+        <h4>Foundation Colors</h4>
+        <div class="swatch-grid">
+          <div class="swatch light-text" style="background: var(--charcoal);">
+            <span class="swatch-name">Charcoal</span>
+            <span class="swatch-hex">#1F2937</span>
+          </div>
+          <div class="swatch light-text" style="background: var(--slate);">
+            <span class="swatch-name">Slate</span>
+            <span class="swatch-hex">#374151</span>
+          </div>
+          <div class="swatch dark-text" style="background: var(--stone);">
+            <span class="swatch-name">Stone</span>
+            <span class="swatch-hex">#F5F5F4</span>
+          </div>
+          <div class="swatch dark-text" style="background: var(--white); border: 1px solid var(--fog);">
+            <span class="swatch-name">White</span>
+            <span class="swatch-hex">#FFFFFF</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="swatch-group">
+        <h4>Semantic Colors</h4>
+        <div class="swatch-grid">
+          <div class="swatch light-text" style="background: var(--error);">
+            <span class="swatch-name">Error</span>
+            <span class="swatch-hex">#DC2626</span>
+          </div>
+          <div class="swatch dark-text" style="background: var(--warning);">
+            <span class="swatch-name">Warning</span>
+            <span class="swatch-hex">#F59E0B</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Typography Section -->
+    <section id="typography">
+      <h2>Typography</h2>
+      <p class="lead mb-6">
+        Outfit—a geometric sans-serif that balances modern confidence with excellent readability. Bold for headlines, clean for data.
+      </p>
+
+      <div class="type-specimen">
+        <div class="type-specimen-label">Outfit — Display Headlines</div>
+        <div class="type-display">Get Your BOH a Share They Deserve</div>
+        <p class="text-muted" style="margin-top: var(--space-3); margin-bottom: 0;">
+          Bold, confident headlines that command attention. 48px / 700 weight / -0.02em tracking
+        </p>
+      </div>
+
+      <div class="type-specimen">
+        <div class="type-specimen-label">Outfit — Body Text</div>
+        <div class="type-body">
+          TipSharePro helps restaurants fairly distribute pooled tips based on hours worked, pay rate, and job category weight. Powerful accounting with easy reporting—transparent to staff and compliant with labor regulations.
+        </div>
+      </div>
+
+      <div class="type-specimen">
+        <div class="type-specimen-label">JetBrains Mono — Numbers & Currency</div>
+        <div class="type-mono">$4,892.50</div>
+        <p class="text-muted" style="margin-top: var(--space-3); margin-bottom: 0;">
+          Tabular figures for perfectly aligned columns. Every dollar crystal clear.
+        </p>
+      </div>
+    </section>
+
+    <!-- Components Section -->
+    <section id="components">
+      <h2>Components</h2>
+
+      <h4>Buttons</h4>
+      <div class="btn-group mb-6">
+        <button class="btn btn-primary">Request Demo</button>
+        <button class="btn btn-secondary">Learn More</button>
+        <button class="btn btn-success">Calculate Tips</button>
+        <button class="btn btn-ghost">Cancel</button>
+      </div>
+
+      <h4>Notes & Alerts</h4>
+      <div class="mb-6">
+        <div class="alert alert-info">
+          <span class="alert-icon">?</span>
+          <div>
+            <strong>?Note:</strong> TipSharePro recommends using a percentage of sales. The taxing authorities require 8% of sales be reported for tip income.
+          </div>
+        </div>
+        <div class="alert alert-warning">
+          <span class="alert-icon">!</span>
+          <div>
+            <strong>!!Note (Critical):</strong> Changing the contribution rate after Launch Date requires written notice to all employees negatively affected, a full 30 days in advance.
+          </div>
+        </div>
+      </div>
+
+      <h4>Form Inputs</h4>
+      <div class="grid-2 mb-6">
+        <div class="form-group">
+          <label class="form-label">Total Pool Amount</label>
+          <input type="text" class="form-input form-input-currency" value="$4,892.50" placeholder="$0.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contribution Rate</label>
+          <input type="text" class="form-input" value="3.25%" placeholder="0.00%">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Error State Example</label>
+          <input type="text" class="form-input form-input-error" value="Invalid">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pay Period</label>
+          <input type="text" class="form-input" value="Jan 1 - Jan 14, 2026">
+        </div>
+      </div>
+
+      <h4>Stat Cards</h4>
+      <div class="grid-4 mb-6">
+        <div class="stat-card">
+          <div class="stat-label">Total Pool</div>
+          <div class="stat-value">$4,892</div>
+          <div class="stat-change positive">12.4%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Team Hours</div>
+          <div class="stat-value">284.5</div>
+          <div class="stat-change positive">3.2%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">$/Hour</div>
+          <div class="stat-value">$17.19</div>
+          <div class="stat-change negative">-2.1%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Recipients</div>
+          <div class="stat-value">12</div>
+        </div>
+      </div>
+
+      <h4>Data Tables</h4>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Position</th>
+              <th>Hours</th>
+              <th>Weight</th>
+              <th class="text-right">Pool Share</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Maria Santos</td>
+              <td><span class="badge badge-server">Server</span></td>
+              <td class="mono">32.5</td>
+              <td class="mono">4.00</td>
+              <td class="currency">$558.28</td>
+            </tr>
+            <tr>
+              <td>James Chen</td>
+              <td><span class="badge badge-bartender">Bartender</span></td>
+              <td class="mono">28.0</td>
+              <td class="mono">4.50</td>
+              <td class="currency">$577.46</td>
+            </tr>
+            <tr>
+              <td>Carlos Rodriguez</td>
+              <td><span class="badge badge-cook">Line Cook</span></td>
+              <td class="mono">40.0</td>
+              <td class="mono">3.50</td>
+              <td class="currency">$642.18</td>
+            </tr>
+            <tr>
+              <td>Sarah Williams</td>
+              <td><span class="badge badge-host">Host</span></td>
+              <td class="mono">24.5</td>
+              <td class="mono">2.00</td>
+              <td class="currency">$224.71</td>
+            </tr>
+            <tr>
+              <td>Miguel Torres</td>
+              <td><span class="badge badge-busser">Busser</span></td>
+              <td class="mono">18.0</td>
+              <td class="mono">1.50</td>
+              <td class="currency">$123.84</td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="2"><strong>Pay Period Total</strong></td>
+              <td class="mono"><strong>143.0</strong></td>
+              <td></td>
+              <td class="currency"><strong>$2,126.47</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Job Categories Section -->
+    <section id="badges">
+      <h2>Job Category Badges</h2>
+      <p class="lead mb-6">
+        Color-coded badges help quickly identify employee roles in distribution tables.
+      </p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h4>Front of House</h4>
+          <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+            <span class="badge badge-server">Server</span>
+            <span class="badge badge-bartender">Bartender</span>
+            <span class="badge badge-host">Host</span>
+          </div>
+        </div>
+        <div class="card">
+          <h4>Back of House</h4>
+          <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+            <span class="badge badge-cook">Lead Cook</span>
+            <span class="badge badge-cook">Line Cook</span>
+            <span class="badge badge-cook">Prep Cook</span>
+          </div>
+        </div>
+        <div class="card">
+          <h4>Support</h4>
+          <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+            <span class="badge badge-busser">Busser</span>
+            <span class="badge badge-busser">Runner</span>
+            <span class="badge badge-busser">Dishwasher</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container">
+      <p class="tagline">TipShare<span class="accent">Pro</span></p>
+      <p>POWERFUL * FAIR * TRANSPARENT</p>
+      <p class="version" style="margin-top: var(--space-4);">Bold Design System v1.0.0</p>
+    </div>
+  </footer>
+
+</body>
+</html>

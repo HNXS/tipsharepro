@@ -1,11 +1,11 @@
 # Tip Share Pro - Product Requirements Document
 
-**Document Version:** 2.0
+**Document Version:** 3.0
 **Date:** January 9, 2026
 **Author:** Product Management
 **Client:** Tom LaChaussee (tlachaussee)
 **Developer:** Tim Heineccius (Heineccius Consulting)
-**Last Updated:** January 9, 2026 - Incorporated Tom's feedback and detailed specifications
+**Last Updated:** January 9, 2026 - Incorporated Tom's detailed Settings Page specifications, flow chart, and comprehensive PDF documentation package
 
 ---
 
@@ -189,6 +189,88 @@ Page 2: Settings (limited version of Page 3)
     ↓
 Page 3: Distribution Table (scaled back version)
 ```
+
+### Demo Settings Page - Detailed Specification
+
+The Demo Settings page is a limited version of Page 3 in the Free Trial/Full Version with some tabs/links blocked.
+
+**Access Method:**
+- Open by double clicking the App icon (see Logo)
+- First page is simple Log In/Password supplied by TipSharePro
+- Next page in Demo is Settings Page
+
+**Welcome Display:** "Welcome Admin (Name of Contact & Company)"
+
+**Settings Steps:**
+
+| Step | Tab/Feature | Description | ?NOTE Help Text |
+|------|-------------|-------------|-----------------|
+| **Step 1** | Method for Contribution % | Check box for: CC Sales, CC Tips, All Tips, or All Sales | "TipSharePro recommends a percentage of sales. The taxing authorities require 8% of sales be reported for tip income as a true up (allocations) at the end of the year." |
+| **Step 2** | Estimate Monthly $ Amount | Open entry box (whole dollars) | "Use whichever criteria you used above. Any relatively close estimate will suffice." |
+| **Step 3** | Enter Contribution % | Dropdown selection | Dropdown varies by Step 1 choice - see below |
+| **Step 4** | Enter Job Categories | Checkbox selection from predefined list + 5 write-ins | "Check the job categories you intend to use. Keep it simple and use as few positions as possible at first." |
+| **Step 5** | Job Category Weights | Dropdown 1-5 in 0.25 increments per category | "1 is the lowest category in the pool. 5 is the highest. Don't get bogged down the first time." |
+
+**Step 3 Contribution % Logic:**
+- If CC Sales, CC Tips, or All Tips selected in Step 1: Dropdown of 5-25% in 0.5 increments of **Tips Only**
+- If All Sales selected in Step 1: Dropdown of 1-5% in 0.25 increments of **(adj) Sales**
+
+**Navigation Buttons:**
+- Tab – Go To Distribution Table
+- Tab – Log Out
+- Links to PDF's used on this page
+- Links to other interesting PDF'S
+
+**Demo-to-Free Trial Upload Feature:**
+- "Upload Demo to Scenario Sand Box" button
+- Settings and Distribution table data sent to SSB (NOT directly to Main Settings/Distribution)
+- Can upload from Demo to SSB multiple times until Demo expires
+- Once in SSB: can only upload to Full Version ONE TIME before Launch Date
+
+---
+
+### Free Trial/Full Version Settings Page (Page 3) - Detailed Specification
+
+**Access Control:** Admin Only or by Permissions - requires Admin Login/Password with 2FA
+
+**Important Note for Admin (!!Note - First Visit):**
+> "It is highly recommended that you take time to Read about the Powerful features of the SCENARIO SAND BOX. If you started with DEMO and are happy with the Data you entered, the Data can be uploaded to SCENARIO SAND BOX."
+
+**Auto-Save:** If Admin clicks off this page, data should be automatically saved.
+
+**Settings Tabs - Full Version:**
+
+| Tab | Description | Type | Notes |
+|-----|-------------|------|-------|
+| **Locations** | Force completion of location data on first entry | Required First | Nickname, Restaurant Name, Address - saved choices appear in dropdown |
+| **Choose Location** | Dropdown to select location | Display | Single location shows "Welcome: Name of Restaurant" |
+| **Date, Time and Zone** | System date/time settings | Required | |
+| **Set Launch Date** | First Day of First Pay Period collecting contributions | Required | Always visible after set; requires 30-day employee notification |
+| **Pay Periods** | Weekly, Bi-Weekly, BiMonthly, Monthly | Required | |
+| **Last PPE Date** | Establishes spread of dates | Required | |
+| **Enter Pay Days** | Day of week or days of month | Required | BiMonthly requires 2 days (usually 5th and 20th) |
+| **Set Contribution Criteria** | CC Sales, CC Tips, All Tips, or All Sales | Required | Same as Demo Step 1 |
+| **Enter Contribution %** | Based on criteria above | Required | 5-25% in 0.5 increments (tips) OR 1-5% in 0.25 increments (sales) |
+| **Enter Job Categories** | Checkbox selection | Required | Same predefined list + 5 write-ins |
+| **Job Category Weights** | 1-5 in 0.25 increments per category | Required | |
+| **User Permissions** | Set user roles and access | Admin Only | Critical Note must be acknowledged - see Admin Role section |
+| **Implement Change Date** | Schedule changes for future PP Beginning | Admin Only | Changes to starred items must be saved with PP Beginning date |
+| **Email Choices for Users** | Communication permissions | Admin | |
+| **Scenario Sand Box** | Access to experimentation module | Admin/Manager | |
+| **Go To All Data Links** | Navigation | All | |
+| **Log Out** | Session end | All | |
+
+**Features BLOCKED in Demo but available in Full Version:**
+- Location
+- Date, Time and Zone
+- Pay Period Type
+- Last PPE date
+- Pay Day
+- Launch Date
+- Users/Permissions
+- Email permissions
+- Scenario Sand Box
+- Go To All Data Links
 
 ---
 
@@ -1096,6 +1178,24 @@ All requirements derived from:
 3. **Marketing documents:** "Why Tip Share Pro.docx", "History of Tip Pools.docx"
 4. **HTML Mockup:** tip-share-pro-mockup.html (functional prototype)
 5. **Contract:** General Contract for Services dated December 2025
+6. **January 9, 2026 Documentation Package (data/20260109/):**
+   - Rough Flow Chart.pdf - 9-page application flow
+   - Demo - Settings Page.pdf - Demo settings specification
+   - Full Version - Settings Page.pdf - Page 3 full specification
+   - pdf How Demo,Sand Box,Free Trial work.pdf - Data flow rules
+   - pdf Job Categories & Weights.pdf - Detailed weight system
+   - pdf Why Sales as....pdf - Contribution factor rationale
+   - Scenario Sand Box and....pdf - SSB functionality detail
+   - The Admin Role.pdf - Admin responsibilities and compliance
+   - Tim Notes Pg 3 Trial-Full Version.pdf - Critical notes for Page 3
+   - Tim - Scattered General Notes.pdf - Implementation details
+7. **Logo Assets (data/20260109/):**
+   - fulllogo.png - Full logo with text
+   - fulllogo_transparent.png - Transparent background version
+   - icononly_transparent_nobuffer.png - Icon only
+   - textonly.png - Text wordmark only
+8. **Website Screenshots (data/20260109/Screenshots/):**
+   - Current www.tipsharepro.com homepage design reference
 
 ---
 
@@ -1105,6 +1205,7 @@ All requirements derived from:
 |---------|------|--------|---------|
 | 1.0 | 2026-01-08 | PM | Initial comprehensive PRD |
 | 2.0 | 2026-01-09 | PM | Added Tom's feedback: 9-page flow chart, Scenario Sand Box detailed specs, Admin Role specifications, Job Categories & Weights detail, ?Note/!!Note help system, resolved Q&A items, detailed contribution criteria explanation |
+| 3.0 | 2026-01-09 | PM | Comprehensive update from Tom's documentation package: Demo Settings Page specs, Full Version Settings Page specs (Page 3), detailed Tim Notes, General Notes for implementation, Logo assets received, website screenshots analyzed, new design system direction |
 
 ---
 
@@ -1167,5 +1268,146 @@ All requirements derived from:
 - Restaurant/kitchen imagery in hero sections
 
 ---
+
+---
+
+## Appendix F: Implementation Notes from Tom (Tim - Scattered General Notes)
+
+### Application Versioning
+
+| Version | Description | Key Features |
+|---------|-------------|--------------|
+| **Demo** | Marketing/preview tool | No login required, limited features |
+| **Free Trial** | Full Version with expiration | Same as Full Version, countdown timer, data preservation |
+| **Full Version** | Paid subscription | All features unlocked, no end date |
+
+**Important:** There should be NO label called "Free Trial" visible to customers. The Free Trial IS the Full Version but with Pop Up countdown reminders at end of Trial Period reminding them to subscribe or lose data.
+
+### Trial Period Implementation
+
+| Feature | Specification |
+|---------|---------------|
+| Duration | Covers 2 pay periods plus buffer |
+| Countdown Display | Visible to all users |
+| Alert Timing | Last 10 days: daily countdown; Last 5 days: email + text to Admin |
+| End Date | Set by TipSharePro before sending trial |
+| Data Persistence | All data preserved if converted to paid |
+
+### Multi-Location Architecture
+
+- Free Trial/Full Version with single Location is normal
+- Multi-unit operators: One Free Trial/Full Version per location
+- Admin Login/Password with 2FA required for each location's settings
+- User Login/Password opens only assigned location
+
+### Data Entry & Archiving Rules
+
+| Rule | Implementation |
+|------|----------------|
+| Data Correction | Manager/User can only correct CURRENT data for mistakes |
+| Auto Archive | ONE archive event: Day after Pay Day |
+| YTD to EOY | Automatic archiving |
+| Prepaid Entries | Must flow to YTD and EOY totals; reside "outside the normal table" |
+
+### Scenario Sand Box Data Flow
+
+- Day after first Pay Day (after Launch Date): Current settings + distribution table → Scenario Sand Box
+- Repeats after every pay day
+- Purpose: Most recent data available for fixing mistakes and experimenting
+
+### Employee Data Management
+
+| Scenario | Handling |
+|----------|----------|
+| New Employee Entry | Job category chosen, weight auto-filled |
+| Distribution Notice | Job category NOT printed (weights never shown) |
+| Employee Name Change | Program should ask: new, rehired, or name change |
+| Terminated Employee | Archived YTD and EOY data preserved |
+| Multiple Pay Periods | Changes in current period must update next period if already visible |
+
+**Data Entry Restrictions:**
+- Data entry role CANNOT change weights
+- ?NOTE: "Be sure of the job category assigned when entering new employees or when a current employee is promoted, demoted or otherwise job reassigned"
+- ?NOTE: "Mistakes most often repeated: forgetting to enter New Employee, Entering Job Category incorrectly, not being told about Job Category reassignment"
+
+### Session & Security
+
+| Feature | Specification |
+|---------|---------------|
+| Session Timeout | Automatic for inactive user with countdown reminder |
+| 2FA Method | Email or SMS only (no authenticator app - Tom "hates authenticator") |
+| Device Authorization | As specified in security requirements |
+
+### Distribution Table Specifics
+
+- Daily Entry: Pay period total at bottom follows to PP Contribution Sheet
+- Grand Total pool amount auto-fills proper cell on PP Contribution sheet
+- Individual wage criteria NOT included in posted version
+- Job Roles included in Final Posted report
+- Job Weights NOT included in Final Posted report
+- Allow Printing from Scenario Sand Box for evidence documentation
+
+### Change Tracking Requirements
+
+Per Tom: "We need to Log Changes in Admin Settings by date, location, what critical area etc. to Database. Best there be a record of who changed what in an un-editable way."
+
+Purpose: "If someone goes in and changes a variable and thinks it wise to blame my program I can produce the entries through my portal."
+
+---
+
+## Appendix G: Logo & Brand Assets
+
+### Logo Files Received (January 9, 2026)
+
+| File | Description | Use Case |
+|------|-------------|----------|
+| fulllogo.png | Full logo with "TipSharePro.com" text + tagline | Marketing materials, website header |
+| fulllogo_transparent.png | Same as above, transparent background | Over images/colored backgrounds |
+| icononly_transparent_nobuffer.png | Icon mark only (pages + arrow) | App icon, favicon, small displays |
+| textonly.png | Text wordmark "TipSharePro.com" + tagline | Text-only contexts |
+
+### Brand Colors (Extracted from Logo)
+
+| Color | Hex (Approximate) | Usage |
+|-------|-------------------|-------|
+| **Burnt Orange** | #E85D04 | Primary CTA, "TipSharePro" text |
+| **Lime Green** | #82B536 | Success indicators, "POWERFUL * FAIR * TRANSPARENT" tagline |
+| **Navy Blue** | #1A4B7C | Trust elements, depth in pages icon |
+| **Cyan/Light Blue** | #35A0D2 | Accessibility, friendliness, page highlights |
+
+### Tagline
+**"POWERFUL * FAIR * TRANSPARENT"**
+
+---
+
+## Appendix H: Current Website Design Reference
+
+Based on screenshots of www.tipsharepro.com (January 9, 2026):
+
+### Visual Style
+
+| Element | Current Implementation |
+|---------|----------------------|
+| **Hero Section** | Dark background with kitchen imagery, bold white headlines |
+| **Primary CTA** | Burnt orange buttons (#E85D04) |
+| **Typography** | Bold sans-serif headlines, clean body text |
+| **Cards** | White background with subtle shadows on light gray sections |
+| **Icons** | Orange icon badges in feature sections |
+| **Footer** | Dark charcoal with orange accent CTA |
+
+### Content Sections
+
+1. **Hero**: "Get Your BOH a Share They Deserve" with kitchen staff imagery
+2. **How It Works**: 4-step process with numbered icons
+3. **Why Restaurants Choose TipSharePro**: 6 benefit cards (2x3 grid)
+4. **FAQ**: Accordion-style expandable questions
+5. **Request a Demo**: Form with orange submit button
+6. **Footer CTA**: "This Program Will Get $$ to Your Chain of Service"
+
+### Design Direction from Tom
+
+> "Don't get too enamored with the pastel accents... throw in some color or I'll fade off to sleep. Take a look at my Logo. Not bashful."
+
+**Key Takeaway:** The application design should match the BOLD energy of the current website and logo - not pastel or muted.
 
 *This document is ready for stakeholder review. All specifications meet the standards of being unambiguous, testable, traceable, complete, and feasible.*

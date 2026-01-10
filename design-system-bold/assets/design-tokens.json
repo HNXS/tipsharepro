@@ -1,0 +1,439 @@
+{
+  "$schema": "https://design-tokens.org/schema",
+  "name": "TipSharePro Design Tokens",
+  "version": "1.0.0",
+  "description": "Design tokens for the TipSharePro Bold design system",
+  "lastUpdated": "2026-01-10",
+
+  "colors": {
+    "brand": {
+      "primary": {
+        "value": "#E85D04",
+        "description": "Burnt Orange - Primary brand color, CTAs, links"
+      },
+      "primary-hover": {
+        "value": "#D45203",
+        "description": "Darker orange for hover states"
+      },
+      "primary-light": {
+        "value": "#FFF7ED",
+        "description": "Light orange for backgrounds"
+      },
+      "secondary": {
+        "value": "#1A4B7C",
+        "description": "Navy Blue - Secondary brand color, headers"
+      },
+      "secondary-hover": {
+        "value": "#153D66",
+        "description": "Darker navy for hover states"
+      },
+      "accent": {
+        "value": "#35A0D2",
+        "description": "Cyan - Accent color, info states"
+      },
+      "accent-light": {
+        "value": "#E8F4FA",
+        "description": "Light cyan for backgrounds"
+      }
+    },
+    "semantic": {
+      "success": {
+        "value": "#82B536",
+        "description": "Lime Green - Success states, positive"
+      },
+      "success-light": {
+        "value": "#F0F7E6",
+        "description": "Light green for backgrounds"
+      },
+      "warning": {
+        "value": "#F59E0B",
+        "description": "Amber - Warning states, caution"
+      },
+      "warning-light": {
+        "value": "#FEF3C7",
+        "description": "Light amber for backgrounds"
+      },
+      "error": {
+        "value": "#DC2626",
+        "description": "Red - Error states, destructive"
+      },
+      "error-light": {
+        "value": "#FEE2E2",
+        "description": "Light red for backgrounds"
+      }
+    },
+    "neutral": {
+      "white": {
+        "value": "#FFFFFF",
+        "description": "Pure white - backgrounds"
+      },
+      "stone": {
+        "value": "#F5F5F4",
+        "description": "Light gray - subtle backgrounds"
+      },
+      "fog": {
+        "value": "#E5E5E5",
+        "description": "Border color"
+      },
+      "charcoal": {
+        "value": "#292524",
+        "description": "Near black - primary text"
+      }
+    },
+    "text": {
+      "primary": {
+        "value": "#292524",
+        "description": "Primary text color"
+      },
+      "secondary": {
+        "value": "#57534E",
+        "description": "Secondary text color"
+      },
+      "muted": {
+        "value": "#78716C",
+        "description": "Muted text color"
+      },
+      "inverse": {
+        "value": "#FFFFFF",
+        "description": "Text on dark backgrounds"
+      }
+    },
+    "badge": {
+      "server": {
+        "value": "#35A0D2",
+        "description": "Server badge color"
+      },
+      "bartender": {
+        "value": "#1A4B7C",
+        "description": "Bartender badge color"
+      },
+      "cook": {
+        "value": "#F59E0B",
+        "description": "Cook badge color"
+      },
+      "busser": {
+        "value": "#82B536",
+        "description": "Busser badge color"
+      },
+      "host": {
+        "value": "#7C3AED",
+        "description": "Host badge color"
+      }
+    }
+  },
+
+  "typography": {
+    "fontFamily": {
+      "primary": {
+        "value": "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        "description": "Primary font for UI text"
+      },
+      "mono": {
+        "value": "'JetBrains Mono', 'SF Mono', 'Consolas', monospace",
+        "description": "Monospace font for numbers and code"
+      }
+    },
+    "fontSize": {
+      "xs": {
+        "value": "0.75rem",
+        "description": "12px - Captions, badges"
+      },
+      "sm": {
+        "value": "0.875rem",
+        "description": "14px - Secondary text"
+      },
+      "base": {
+        "value": "1rem",
+        "description": "16px - Body text"
+      },
+      "lg": {
+        "value": "1.125rem",
+        "description": "18px - Large body"
+      },
+      "xl": {
+        "value": "1.25rem",
+        "description": "20px - H4 headings"
+      },
+      "2xl": {
+        "value": "1.5rem",
+        "description": "24px - H3 headings"
+      },
+      "3xl": {
+        "value": "2rem",
+        "description": "32px - H2 headings"
+      },
+      "4xl": {
+        "value": "2.5rem",
+        "description": "40px - H1 headings"
+      },
+      "5xl": {
+        "value": "3rem",
+        "description": "48px - Display text"
+      }
+    },
+    "fontWeight": {
+      "normal": {
+        "value": "400",
+        "description": "Normal weight"
+      },
+      "medium": {
+        "value": "500",
+        "description": "Medium weight"
+      },
+      "semibold": {
+        "value": "600",
+        "description": "Semibold weight"
+      },
+      "bold": {
+        "value": "700",
+        "description": "Bold weight"
+      },
+      "extrabold": {
+        "value": "800",
+        "description": "Extra bold weight"
+      }
+    },
+    "lineHeight": {
+      "tight": {
+        "value": "1.1",
+        "description": "Headings"
+      },
+      "snug": {
+        "value": "1.25",
+        "description": "Subheadings"
+      },
+      "normal": {
+        "value": "1.5",
+        "description": "Body text"
+      },
+      "relaxed": {
+        "value": "1.625",
+        "description": "Long form content"
+      }
+    },
+    "letterSpacing": {
+      "tight": {
+        "value": "-0.02em",
+        "description": "Headings"
+      },
+      "normal": {
+        "value": "0",
+        "description": "Body text"
+      },
+      "wide": {
+        "value": "0.03em",
+        "description": "Labels, badges"
+      },
+      "wider": {
+        "value": "0.05em",
+        "description": "Uppercase labels"
+      }
+    }
+  },
+
+  "spacing": {
+    "0": {
+      "value": "0",
+      "description": "No spacing"
+    },
+    "1": {
+      "value": "0.25rem",
+      "description": "4px"
+    },
+    "2": {
+      "value": "0.5rem",
+      "description": "8px"
+    },
+    "3": {
+      "value": "0.75rem",
+      "description": "12px"
+    },
+    "4": {
+      "value": "1rem",
+      "description": "16px"
+    },
+    "5": {
+      "value": "1.25rem",
+      "description": "20px"
+    },
+    "6": {
+      "value": "1.5rem",
+      "description": "24px"
+    },
+    "7": {
+      "value": "2rem",
+      "description": "32px"
+    },
+    "8": {
+      "value": "2.5rem",
+      "description": "40px"
+    },
+    "9": {
+      "value": "3rem",
+      "description": "48px"
+    },
+    "10": {
+      "value": "4rem",
+      "description": "64px"
+    },
+    "11": {
+      "value": "5rem",
+      "description": "80px"
+    },
+    "12": {
+      "value": "6rem",
+      "description": "96px"
+    }
+  },
+
+  "borderRadius": {
+    "none": {
+      "value": "0",
+      "description": "No rounding"
+    },
+    "sm": {
+      "value": "4px",
+      "description": "Small elements"
+    },
+    "md": {
+      "value": "8px",
+      "description": "Buttons, inputs"
+    },
+    "lg": {
+      "value": "12px",
+      "description": "Cards, containers"
+    },
+    "xl": {
+      "value": "16px",
+      "description": "Large cards, modals"
+    },
+    "full": {
+      "value": "9999px",
+      "description": "Pills, badges"
+    }
+  },
+
+  "shadow": {
+    "none": {
+      "value": "none",
+      "description": "No shadow"
+    },
+    "sm": {
+      "value": "0 1px 2px rgba(0, 0, 0, 0.05)",
+      "description": "Subtle shadow"
+    },
+    "md": {
+      "value": "0 1px 3px rgba(0, 0, 0, 0.1)",
+      "description": "Default shadow"
+    },
+    "lg": {
+      "value": "0 4px 12px rgba(0, 0, 0, 0.15)",
+      "description": "Elevated shadow"
+    },
+    "xl": {
+      "value": "0 10px 25px rgba(0, 0, 0, 0.2)",
+      "description": "Modal shadow"
+    },
+    "primary": {
+      "value": "0 4px 12px rgba(232, 93, 4, 0.15)",
+      "description": "Primary button hover"
+    },
+    "focus": {
+      "value": "0 0 0 3px rgba(232, 93, 4, 0.2)",
+      "description": "Focus ring"
+    }
+  },
+
+  "animation": {
+    "duration": {
+      "instant": {
+        "value": "0ms",
+        "description": "No animation"
+      },
+      "fast": {
+        "value": "100ms",
+        "description": "Quick transitions"
+      },
+      "normal": {
+        "value": "150ms",
+        "description": "Standard transitions"
+      },
+      "slow": {
+        "value": "200ms",
+        "description": "Deliberate transitions"
+      },
+      "slower": {
+        "value": "300ms",
+        "description": "Complex animations"
+      }
+    },
+    "easing": {
+      "linear": {
+        "value": "linear",
+        "description": "Constant speed"
+      },
+      "ease-out": {
+        "value": "cubic-bezier(0, 0, 0.2, 1)",
+        "description": "Decelerate - default"
+      },
+      "ease-in": {
+        "value": "cubic-bezier(0.4, 0, 1, 1)",
+        "description": "Accelerate"
+      },
+      "ease-in-out": {
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "description": "Symmetric"
+      }
+    }
+  },
+
+  "breakpoints": {
+    "sm": {
+      "value": "640px",
+      "description": "Small devices (phones landscape)"
+    },
+    "md": {
+      "value": "768px",
+      "description": "Medium devices (tablets)"
+    },
+    "lg": {
+      "value": "1024px",
+      "description": "Large devices (desktops)"
+    },
+    "xl": {
+      "value": "1280px",
+      "description": "Extra large devices"
+    }
+  },
+
+  "zIndex": {
+    "dropdown": {
+      "value": "10",
+      "description": "Dropdown menus"
+    },
+    "sticky": {
+      "value": "20",
+      "description": "Sticky headers"
+    },
+    "fixed": {
+      "value": "30",
+      "description": "Fixed elements"
+    },
+    "modal-backdrop": {
+      "value": "40",
+      "description": "Modal overlay"
+    },
+    "modal": {
+      "value": "50",
+      "description": "Modal content"
+    },
+    "popover": {
+      "value": "60",
+      "description": "Popovers, tooltips"
+    },
+    "toast": {
+      "value": "70",
+      "description": "Toast notifications"
+    }
+  }
+}

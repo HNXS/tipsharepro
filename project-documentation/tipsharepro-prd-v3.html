@@ -1,0 +1,2244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TipSharePro - Product Requirements Document v3.0</title>
+    <link rel="icon" type="image/png" href="../data/20260109/icononly_transparent_nobuffer.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Bold Design System Colors */
+            --primary: #E85D04;
+            --primary-hover: #D14D00;
+            --primary-light: #FFF3E6;
+            --secondary: #1A4B7C;
+            --secondary-hover: #153D66;
+            --secondary-light: #E6EEF5;
+            --success: #82B536;
+            --success-light: #F0F7E6;
+            --accent: #35A0D2;
+            --accent-light: #E6F4FA;
+            --warning: #F59E0B;
+            --warning-light: #FFFBEB;
+            --error: #DC2626;
+            --error-light: #FEF2F2;
+
+            /* Foundation */
+            --charcoal: #1F2937;
+            --slate: #374151;
+            --graphite: #4B5563;
+            --white: #FFFFFF;
+            --snow: #FAFAFA;
+            --stone: #F5F5F4;
+            --fog: #E5E5E5;
+
+            /* Text */
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --text-muted: #9CA3AF;
+
+            /* Typography */
+            --font-primary: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--snow);
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        /* Header */
+        .doc-header {
+            background: linear-gradient(135deg, var(--charcoal) 0%, var(--slate) 100%);
+            color: white;
+            padding: 64px 32px;
+            text-align: center;
+            position: relative;
+        }
+
+        .doc-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+
+        .doc-header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-logo {
+            max-width: 400px;
+            width: 100%;
+            height: auto;
+            margin-bottom: 16px;
+        }
+
+        .doc-header .subtitle {
+            font-size: 1.5rem;
+            font-weight: 400;
+            opacity: 0.9;
+            margin-bottom: 24px;
+        }
+
+        .doc-meta {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .doc-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tagline {
+            display: inline-flex;
+            gap: 12px;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--success);
+            letter-spacing: 0.05em;
+            margin-top: 24px;
+        }
+
+        .tagline span {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Navigation */
+        .toc {
+            background: var(--white);
+            border-bottom: 1px solid var(--fog);
+            padding: 16px 32px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .toc-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .toc a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 6px;
+            transition: all 0.15s ease-out;
+        }
+
+        .toc a:hover {
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 48px 32px;
+        }
+
+        /* Sections */
+        section {
+            margin-bottom: 64px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--charcoal);
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 4px solid var(--primary);
+            letter-spacing: -0.01em;
+        }
+
+        h3 {
+            font-size: 1.375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 32px 0 16px 0;
+        }
+
+        h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--secondary);
+            margin: 24px 0 12px 0;
+        }
+
+        h5 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 16px 0 8px 0;
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+        }
+
+        strong {
+            color: var(--text-primary);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--fog);
+        }
+
+        .card.highlight {
+            border-left: 4px solid var(--primary);
+        }
+
+        .card.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .card.warning {
+            border-left: 4px solid var(--warning);
+            background: var(--warning-light);
+        }
+
+        .card.info {
+            border-left: 4px solid var(--accent);
+            background: var(--accent-light);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            background: var(--white);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background: var(--secondary);
+            color: white;
+            text-align: left;
+            padding: 12px 16px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--fog);
+            color: var(--text-primary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: var(--primary-light);
+        }
+
+        /* Priority Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .badge.p0 {
+            background: var(--error-light);
+            color: #991b1b;
+        }
+
+        .badge.p1 {
+            background: var(--warning-light);
+            color: #92400e;
+        }
+
+        .badge.p2 {
+            background: var(--accent-light);
+            color: #1e40af;
+        }
+
+        .badge.success {
+            background: var(--success-light);
+            color: #065f46;
+        }
+
+        .badge.server { background: var(--accent-light); color: var(--accent); }
+        .badge.cook { background: var(--warning-light); color: #B45309; }
+        .badge.busser { background: var(--success-light); color: var(--success); }
+        .badge.host { background: #F3E8FF; color: #7C3AED; }
+        .badge.bartender { background: var(--secondary-light); color: var(--secondary); }
+
+        /* Feature Cards */
+        .feature-card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+            overflow: hidden;
+            border: 1px solid var(--fog);
+        }
+
+        .feature-header {
+            background: var(--stone);
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--fog);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .feature-header h4 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .feature-body {
+            padding: 24px;
+        }
+
+        .feature-section {
+            margin-bottom: 20px;
+        }
+
+        .feature-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .feature-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        /* User Story */
+        .user-story {
+            background: var(--primary-light);
+            padding: 16px;
+            border-radius: 8px;
+            font-style: italic;
+            border-left: 4px solid var(--primary);
+            color: var(--text-primary);
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: var(--charcoal);
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            overflow-x: auto;
+            white-space: pre;
+            line-height: 1.5;
+            margin: 16px 0;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 16px 0;
+            padding-left: 24px;
+        }
+
+        li {
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        li strong {
+            color: var(--text-primary);
+        }
+
+        /* Checkboxes */
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .checklist li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--fog);
+        }
+
+        .checklist li:last-child {
+            border-bottom: none;
+        }
+
+        .check-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+            font-weight: 700;
+        }
+
+        .check-icon.checked {
+            background: var(--success);
+            color: white;
+        }
+
+        .check-icon.unchecked {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        /* Permissions Matrix */
+        .permission-yes {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .permission-no {
+            color: var(--error);
+            font-weight: 600;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid var(--fog);
+            transition: border-color 0.15s ease-out;
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary);
+        }
+
+        .stat-value {
+            font-family: var(--font-mono);
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        /* Phase Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 32px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--fog);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 32px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -28px;
+            top: 4px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 3px solid var(--white);
+            box-shadow: 0 0 0 3px var(--primary);
+        }
+
+        .timeline-item.completed::before {
+            background: var(--success);
+            box-shadow: 0 0 0 3px var(--success);
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .timeline-item p {
+            margin-bottom: 0;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 16px 0;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .alert.info {
+            background: var(--accent-light);
+            border: 1px solid var(--accent);
+            color: var(--secondary);
+        }
+
+        .alert.warning {
+            background: var(--warning-light);
+            border: 1px solid var(--warning);
+            color: #92400e;
+        }
+
+        .alert.error {
+            background: var(--error-light);
+            border: 1px solid var(--error);
+            color: #991b1b;
+        }
+
+        .alert.success {
+            background: var(--success-light);
+            border: 1px solid var(--success);
+            color: #065f46;
+        }
+
+        .alert-icon {
+            font-size: 1.25rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .alert p {
+            margin: 0;
+            color: inherit;
+        }
+
+        /* Note Types */
+        .note-example {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+            border: 1px solid var(--fog);
+        }
+
+        .note-example.question-note {
+            border-left: 4px solid var(--warning);
+            background: var(--warning-light);
+        }
+
+        .note-example.critical-note {
+            border-left: 4px solid var(--error);
+            background: var(--error-light);
+        }
+
+        .note-label {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .note-label.question { color: #B45309; }
+        .note-label.critical { color: #991b1b; }
+
+        /* Grid layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Blockquote */
+        blockquote {
+            background: var(--stone);
+            border-left: 4px solid var(--primary);
+            padding: 16px 20px;
+            margin: 16px 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+
+        blockquote p {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        blockquote cite {
+            display: block;
+            margin-top: 8px;
+            font-style: normal;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Footer */
+        .doc-footer {
+            background: var(--charcoal);
+            color: white;
+            padding: 48px 32px;
+            text-align: center;
+            margin-top: 64px;
+        }
+
+        .doc-footer .brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .doc-footer .brand .accent {
+            color: var(--primary);
+        }
+
+        .doc-footer p {
+            margin-bottom: 8px;
+            opacity: 0.7;
+            color: white;
+        }
+
+        .doc-footer .version {
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            margin-top: 16px;
+            opacity: 0.5;
+        }
+
+        /* Print Styles */
+        @media print {
+            .toc {
+                display: none;
+            }
+
+            .doc-header {
+                background: var(--charcoal) !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 24px;
+            }
+
+            .card, .feature-card {
+                break-inside: avoid;
+            }
+
+            table {
+                break-inside: avoid;
+            }
+
+            section {
+                break-before: page;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .doc-header {
+                padding: 40px 16px;
+            }
+
+            .header-logo {
+                max-width: 280px;
+            }
+
+            .doc-meta {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .container {
+                padding: 24px 16px;
+            }
+
+            .toc {
+                display: none;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 8px 12px;
+            }
+
+            .code-block {
+                font-size: 0.75rem;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="doc-header">
+        <div class="doc-header-content">
+            <img src="../data/20260109/fulllogo_transparent.png" alt="TipSharePro - Powerful * Fair * Transparent" class="header-logo">
+            <p class="subtitle">Product Requirements Document</p>
+            <div class="doc-meta">
+                <span><strong>Version 3.0</strong></span>
+                <span>January 9, 2026</span>
+                <span>Client: Tom LaChaussee</span>
+                <span>Developer: Tim Heineccius</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Table of Contents -->
+    <nav class="toc">
+        <div class="toc-inner">
+            <a href="#executive-summary">Executive Summary</a>
+            <a href="#problem-analysis">Problem Analysis</a>
+            <a href="#application-flow">Application Flow</a>
+            <a href="#settings-pages">Settings Pages</a>
+            <a href="#features">Features</a>
+            <a href="#admin-role">Admin Role</a>
+            <a href="#job-categories">Job Categories</a>
+            <a href="#requirements">Requirements</a>
+            <a href="#database">Database</a>
+            <a href="#phases">Phases</a>
+            <a href="#appendices">Appendices</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Executive Summary -->
+        <section id="executive-summary">
+            <h2>Executive Summary</h2>
+
+            <div class="card highlight">
+                <div class="card-title">Elevator Pitch</div>
+                <p style="margin-bottom: 0;"><strong>TipSharePro</strong> is a fair tip distribution calculator that helps restaurants split pooled tips based on each employee's hours, pay rate, and job impact - making everyone's share transparent and compliant.</p>
+            </div>
+
+            <h3>Problem Statement</h3>
+            <p>Restaurant tip pooling is broken. Existing methods either treat all employees equally regardless of contribution (unfair to high performers), exclude kitchen staff entirely (illegal in many states), or expose servers to unnecessary tax burden because contributions aren't properly tracked. Restaurant managers lack the tools to create fair, transparent, legally defensible tip distributions that satisfy both the Department of Labor and the IRS.</p>
+
+            <h3>Target Audience</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Segment</th>
+                        <th>Description</th>
+                        <th>Pain Points</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Primary: Restaurant Owners</strong></td>
+                        <td>Multi-location and single-location operators</td>
+                        <td>Need compliance, fairness, retention tool, operational efficiency</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Secondary: Restaurant Managers</strong></td>
+                        <td>Day-to-day operations, scheduling, payroll</td>
+                        <td>Need simple data entry, clear reports, staff transparency</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tertiary: Restaurant Staff</strong></td>
+                        <td>Servers, cooks, bussers, hosts</td>
+                        <td>Want fair compensation, visibility into distribution, tax documentation</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Unique Selling Proposition</h3>
+            <div class="card success">
+                <p style="margin-bottom: 0;">TipSharePro uses a proprietary <strong>Hours x Rate x Variable Weight</strong> algorithm that ensures distributions are fair, legal, and tax-efficient - while keeping the calculation hidden so competitors can't replicate it.</p>
+            </div>
+
+            <h4>Key Differentiators</h4>
+            <ul>
+                <li><strong>Sales-based contributions</strong> (same method IRS uses) - not percentage of tips</li>
+                <li><strong>Hidden algorithm</strong> (the "Basis" calculation is never shown to users)</li>
+                <li><strong>Tax benefit tracking</strong> - servers get credit for contributions, reducing taxable income</li>
+                <li><strong>Multi-tenant SaaS</strong> - each restaurant is isolated, but owners can view all locations</li>
+                <li><strong>Scenario Sand Box</strong> - test changes without affecting live data</li>
+            </ul>
+
+            <h3>Success Metrics</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">50</div>
+                    <div class="stat-label">Paid Locations Year 1</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">>90%</div>
+                    <div class="stat-label">Monthly Retention</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">80%</div>
+                    <div class="stat-label">Trial Activation</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value"><30m</div>
+                    <div class="stat-label">Time to Value</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Problem Analysis -->
+        <section id="problem-analysis">
+            <h2>Problem Analysis</h2>
+
+            <h3>What Specific Problem Does This Solve?</h3>
+
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-title">For Restaurant Owners</div>
+                    <ul>
+                        <li>Compliance risk with DOL regulations</li>
+                        <li>Inability to defend tip pooling if challenged</li>
+                        <li>Staff retention issues due to compensation disparity</li>
+                        <li>No visibility across multiple locations</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">For Managers</div>
+                    <ul>
+                        <li>Time-consuming manual Excel calculations</li>
+                        <li>Errors leading to staff disputes</li>
+                        <li>No audit trail for data changes</li>
+                        <li>Difficulty explaining distribution logic</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">For Staff</div>
+                    <ul>
+                        <li>Unfair distribution methods</li>
+                        <li>No transparency in calculations</li>
+                        <li>Servers taxed on money they give away</li>
+                        <li>Kitchen staff excluded from tips</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Why Is This the Right Solution?</h3>
+
+            <div class="alert info">
+                <span class="alert-icon">i</span>
+                <div>
+                    <p><strong>Validated by Experience:</strong> Tom LaChaussee used this system for 12 years across multiple restaurant locations. The Excel-based version worked but wasn't scalable or sellable.</p>
+                </div>
+            </div>
+
+            <h4>Alternatives Considered</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Alternative</th>
+                        <th>Why Rejected</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Enhanced Excel</td>
+                        <td>Not scalable, formulas exposed, no multi-user support</td>
+                    </tr>
+                    <tr>
+                        <td>Enterprise payroll add-on</td>
+                        <td>Too expensive, overkill for single locations</td>
+                    </tr>
+                    <tr>
+                        <td>Equal-split apps</td>
+                        <td>Don't address fairness or compliance needs</td>
+                    </tr>
+                    <tr>
+                        <td>Custom development per client</td>
+                        <td>Not scalable as a business</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Application Flow -->
+        <section id="application-flow">
+            <h2>Application Page Flow (9 Pages)</h2>
+
+            <p>Based on Tom's flow chart, the full application consists of 9 pages:</p>
+
+            <div class="code-block">┌─────────────────────────────────────────────────────────────────────────┐
+│                        FULL APPLICATION FLOW                            │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  PAGE 1: Login                    PAGE 2: Navigation Hub               │
+│  ┌─────────────────┐              ┌─────────────────────┐              │
+│  │ TipSharePro     │              │ Where to Next?      │              │
+│  │ Logo            │              │ - All Page Links    │              │
+│  │                 │      →       │ - By Log In         │              │
+│  │ Log In:         │              │   Permissions       │              │
+│  │ Password:       │              │ - Data & Archived   │              │
+│  └─────────────────┘              └─────────────────────┘              │
+│           │                                │                           │
+│           ▼                                ▼                           │
+│  PAGE 3: Settings                 PAGE 4: Scenario Sand Box            │
+│  ┌─────────────────┐              ┌─────────────────────┐              │
+│  │ Admin Only or   │              │ New Scenario        │              │
+│  │ Designee w/     │              │ Sand Box            │              │
+│  │ Permission      │              │ Admin Only or       │              │
+│  └─────────────────┘              │ Designee w/Perm     │              │
+│                                   └─────────────────────┘              │
+│           │                                                            │
+│           ▼                                                            │
+│  PAGE 5: Daily Contributions      PAGE 6: PPE Contributions Log        │
+│  ┌─────────────────┐              ┌─────────────────────┐              │
+│  │ Daily           │              │ PPE                 │              │
+│  │ Contributions   │      →       │ Contributions Log   │              │
+│  │ Log             │              │ Some Auto Fill      │              │
+│  │ Some Auto Fill  │              │ Some Data Entry     │              │
+│  │ Data Entry      │              │ All Permissions     │              │
+│  │ All Permissions │              └─────────────────────┘              │
+│  └─────────────────┘                       │                           │
+│                                            ▼                           │
+│  PAGE 7: PPE Distribution         PAGE 8: YTD Data                     │
+│  ┌─────────────────┐              ┌─────────────────────┐              │
+│  │ PPE             │              │ YTD Data            │              │
+│  │ Distribution    │      →       │ Contributions &     │              │
+│  │ Log             │              │ Distributions       │              │
+│  │ Some Auto Fill  │              │ All Auto Fill       │              │
+│  │ Data Entry      │              │ All Permissions     │              │
+│  │ All Permissions │              │ Print For Payroll & │              │
+│  └─────────────────┘              │ Auto Archive at EOY │              │
+│                                   └─────────────────────┘              │
+│                                            │                           │
+│                                            ▼                           │
+│                          PAGE 9: All Allocations                       │
+│                          ┌─────────────────────┐                       │
+│                          │ All Allocations     │                       │
+│                          │ Contributors and    │                       │
+│                          │ Recipients          │                       │
+│                          │ Some Auto Fill      │                       │
+│                          │ Some Data Entry     │                       │
+│                          │ All Permissions     │                       │
+│                          │ PDF Library         │                       │
+│                          └─────────────────────┘                       │
+└─────────────────────────────────────────────────────────────────────────┘</div>
+
+            <h3>Demo Application Flow (Simplified)</h3>
+            <div class="card">
+                <div class="code-block" style="margin: 0;">Page 1: Login (supplied by TipSharePro)
+    ↓
+Page 2: Settings (limited version of Page 3)
+    ↓
+Page 3: Distribution Table (scaled back version)</div>
+            </div>
+
+            <h3>Feature Overview Map</h3>
+            <div class="code-block">DEMO (Phase 1)          FREE TRIAL (Phase 2)        FULL VERSION (Phase 3)
+------------------      --------------------        ---------------------
+Settings Preview        All Demo Features +         All Free Trial Features +
+Data Entry Demo         Real Authentication         Payment Processing
+Results Preview         2FA Security                Multi-Location Support
+No Login Required       Cloud Storage               YTD Archiving
+Limited Functionality   Full Calculations           W2 Reporting
+Marketing Tool          45-Day Trial                Admin Command Center
+                        Scenario Sand Box           Expert Portal</div>
+        </section>
+
+        <!-- Settings Pages -->
+        <section id="settings-pages">
+            <h2>Settings Page Specifications</h2>
+
+            <h3>Demo Settings Page</h3>
+            <p>The Demo Settings page is a limited version of Page 3 with some tabs/links blocked.</p>
+
+            <div class="card info">
+                <p style="margin-bottom: 0;"><strong>Access Method:</strong> Open by double clicking the App icon (see Logo). First page is simple Log In/Password supplied by TipSharePro. Next page in Demo is Settings Page.</p>
+            </div>
+
+            <p><strong>Welcome Display:</strong> "Welcome Admin (Name of Contact & Company)"</p>
+
+            <h4>Settings Steps</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Step</th>
+                        <th>Tab/Feature</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Step 1</strong></td>
+                        <td>Method for Contribution %</td>
+                        <td>Check box for: CC Sales, CC Tips, All Tips, or All Sales</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Step 2</strong></td>
+                        <td>Estimate Monthly $ Amount</td>
+                        <td>Open entry box (whole dollars)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Step 3</strong></td>
+                        <td>Enter Contribution %</td>
+                        <td>Dropdown varies by Step 1 choice</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Step 4</strong></td>
+                        <td>Enter Job Categories</td>
+                        <td>Checkbox selection from predefined list + 5 write-ins</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Step 5</strong></td>
+                        <td>Job Category Weights</td>
+                        <td>Dropdown 1-5 in 0.25 increments per category</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Step 3 Contribution % Logic</h4>
+            <ul>
+                <li>If CC Sales, CC Tips, or All Tips selected: Dropdown of <strong>5-25% in 0.5 increments</strong> of Tips Only</li>
+                <li>If All Sales selected: Dropdown of <strong>1-5% in 0.25 increments</strong> of (adj) Sales</li>
+            </ul>
+
+            <h3>Help System: ?Notes and !!Notes</h3>
+            <p>The application uses two types of contextual help:</p>
+
+            <div class="grid-2">
+                <div class="note-example question-note">
+                    <div class="note-label question">?Note (Informational)</div>
+                    <p style="margin-bottom: 0;">Yellow highlighted "?" - Hover tooltip with explanation. Used for general help and recommendations.</p>
+                </div>
+                <div class="note-example critical-note">
+                    <div class="note-label critical">!!Note (Critical)</div>
+                    <p style="margin-bottom: 0;">Red/orange highlighted "!!" - Modal with "I Have Read and Agree" checkbox required before proceeding.</p>
+                </div>
+            </div>
+
+            <h3>Full Version Settings Page (Page 3)</h3>
+            <p><strong>Access Control:</strong> Admin Only or by Permissions - requires Admin Login/Password with 2FA</p>
+
+            <div class="alert warning">
+                <span class="alert-icon">!!</span>
+                <div>
+                    <p><strong>Important Note for Admin (First Visit):</strong> "It is highly recommended that you take time to Read about the Powerful features of the SCENARIO SAND BOX. If you started with DEMO and are happy with the Data you entered, the Data can be uploaded to SCENARIO SAND BOX."</p>
+                </div>
+            </div>
+
+            <h4>Settings Tabs - Full Version</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tab</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Locations</strong></td>
+                        <td>Force completion of location data on first entry</td>
+                        <td>Required First</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Choose Location</strong></td>
+                        <td>Dropdown to select location</td>
+                        <td>Display</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Date, Time and Zone</strong></td>
+                        <td>System date/time settings</td>
+                        <td>Required</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Set Launch Date</strong></td>
+                        <td>First Day of First Pay Period collecting contributions</td>
+                        <td>Required</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Pay Periods</strong></td>
+                        <td>Weekly, Bi-Weekly, BiMonthly, Monthly</td>
+                        <td>Required</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Last PPE Date</strong></td>
+                        <td>Establishes spread of dates</td>
+                        <td>Required</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Enter Pay Days</strong></td>
+                        <td>Day of week or days of month</td>
+                        <td>Required</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Set Contribution Criteria</strong></td>
+                        <td>CC Sales, CC Tips, All Tips, or All Sales</td>
+                        <td>Required</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Enter Contribution %</strong></td>
+                        <td>Based on criteria above</td>
+                        <td>Required</td>
+                    </tr>
+                    <tr>
+                        <td><strong>User Permissions</strong></td>
+                        <td>Set user roles and access</td>
+                        <td>Admin Only</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Implement Change Date</strong></td>
+                        <td>Schedule changes for future PP Beginning</td>
+                        <td>Admin Only</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Scenario Sand Box</strong></td>
+                        <td>Access to experimentation module</td>
+                        <td>Admin/Manager</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Features BLOCKED in Demo (Available in Full Version)</h4>
+            <ul>
+                <li>Location settings</li>
+                <li>Date, Time and Zone</li>
+                <li>Pay Period Type</li>
+                <li>Last PPE date</li>
+                <li>Pay Day</li>
+                <li>Launch Date</li>
+                <li>Users/Permissions</li>
+                <li>Email permissions</li>
+                <li>Scenario Sand Box</li>
+                <li>Go To All Data Links</li>
+            </ul>
+        </section>
+
+        <!-- Features -->
+        <section id="features">
+            <h2>Feature Specifications</h2>
+
+            <h3>P0 Features (Must Have - MVP)</h3>
+
+            <!-- Feature 1 -->
+            <div class="feature-card">
+                <div class="feature-header">
+                    <h4>Feature 1: Core Tip Calculation Engine</h4>
+                    <span class="badge p0">P0 - Critical</span>
+                </div>
+                <div class="feature-body">
+                    <div class="feature-section">
+                        <div class="feature-label">User Story</div>
+                        <div class="user-story">
+                            As a restaurant manager, I want to enter daily contribution data and have the system automatically calculate each employee's share of the tip pool, so that I can distribute tips fairly and efficiently.
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-label">Acceptance Criteria</div>
+                        <ul>
+                            <li>Given a list of employees with hours worked, pay rates, and job categories</li>
+                            <li>When the manager triggers calculation</li>
+                            <li>Then the system computes each employee's share using Hours x Rate x Weight</li>
+                            <li>And the total shares equal exactly the total pool amount (no rounding errors)</li>
+                            <li><strong>And the "Basis" value is never displayed to any user</strong></li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-label">Edge Cases</div>
+                        <ul>
+                            <li>Employee with 0 hours = $0 share (no division by zero)</li>
+                            <li>Single employee = 100% of pool</li>
+                            <li>Pool amount of $0 = all shares $0</li>
+                            <li>Decimal rounding must reconcile to exact total (adjust smallest share if needed)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="feature-card">
+                <div class="feature-header">
+                    <h4>Feature 2: Daily Contribution Entry</h4>
+                    <span class="badge p0">P0 - Critical</span>
+                </div>
+                <div class="feature-body">
+                    <div class="feature-section">
+                        <div class="feature-label">User Story</div>
+                        <div class="user-story">
+                            As a data entry designee, I want to quickly enter each server's daily sales and tip contribution, so that the pay period totals are accurate.
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-label">Acceptance Criteria</div>
+                        <ul>
+                            <li>Date navigator (previous/next day buttons)</li>
+                            <li>Enter server sales amounts, system calculates contribution at configured rate</li>
+                            <li>Allow override with actual contribution amount</li>
+                            <li>"Actual Contribution" is what enters the pool (not calculated)</li>
+                            <li>Running totals updated in real-time</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="feature-card">
+                <div class="feature-header">
+                    <h4>Feature 3: Pay Period Summary</h4>
+                    <span class="badge p0">P0 - Critical</span>
+                </div>
+                <div class="feature-body">
+                    <div class="feature-section">
+                        <div class="feature-label">User Story</div>
+                        <div class="user-story">
+                            As a manager, I want to see all server contributions for a pay period in one view, so that I can verify totals before calculating distribution.
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-label">Acceptance Criteria</div>
+                        <ul>
+                            <li>Grid showing servers in rows with totals column</li>
+                            <li>Each server's total sales, calculated contribution, and actual contribution</li>
+                            <li>"Attested" column with checkmark + initials</li>
+                            <li>Print button generates PDF without wage data</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="feature-card">
+                <div class="feature-header">
+                    <h4>Feature 4: Pool Distribution Report</h4>
+                    <span class="badge p0">P0 - Critical</span>
+                </div>
+                <div class="feature-body">
+                    <div class="feature-section">
+                        <div class="feature-label">User Story</div>
+                        <div class="user-story">
+                            As a restaurant owner, I want to see how the tip pool is distributed to each employee, so that I can verify fairness and post for staff review.
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-label">Key Requirements</div>
+                        <ul>
+                            <li>Employee name, location, role, hours, rate, share %, share amount</li>
+                            <li><strong>NO "Basis" column ever shown</strong> (proprietary algorithm)</li>
+                            <li>"Received" column shows whole-dollar amounts</li>
+                            <li>PDF print hides wage column (confidential)</li>
+                            <li>Role badges with color coding</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-label">Role Badge Colors</div>
+                        <p style="margin-bottom: 8px;">
+                            <span class="badge server">Server</span>
+                            <span class="badge bartender">Bartender</span>
+                            <span class="badge cook">Cook</span>
+                            <span class="badge busser">Busser</span>
+                            <span class="badge host">Host</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="feature-card">
+                <div class="feature-header">
+                    <h4>Feature 5: Settings Configuration</h4>
+                    <span class="badge p0">P0 - Critical</span>
+                </div>
+                <div class="feature-body">
+                    <div class="feature-section">
+                        <div class="feature-label">User Story</div>
+                        <div class="user-story">
+                            As an admin, I want to configure contribution rates, job categories, and weights, so that the system reflects my restaurant's specific policies.
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-label">Configuration Options</div>
+                        <ul>
+                            <li>Contribution rate: Dropdown 1-5 with 0.25 increments + static % sign</li>
+                            <li>Job categories: Configurable list (Server, Cook, Busser, Host, etc.)</li>
+                            <li>Variable weights: Dropdown 1-5 with 0.25 increments (17 options)</li>
+                            <li>Pay period type: Weekly, bi-weekly, semi-monthly</li>
+                            <li>Help (?) icons next to each setting with tooltip explanations</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <h3>P1 Features (Should Have - Post-MVP)</h3>
+
+            <!-- Feature 6 -->
+            <div class="feature-card">
+                <div class="feature-header">
+                    <h4>Feature 6: User Authentication & Authorization</h4>
+                    <span class="badge p1">P1 - Important</span>
+                </div>
+                <div class="feature-body">
+                    <div class="feature-section">
+                        <div class="feature-label">Role Permissions Matrix</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>Designee</th>
+                                    <th>Manager</th>
+                                    <th>Admin</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Enter daily data</td>
+                                    <td class="permission-yes">Yes</td>
+                                    <td class="permission-yes">Yes</td>
+                                    <td class="permission-yes">Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>Edit current period</td>
+                                    <td class="permission-yes">Yes</td>
+                                    <td class="permission-yes">Yes</td>
+                                    <td class="permission-yes">Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>Edit archived data</td>
+                                    <td class="permission-no">No</td>
+                                    <td class="permission-no">No</td>
+                                    <td class="permission-yes">Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>Change weights</td>
+                                    <td class="permission-no">No</td>
+                                    <td class="permission-no">No</td>
+                                    <td class="permission-yes">Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>Change settings</td>
+                                    <td class="permission-no">No</td>
+                                    <td class="permission-no">No</td>
+                                    <td class="permission-yes">Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>Assign users</td>
+                                    <td class="permission-no">No</td>
+                                    <td class="permission-yes">Designees only</td>
+                                    <td class="permission-yes">Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>View other locations</td>
+                                    <td class="permission-no">No</td>
+                                    <td class="permission-no">No</td>
+                                    <td class="permission-yes">Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>Access Scenario Sandbox</td>
+                                    <td class="permission-no">No</td>
+                                    <td class="permission-yes">Yes</td>
+                                    <td class="permission-yes">Yes</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-label">Security Requirements</div>
+                        <ul>
+                            <li>2FA via email or SMS only (no authenticator app per client request)</li>
+                            <li>Session timeout with countdown warning</li>
+                            <li>Device authorization for Admin/Manager</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 8: Scenario Sand Box -->
+            <div class="feature-card">
+                <div class="feature-header">
+                    <h4>Feature 8: Scenario Sand Box</h4>
+                    <span class="badge p1">P1 - Important</span>
+                </div>
+                <div class="feature-body">
+                    <div class="feature-section">
+                        <div class="feature-label">User Story</div>
+                        <div class="user-story">
+                            As a manager, I want to test different contribution rates or weight changes without affecting live data, so that I can see the impact before committing. I also want to use this to calculate corrections for missed employees or terminated employees.
+                        </div>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-label">Critical Data Flow Rules</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Phase</th>
+                                    <th>Data Flow Direction</th>
+                                    <th>Allowed</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Before Launch Date</td>
+                                    <td>Sandbox → Production</td>
+                                    <td><strong>ONE TIME ONLY</strong> via "Upload To Free Trial/Full Version" button</td>
+                                </tr>
+                                <tr>
+                                    <td>After Launch Date</td>
+                                    <td>Sandbox → Production</td>
+                                    <td class="permission-no">NEVER - changes cannot flow to live data</td>
+                                </tr>
+                                <tr>
+                                    <td>After Each Payday</td>
+                                    <td>Production → Sandbox</td>
+                                    <td><strong>AUTOMATIC</strong> - archiving replaces sandbox data</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-label">Use Case: Forgotten Employee (Johnny the dishwasher)</div>
+                        <ol>
+                            <li>Load last paid pool in Sandbox</li>
+                            <li>Add Johnny's Wage, Hours, Job Role</li>
+                            <li>See what his share would have been</li>
+                            <li>Print for documentation</li>
+                            <li>Options: Pay from house funds (enter as prepaid) OR add to next pool with note</li>
+                        </ol>
+                    </div>
+
+                    <div class="feature-section">
+                        <div class="feature-label">Use Case: Employee Terminates Before First Pool</div>
+                        <ol>
+                            <li>Plug new employee's Hours, Wage, Job Role into last period's Sandbox data</li>
+                            <li>Calculate estimated share</li>
+                            <li>Print as proof of estimated earnings</li>
+                            <li>Include in final check</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <h3>P2 Features (Nice to Have - Future)</h3>
+            <div class="card">
+                <ul>
+                    <li><strong>Expert Admin Panel (Command Center)</strong> - Back-office for managing all customer accounts, subscriptions, trial conversions</li>
+                    <li><strong>Email/SMS Notifications</strong> - Trial expiration alerts, countdown reminders</li>
+                    <li><strong>Audit Logging</strong> - Who entered/changed data and when</li>
+                    <li><strong>YTD Reports</strong> - Annual summaries for W2 preparation</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Admin Role -->
+        <section id="admin-role">
+            <h2>The Administrator Role</h2>
+
+            <div class="alert error">
+                <span class="alert-icon">!!</span>
+                <div>
+                    <p><strong>Critical Warning:</strong> "Do not give Admin privileges to anyone you do not trust to keep you out of trouble from Labor Department scrutiny."</p>
+                </div>
+            </div>
+
+            <p>The Administrator has <strong>FULL responsibility</strong> for setting:</p>
+            <ul>
+                <li>Contribution Rate</li>
+                <li>Job Roles</li>
+                <li>Each Job Role's variable "weight" based on overall contribution to customer satisfaction</li>
+            </ul>
+
+            <h3>Legal Accountability</h3>
+            <ul>
+                <li>Tip pools may be analyzed for reasonableness and fairness by state Labor Boards</li>
+                <li>Admin may be required to justify reasoning and methods</li>
+                <li>Must keep Contribution Rate, Job Roles, and Weights FAIR and REASONABLE</li>
+                <li>Changes require proper notification to affected employees</li>
+            </ul>
+
+            <h3>Change Notification Requirements</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Change Type</th>
+                        <th>Who to Notify</th>
+                        <th>Notice Period</th>
+                        <th>Method</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Contribution Rate Increase</strong></td>
+                        <td>All Contributors (servers)</td>
+                        <td>30 days written</td>
+                        <td>Signed acknowledgment form</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Contribution Rate Decrease</strong></td>
+                        <td>All Distribution Beneficiaries</td>
+                        <td>30 days written</td>
+                        <td>Signed acknowledgment form</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Individual Job Category Change</strong></td>
+                        <td>That individual</td>
+                        <td>1 full pay period</td>
+                        <td>Face-to-face, documented</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Individual Weight Change</strong></td>
+                        <td>That individual</td>
+                        <td>1 full pay period</td>
+                        <td>Face-to-face, documented</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Multiple Weight Changes</strong></td>
+                        <td>All negatively affected</td>
+                        <td>1 full pay period written</td>
+                        <td>Signed acknowledgment form</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Audit Trail Requirements</h3>
+            <p>The system <strong>MUST</strong> log all Admin Settings changes:</p>
+            <ul>
+                <li>Date of change</li>
+                <li>Location affected</li>
+                <li>What critical area was changed</li>
+                <li>Who made the change</li>
+                <li>Before/after values</li>
+                <li><strong>UN-EDITABLE record</strong> (for legal protection)</li>
+            </ul>
+
+            <blockquote>
+                <p>"If someone goes in and changes a variable and thinks it wise to blame my program I can produce the entries through my portal."</p>
+                <cite>— Tom LaChaussee</cite>
+            </blockquote>
+        </section>
+
+        <!-- Job Categories -->
+        <section id="job-categories">
+            <h2>Job Categories & Weights</h2>
+
+            <h3>Predefined Job Categories</h3>
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-title">Kitchen (BOH)</div>
+                    <ul>
+                        <li>Lead Cook</li>
+                        <li>Line Cook</li>
+                        <li>Pastry Chef</li>
+                        <li>Prep Cook</li>
+                        <li>Pantry Chef</li>
+                        <li>Dishwasher</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-title">Front of House</div>
+                    <ul>
+                        <li>Maitre D</li>
+                        <li>Host/Hostess</li>
+                        <li>Cashier</li>
+                        <li>Runner</li>
+                        <li>Busser</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-title">Bar</div>
+                    <ul>
+                        <li>Barista</li>
+                        <li>Bartender</li>
+                        <li>Sommelier</li>
+                        <li>Bar Back</li>
+                    </ul>
+                </div>
+            </div>
+            <p><strong>Plus 5 write-in positions</strong> for custom roles not listed.</p>
+
+            <h3>Weight System</h3>
+            <ul>
+                <li><strong>Range:</strong> 1 – 5 in 0.25 increments (17 options)</li>
+                <li><strong>Weight 1:</strong> Lowest share component in pool</li>
+                <li><strong>Weight 5:</strong> Highest share component in pool</li>
+                <li>Everyone in same Job Category gets same weight</li>
+            </ul>
+
+            <div class="card highlight">
+                <div class="card-title">Example: Clam Shuckers</div>
+                <ul>
+                    <li>Regular shuckers: Weight 3</li>
+                    <li>Lead Shucker (super star, non-supervisory): Weight 5, own category</li>
+                    <li>Combined with higher hourly wage = appropriately larger share</li>
+                </ul>
+            </div>
+
+            <h3>Key Principles</h3>
+            <ol>
+                <li><strong>Hours x Rate x Weight</strong> formula rewards:
+                    <ul>
+                        <li>Experience (reflected in hourly rate)</li>
+                        <li>Hours worked</li>
+                        <li>Job category impact on customer satisfaction</li>
+                    </ul>
+                </li>
+                <li><strong>TipSharePro differentiator:</strong> Wages as a factor - "The single biggest determining factor of who is contributing most to the Chain of Service"</li>
+                <li><strong>Fairness over equality:</strong> "If the pool was done on a straight hours worked times a single job category weight, the Doctor and the Nurses would get the same rate per hour. That would be weird and frankly un-American."</li>
+            </ol>
+
+            <h3>Estimated Impact</h3>
+            <ul>
+                <li>$100K monthly sales → ~$1,000 pool per pay period</li>
+                <li>Annual: ~$26,000 in additional compensation for pool recipients</li>
+                <li>Benefit: Reduced turnover = reward for management</li>
+            </ul>
+        </section>
+
+        <!-- Requirements -->
+        <section id="requirements">
+            <h2>Requirements Documentation</h2>
+
+            <h3>Non-Functional Requirements</h3>
+
+            <h4>Performance Targets</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Target</th>
+                        <th>Measurement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Page Load Time</td>
+                        <td>&lt; 2 seconds</td>
+                        <td>Time to interactive</td>
+                    </tr>
+                    <tr>
+                        <td>Calculation Time</td>
+                        <td>&lt; 500ms for 100 employees</td>
+                        <td>Server processing</td>
+                    </tr>
+                    <tr>
+                        <td>API Response Time</td>
+                        <td>&lt; 200ms (95th percentile)</td>
+                        <td>Backend latency</td>
+                    </tr>
+                    <tr>
+                        <td>Database Query</td>
+                        <td>&lt; 100ms</td>
+                        <td>Slow query log</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Scalability Needs</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Dimension</th>
+                        <th>Target</th>
+                        <th>Design Approach</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Concurrent Users</td>
+                        <td>1,000</td>
+                        <td>Stateless API, connection pooling</td>
+                    </tr>
+                    <tr>
+                        <td>Customers</td>
+                        <td>500 restaurants</td>
+                        <td>Tenant isolation, indexed queries</td>
+                    </tr>
+                    <tr>
+                        <td>Locations per Customer</td>
+                        <td>20</td>
+                        <td>Efficient joins</td>
+                    </tr>
+                    <tr>
+                        <td>Employees per Location</td>
+                        <td>100</td>
+                        <td>Pagination, lazy loading</td>
+                    </tr>
+                    <tr>
+                        <td>Pay Periods (History)</td>
+                        <td>5 years</td>
+                        <td>Data archiving, partitioning</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Security Requirements</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Requirement</th>
+                        <th>Implementation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Authentication</td>
+                        <td>Username/password + 2FA (email or SMS)</td>
+                    </tr>
+                    <tr>
+                        <td>Authorization</td>
+                        <td>Role-based access control (Admin, Manager, Designee)</td>
+                    </tr>
+                    <tr>
+                        <td>Data Encryption</td>
+                        <td>TLS 1.3 in transit, AES-256 at rest</td>
+                    </tr>
+                    <tr>
+                        <td>Session Management</td>
+                        <td>30-minute timeout with countdown warning</td>
+                    </tr>
+                    <tr>
+                        <td>Tenant Isolation</td>
+                        <td>Database-level row filtering, never trust client</td>
+                    </tr>
+                    <tr>
+                        <td>Audit Trail</td>
+                        <td>Log all data modifications with user/timestamp</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Database -->
+        <section id="database">
+            <h2>Database Schema (Conceptual)</h2>
+
+            <h3>Multi-Tenant Data Model</h3>
+
+            <div class="code-block">Organizations (Tenants)
+├── id (UUID)
+├── name
+├── subscription_status
+├── stripe_customer_id
+└── settings (JSON: contribution_rate, pay_period_type, etc.)
+
+Locations
+├── id (UUID)
+├── organization_id (FK)
+├── name
+├── number
+└── status (active/inactive)
+
+Users
+├── id (UUID)
+├── organization_id (FK)
+├── email
+├── role (admin/manager/designee)
+├── location_id (FK, nullable for admins)
+└── two_factor_enabled
+
+Employees
+├── id (UUID)
+├── organization_id (FK)
+├── location_id (FK)
+├── name
+├── hourly_rate
+├── job_category_id (FK)
+└── status (active/terminated)
+
+Job_Categories
+├── id (UUID)
+├── organization_id (FK)
+├── name
+├── weight (1.0-5.0)
+└── badge_color
+
+Pay_Periods
+├── id (UUID)
+├── organization_id (FK)
+├── location_id (FK)
+├── start_date
+├── end_date
+├── status (draft/active/archived)
+└── total_pool
+
+Daily_Entries
+├── id (UUID)
+├── pay_period_id (FK)
+├── employee_id (FK)
+├── date
+├── sales_amount
+├── calculated_contribution
+└── actual_contribution
+
+Distributions
+├── id (UUID)
+├── pay_period_id (FK)
+├── employee_id (FK)
+├── hours_worked
+├── rate_at_time
+├── weight_at_time
+├── basis (HIDDEN - never exposed to API)
+├── percentage
+├── share_amount
+└── received_amount
+
+Audit_Log
+├── id (UUID)
+├── organization_id (FK)
+├── user_id (FK)
+├── timestamp
+├── action
+├── entity_type
+├── entity_id
+├── before_values (JSON)
+└── after_values (JSON)</div>
+        </section>
+
+        <!-- Development Phases -->
+        <section id="phases">
+            <h2>Development Phases</h2>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-title">Phase 1: Demo (Current Priority)</div>
+                    <p>Static/interactive demo for marketing. No authentication. Settings preview with some features blocked. Sample data entry. Results/distribution display. PDF print capability. Lives on TipSharePro.com landing page.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-title">Phase 2: Full Single-Location Version</div>
+                    <p>Real authentication (email/password + 2FA). Complete settings configuration. Daily entry workflow. Pay period calculations. Distribution reports. Cloud data storage. Stripe subscription integration.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-title">Phase 3: Multi-Location Support</div>
+                    <p>Location selector. Admin view across locations. Per-location pools. Aggregated reporting.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-title">Phase 4: Advanced Features</div>
+                    <p>Expert Command Center. Scenario Sandbox enhancements. YTD archiving. W2 reporting export. Advanced audit logging. Email/SMS notifications.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Critical Questions -->
+        <section id="gaps">
+            <h2>Critical Questions Checklist</h2>
+
+            <h3>Verified Items</h3>
+            <ul class="checklist">
+                <li>
+                    <span class="check-icon checked">&#10003;</span>
+                    <div>
+                        <strong>Existing solutions we're improving upon?</strong><br>
+                        <span style="color: var(--text-secondary);">Yes: Basic Excel tip pooling, enterprise payroll add-ons. We're targeting the mid-market with a specific Hours x Rate x Weight algorithm.</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="check-icon checked">&#10003;</span>
+                    <div>
+                        <strong>What's the minimum viable version?</strong><br>
+                        <span style="color: var(--text-secondary);">Demo (Phase 1): Interactive preview with sample calculations, no login, PDF export</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="check-icon checked">&#10003;</span>
+                    <div>
+                        <strong>Potential risks or unintended consequences?</strong><br>
+                        <span style="color: var(--text-secondary);">Legal Risk (compliance), Privacy Risk (wage data), Fairness Perception (hidden algorithm)</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="check-icon checked">&#10003;</span>
+                    <div>
+                        <strong>Platform-specific requirements?</strong><br>
+                        <span style="color: var(--text-secondary);">Web-first, responsive design, PDF generation in browser</span>
+                    </div>
+                </li>
+            </ul>
+
+            <h3>Resolved Questions (January 9, 2026)</h3>
+            <ul class="checklist">
+                <li>
+                    <span class="check-icon checked">&#10003;</span>
+                    <div>
+                        <strong>Q1: Scenario Sand Box Purpose</strong><br>
+                        <span style="color: var(--text-secondary);">See detailed specification in Features section. The Demo focus should be on the Distribution page next so Demo is ready.</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="check-icon checked">&#10003;</span>
+                    <div>
+                        <strong>Q2: Multiple Job Categories / Same Employee Different Positions</strong><br>
+                        <span style="color: var(--text-secondary);">YES, this happens. Posted Distribution Report: Keep earnings SEPARATED by position. YTD/EOY Totals: COMBINE into single employee line.</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="check-icon checked">&#10003;</span>
+                    <div>
+                        <strong>Q3: Historical Rate Changes / Mid-Period Raises</strong><br>
+                        <span style="color: var(--text-secondary);">Make another entry on Distribution Table with new rate. Policy: Tell managers NOT to give raises mid pay period.</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="check-icon checked">&#10003;</span>
+                    <div>
+                        <strong>Q4: Cloud Storage Costs</strong><br>
+                        <span style="color: var(--text-secondary);">Tom needs advice. Initial: Pay per GB. Future goal: Flat fee per TB. Subscription should cover storage + legal + accounting + employees + advertising.</span>
+                    </div>
+                </li>
+            </ul>
+
+            <h3>Remaining Gaps</h3>
+            <ul class="checklist">
+                <li>
+                    <span class="check-icon unchecked">?</span>
+                    <div><strong>Prepaid Entry Handling:</strong> Exact workflow for adjustments via prepaid line needs detailed specification. Prepaid amounts must flow to YTD and EOY totals.</div>
+                </li>
+                <li>
+                    <span class="check-icon unchecked">?</span>
+                    <div><strong>Trial Period Implementation:</strong> Free Trial IS the Full Version (no "Free Trial" label visible). Countdown display in last 10 days. Last 5 days: Email and text alerts to Administrator.</div>
+                </li>
+                <li>
+                    <span class="check-icon unchecked">?</span>
+                    <div><strong>Trial-to-Paid Data Migration:</strong> Does trial data persist when converting to paid? (Assumed YES) Any cleanup or verification required?</div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Appendices -->
+        <section id="appendices">
+            <h2>Appendices</h2>
+
+            <h3>Appendix A: Glossary</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Term</th>
+                        <th>Definition</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Contribution</strong></td>
+                        <td>Amount a server puts into the tip pool (% of sales)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Distribution</strong></td>
+                        <td>Amount an employee receives from the tip pool</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Basis</strong></td>
+                        <td>Hidden calculation: Hours x Rate x Weight (never shown)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Variable Weight</strong></td>
+                        <td>Management-assigned factor (1-5) for job category impact</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Pay Period Ending (PPE)</strong></td>
+                        <td>The last day of a pay cycle</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Scenario Sandbox</strong></td>
+                        <td>Test environment for what-if calculations</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Designee</strong></td>
+                        <td>Data entry role with limited permissions</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tenant</strong></td>
+                        <td>A restaurant organization in the multi-tenant platform</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Appendix D: Why Use All Sales as Contribution Factor</h3>
+
+            <h4>IRS Alignment</h4>
+            <p>"All Sales" is adjusted for (by IRS standards): Sales tax, Take-out orders, Retail sales, Non-tipped meals, Owner meals</p>
+
+            <h4>Why NOT Use CC Tips or All Tips</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Problem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>CC Sales</td>
+                        <td>Cash tips not properly accounted</td>
+                    </tr>
+                    <tr>
+                        <td>CC Tips</td>
+                        <td>Understates actual tips received</td>
+                    </tr>
+                    <tr>
+                        <td>All Tips</td>
+                        <td>Directly tipped workers easily hide cash tips</td>
+                    </tr>
+                    <tr>
+                        <td>Cash Apps</td>
+                        <td>Customers using to bypass accounting</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <blockquote>
+                <p>"The whole reason for doing a Chain of Service pool is to put more income into the hands of BOH workers who management can't afford to get significant raises to because minimum wage eats up labor dollars first."</p>
+                <cite>— Tom LaChaussee</cite>
+            </blockquote>
+
+            <h3>Appendix E: Design Feedback from Tom</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Element</th>
+                        <th>Feedback</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Foundation colors</td>
+                        <td>"Mostly cool" - approved</td>
+                    </tr>
+                    <tr>
+                        <td>Text colors</td>
+                        <td>"Like it" - approved</td>
+                    </tr>
+                    <tr>
+                        <td>"Mahogany" color</td>
+                        <td>Came through as dark olive - "I like the dark olive"</td>
+                    </tr>
+                    <tr>
+                        <td>Pastel accents</td>
+                        <td><strong>"Don't get too enamored"</strong> - wants more bold color</td>
+                    </tr>
+                    <tr>
+                        <td>Overall</td>
+                        <td>"Throw in some color or I'll fade off to sleep"</td>
+                    </tr>
+                    <tr>
+                        <td>Logo reference</td>
+                        <td><strong>"Take a look at my Logo. Not bashful."</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Appendix G: Logo & Brand Assets</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>File</th>
+                        <th>Description</th>
+                        <th>Use Case</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>fulllogo.png</td>
+                        <td>Full logo with text + tagline</td>
+                        <td>Marketing materials, website header</td>
+                    </tr>
+                    <tr>
+                        <td>fulllogo_transparent.png</td>
+                        <td>Transparent background</td>
+                        <td>Over images/colored backgrounds</td>
+                    </tr>
+                    <tr>
+                        <td>icononly_transparent_nobuffer.png</td>
+                        <td>Icon mark only</td>
+                        <td>App icon, favicon</td>
+                    </tr>
+                    <tr>
+                        <td>textonly.png</td>
+                        <td>Text wordmark + tagline</td>
+                        <td>Text-only contexts</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Brand Colors (Extracted from Logo)</h4>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap; margin: 16px 0;">
+                <div style="background: #E85D04; color: white; padding: 16px 24px; border-radius: 8px; font-weight: 600;">
+                    Burnt Orange<br><span style="font-family: var(--font-mono); font-size: 0.875rem;">#E85D04</span>
+                </div>
+                <div style="background: #82B536; color: white; padding: 16px 24px; border-radius: 8px; font-weight: 600;">
+                    Lime Green<br><span style="font-family: var(--font-mono); font-size: 0.875rem;">#82B536</span>
+                </div>
+                <div style="background: #1A4B7C; color: white; padding: 16px 24px; border-radius: 8px; font-weight: 600;">
+                    Navy Blue<br><span style="font-family: var(--font-mono); font-size: 0.875rem;">#1A4B7C</span>
+                </div>
+                <div style="background: #35A0D2; color: white; padding: 16px 24px; border-radius: 8px; font-weight: 600;">
+                    Cyan<br><span style="font-family: var(--font-mono); font-size: 0.875rem;">#35A0D2</span>
+                </div>
+            </div>
+
+            <h3>Appendix C: Client Requirements Source</h3>
+            <p>All requirements derived from:</p>
+            <ol>
+                <li>Chat transcript: December 9, 2025 - January 4, 2026</li>
+                <li>Original Excel workbooks</li>
+                <li>Marketing documents</li>
+                <li>HTML Mockup: tip-share-pro-mockup.html</li>
+                <li>Contract: December 2025</li>
+                <li><strong>January 9, 2026 Documentation Package:</strong>
+                    <ul>
+                        <li>Rough Flow Chart.pdf</li>
+                        <li>Demo - Settings Page.pdf</li>
+                        <li>Full Version - Settings Page.pdf</li>
+                        <li>pdf How Demo,Sand Box,Free Trial work.pdf</li>
+                        <li>pdf Job Categories & Weights.pdf</li>
+                        <li>pdf Why Sales as....pdf</li>
+                        <li>Scenario Sand Box and....pdf</li>
+                        <li>The Admin Role.pdf</li>
+                        <li>Tim Notes Pg 3 Trial-Full Version.pdf</li>
+                        <li>Tim - Scattered General Notes.pdf</li>
+                    </ul>
+                </li>
+                <li>Logo Assets & Website Screenshots</li>
+            </ol>
+        </section>
+
+        <!-- Document Control -->
+        <section>
+            <h2>Document Control</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Version</th>
+                        <th>Date</th>
+                        <th>Changes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1.0</td>
+                        <td>2026-01-08</td>
+                        <td>Initial comprehensive PRD</td>
+                    </tr>
+                    <tr>
+                        <td>2.0</td>
+                        <td>2026-01-09</td>
+                        <td>Added 9-page flow chart, Scenario Sand Box specs, Admin Role specifications, Job Categories & Weights detail, ?Note/!!Note help system</td>
+                    </tr>
+                    <tr>
+                        <td>3.0</td>
+                        <td>2026-01-09</td>
+                        <td>Comprehensive update: Demo Settings Page specs, Full Version Settings Page (Page 3), Tim Notes, Logo assets, website screenshots, bold design system direction</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="doc-footer">
+        <div class="brand">TipShare<span class="accent">Pro</span></div>
+        <p>POWERFUL * FAIR * TRANSPARENT</p>
+        <p>This document is ready for stakeholder review.</p>
+        <p>All specifications meet the standards of being unambiguous, testable, traceable, complete, and feasible.</p>
+        <div class="version">PRD v3.0 | January 9, 2026</div>
+    </footer>
+</body>
+</html>
