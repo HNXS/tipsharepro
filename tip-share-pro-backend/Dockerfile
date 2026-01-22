@@ -19,11 +19,15 @@ COPY prisma ./prisma/
 # Install all dependencies (including devDependencies for build)
 RUN npm ci
 
-# Copy source code
-COPY . .
+# Copy source code and build configuration
+COPY src ./src
+COPY tsconfig.json ./
 
 # Build TypeScript
 RUN npm run build
+
+# Verify build output
+RUN ls -la dist/
 
 # ============================================================================
 # Stage 2: Runner (Production)
