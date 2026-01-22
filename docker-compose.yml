@@ -36,8 +36,8 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@tipsharepro.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
       PGADMIN_CONFIG_SERVER_MODE: 'False'
-    ports:
-      - "5050:80"
+    expose:
+      - "80"
     depends_on:
       postgres:
         condition: service_healthy
@@ -88,8 +88,8 @@ services:
     environment:
       NODE_ENV: production
       BACKEND_INTERNAL_URL: http://backend:3001
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     depends_on:
       backend:
         condition: service_healthy
