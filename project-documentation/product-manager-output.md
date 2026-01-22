@@ -1,11 +1,11 @@
 # Tip Share Pro - Product Requirements Document
 
-**Document Version:** 3.0
-**Date:** January 9, 2026
+**Document Version:** 4.3
+**Date:** January 15, 2026
 **Author:** Product Management
 **Client:** Tom LaChaussee (tlachaussee)
 **Developer:** Tim Heineccius (Heineccius Consulting)
-**Last Updated:** January 9, 2026 - Incorporated Tom's detailed Settings Page specifications, flow chart, and comprehensive PDF documentation package
+**Last Updated:** January 15, 2026 - **DISTRIBUTION TABLE SPECS:** Complete Demo Distribution Page and Full Version Page 7 PP Distribution specifications. Table columns, stat cards, employee entry workflow, print options, and calculation formulas documented.
 
 ---
 
@@ -105,16 +105,20 @@ Tip Share Pro uses a proprietary **Hours x Rate x Variable Weight** algorithm th
 ### Feature Overview Map
 
 ```
-DEMO (Phase 1)          FREE TRIAL (Phase 2)        FULL VERSION (Phase 3)
-------------------      --------------------        ---------------------
-Settings Preview        All Demo Features +         All Free Trial Features +
-Data Entry Demo         Real Authentication         Payment Processing
-Results Preview         2FA Security                Multi-Location Support
-No Login Required       Cloud Storage               YTD Archiving
-Limited Functionality   Full Calculations           W2 Reporting
-Marketing Tool          45-Day Trial                Admin Command Center
-                        Scenario Sand Box           Expert Portal
+DEMO (Phase 1) - REVISED      FREE TRIAL (Phase 2)        FULL VERSION (Phase 3)
+--------------------------    --------------------        ---------------------
+STANDALONE Application        All Demo Features +         All Free Trial Features +
+Login via TipSharePro link    Real Authentication         Payment Processing
+Settings Page (5 steps)       2FA Security                Multi-Location Support
+10 Pre-Set Employees          Cloud Storage               YTD Archiving
+Inline Distribution Preview   Full Calculations           W2 Reporting
+Print Distribution Table      45-Day Trial                Admin Command Center
+NO SSB Upload                 Scenario Sand Box           Expert Portal
+Easily Email-Distributable
+Faded Full Version Controls
 ```
+
+**IMPORTANT CHANGE (January 15, 2026):** Demo is now a STANDALONE marketing tool that does NOT upload to Scenario Sand Box. Goal: "Wet their whistle" - if they want more, sign up for free trial (it's free). Keep Demo as uncomplicated as possible.
 
 ---
 
@@ -190,18 +194,24 @@ Page 2: Settings (limited version of Page 3)
 Page 3: Distribution Table (scaled back version)
 ```
 
-### Demo Settings Page - Detailed Specification
+### Demo Settings Page - Detailed Specification (REVISED January 15, 2026)
 
-The Demo Settings page is a limited version of Page 3 in the Free Trial/Full Version with some tabs/links blocked.
+**⚠️ MAJOR CHANGE:** Demo is now a STANDALONE marketing tool. No SSB upload. Goal is simplicity - "wet their whistle."
+
+**New Demo Concept:**
+- Standalone application distributed via email link
+- Could potentially reside on Replit (lightweight hosting)
+- Does NOT need to reside in the full app codebase
+- Programming can be reused to reduce production time
 
 **Access Method:**
-- Open by double clicking the App icon (see Logo)
-- First page is simple Log In/Password supplied by TipSharePro
-- Next page in Demo is Settings Page
+- User clicks link in email from TipSharePro
+- Enters login/password issued by TipSharePro
+- Goes directly to Settings Page
 
 **Welcome Display:** "Welcome Admin (Name of Contact & Company)"
 
-**Settings Steps:**
+**Settings Steps (Same as before, but with INLINE preview):**
 
 | Step | Tab/Feature | Description | ?NOTE Help Text |
 |------|-------------|-------------|-----------------|
@@ -215,17 +225,100 @@ The Demo Settings page is a limited version of Page 3 in the Free Trial/Full Ver
 - If CC Sales, CC Tips, or All Tips selected in Step 1: Dropdown of 5-25% in 0.5 increments of **Tips Only**
 - If All Sales selected in Step 1: Dropdown of 1-5% in 0.25 increments of **(adj) Sales**
 
-**Navigation Buttons:**
-- Tab – Go To Distribution Table
+**NEW: Inline Distribution Preview:**
+- 10 Pre-Set sample employees built into Demo
+- Wages and Hours are fully editable by user
+- Job roles come from Settings (only selected roles appear as choices)
+- **After changing ANY setting, user scrolls down to see effect on scaled-down Distribution Table**
+- Real-time calculation preview as settings change
+
+**Navigation & Controls:**
+- Faded-out control buttons of Full Version visible (as a TEASE)
+- Creates "Pilot's Cockpit" desire for Full Version
+- Tab – Go To Distribution Table (scrolls to inline preview)
 - Tab – Log Out
 - Links to PDF's used on this page
-- Links to other interesting PDF'S
+- Print button: Prints Demo Distribution Table ONLY (just the table)
 
-**Demo-to-Free Trial Upload Feature:**
-- "Upload Demo to Scenario Sand Box" button
-- Settings and Distribution table data sent to SSB (NOT directly to Main Settings/Distribution)
-- Can upload from Demo to SSB multiple times until Demo expires
-- Once in SSB: can only upload to Full Version ONE TIME before Launch Date
+**REMOVED (No longer in Demo):**
+- ~~"Upload Demo to Scenario Sand Box" button~~ - REMOVED
+- ~~SSB integration~~ - REMOVED
+- Demo is 100% standalone
+
+**Demo Dialog Box:**
+- "You can set hours to zero on any employee you want to eliminate from the pool if it holds too many recipients."
+- Purpose: Explain how to reduce the 10 pre-set employees if desired
+
+---
+
+### Demo Distribution Table - Detailed Specification (January 14, 2026)
+
+After scrolling down from Demo Settings, the user sees the **Distribution Table** with colorful preset employees.
+
+#### Stat Cards (Above Table)
+
+All stat cards auto-fill for Demo. Some from Settings choices, some display "Demo":
+
+| Stat Card | Demo Value | Full Version |
+|-----------|------------|--------------|
+| **Day/Date** | "Demo" (static) | Auto-fill current date |
+| **Location** | "Demo" (static) | Selectable by Admin |
+| **Pay Period** | "Demo" (static) | Clickable to view 2 prior archived PPs |
+| **Contrib. Method** | From Demo Settings | Sales, CC Sales, CC Tips, All Tips |
+| **Gross Pool** | From Demo Settings | From PP Contribution page |
+| **Pre-Paid** | "Demo" with ?Note | Alters Net Pool if entered |
+| **Net Pool** | Same as Gross | Gross − Pre-Paid |
+| **Top Contributors** | Static: "Barb B (aka: Malibu), Ken Dahl" | Real-time from PP Contributions |
+
+**Pre-Paid ?Note:** "Early termination payment" - Link to PDF "What Does Pre-Paid Mean..."
+
+#### Welcome Dialog Box
+
+A large dialog box explains what the user sees. Can be dismissed and brought back up.
+
+**??Note Content:**
+> "The table displayed assumes your distribution employee's data is up to date and all that is needed is the hours entered. This is a good representation of the finalizing of Distributions. All updating of any employee data (new employee, wage increase, category change etc) can be accomplished before PPE so as not to hold up Pay Day.
+>
+> Enter Hours, Double Check for Errors, Print for posting and Email to Payroll.
+>
+> At this point just enter hours and see how your settings affected the pool. You can change wages, hours and if you click on the name cell, change category weights by .25 increments up to .75. Whole number Category weights are changeable in the Demo settings above. Return to the original Distribution table settings by pressing the 'default settings' button."
+
+#### Distribution Table Columns
+
+| Column | Data Type | Editable | Print | Notes |
+|--------|-----------|----------|-------|-------|
+| **Name** | Text | Static (preset) | Yes | Cell background = Category Color |
+| **Wages** | Decimal (20.0, 20.25) | Yes | **HIDDEN** | Confidential |
+| **Hours** | Decimal (64.0, 64.25) | Yes | Yes | |
+| **Category Weight** | Whole number 1-5 | Via Settings | Yes | Cell shows category color |
+| **Share %** | Auto-calculated | No | Yes | Real-time when Hours + Wages entered |
+| **Share $** | Auto-calculated | No | Yes | Real-time, rounded to nearest $ |
+| **$/Hr** | Auto-calculated | No | **HIDDEN** (optional) | Pool Share ÷ Hours |
+
+#### Column Totals (Real-time at bottom)
+
+| Column | Total Requirement |
+|--------|-------------------|
+| Hours | Sum (for reference/average) |
+| Share % | **Must = 100%** |
+| Share $ | **Must = Net Pool** |
+
+#### Name Cell Interaction
+
+When name cell is clicked:
+1. Dropdown shows colorful categories (static in Demo)
+2. Next to category name (e.g., "BOH-Orange") is the assigned Category Weight
+3. **+** or **−** buttons allow adjustment by 0.25 increments (up to +0.75)
+4. Whole number weights changeable in Demo Settings only
+
+#### Demo Controls
+
+| Control | Action |
+|---------|--------|
+| **Default Settings Button** | Reset to original preset values |
+| **Go To Distribution Table** | Scroll down from Settings |
+| **Print** | Checkbox: "Include Share/Hr Column?" (default: NOT printed) |
+| **Log Out** | End session |
 
 ---
 
@@ -288,6 +381,114 @@ The application uses two types of contextual help:
 - Should only appear after Launch Date for certain compliance warnings
 - Log acknowledgment with timestamp and user ID
 - Examples: Changing contribution rate, modifying job category weights
+
+---
+
+### Full Version PP Distribution Table (Page 7) - Detailed Specification (January 14, 2026)
+
+Page 7 in the flow chart. This is where the actual tip pool distributions are calculated and posted.
+
+#### Entry Point ?Note (SSB Reminder)
+
+**??Note - Scenario Sand Box:**
+> "If you have data in The Scenario Sand Box and you want to upload all that data to both the Settings Page and Here in the Distribution Page you may upload it any time before Launch Date. Go to Scenario Sand Box and click *Upload to Free Trial/Full Version*. This Upload data Button can only be activated once before Launch Day."
+
+*Tim Note: Can these ??Note be timed to disappear? After First Pay Day has occurred after Launch Date (Archive Day), this ??Note can go bye bye.*
+
+#### Stat Cards (Above Table)
+
+| Stat Card | Source | Notes |
+|-----------|--------|-------|
+| **Day/Date** | Auto-fill current date | Override option for POS outages |
+| **Location** | Forced choice if Admin + multiple locations | |
+| **Pay Period** | Step 1 selection | Clickable for 2 prior archived PPs (view/print only) |
+| **Contrib. Method** | From Settings | Static |
+| **Gross Pool** | From PP Contribution page | |
+| **Pre-Paid** | Manual entry | Alters Net Pool. ?Note: "early termination payment" |
+| **Net Pool** | Gross − Pre-Paid | |
+| **Top Contributors** | Real-time from PP Contributions | "Be sure to thank our Top Contributors this Pay Period!" on print |
+| **Pool $ Amount** | Real-time from current PP Contribution Log | |
+| **Countdown to PPE** | Days remaining (e.g., "3 days To PPE") or "Complete" | |
+
+#### Step 1: Choose Pay Period
+
+Upon entering Distribution page, user is **forced to choose** from dropdown of 2 PP choices (overlap from PPE to Pay Day).
+
+- Once archived (day after Pay Day), new PP dates load and archived dates removed from dropdown
+- Once chosen, Pool amount and Countdown auto-fill accordingly
+- Table loads with last PP known data **except Hours** (which clears Share % and $)
+
+#### Step 2: First Time Entries (Full Version Only)
+
+This is where all Recipients' data is entered after Launch Date, ideally before End of First Pay Period.
+
+**Employee Status Checkbox (when entering new name):**
+- [ ] New
+- [ ] Rehired
+- [ ] Borrowed (earnings need to be combined with another location)
+- [ ] Split Job/Category/Wage (combine lines to one name in YTD)
+- [ ] Name Change (If yes, Old Name: _______)
+
+**Data Entry Flow:**
+
+1. **Type Name** → Press Enter
+2. **Choose Category** → Dropdown of colorful categories
+   - Admin/Manager sees weight with +/− buttons (0.25 increments up to +0.75)
+   - Users do NOT see weight adjustments unless granted permission
+   - Entire Name cell gets category color background
+3. **Enter Wage/Hr** → Decimal (20.0, 20.25, etc.) - **HIDDEN on print**
+4. **Enter Hours** → Decimal (14.25, 32.65, etc.)
+5. **Auto-fill columns:** Category Color + Base Weight, Share %, Share $
+
+**??Note for Salaried Employees:**
+> "If the person is OT exempt and paid a salary get as close as you can with an hourly wage estimate. This does not get revealed on the postings for confidentiality reasons. The important thing is if this person is salaried they will be scrutinized on their duties. They must NOT be an Owner, Manager, Assistant Manager or Supervisor... This is the one mistake that can trigger guaranteed Civil Money Penalties!"
+
+#### Distribution Table Columns (Full Version)
+
+| Column | Data Type | Editable | Print | Notes |
+|--------|-----------|----------|-------|-------|
+| **Name** | Text | Yes | Yes | Cell background = Category Color |
+| **Wages** | Decimal | Yes | **HIDDEN** | Confidential |
+| **Hours** | Decimal | Yes | Yes | From timekeeping system |
+| **Category Weight** | 1-5 (shows base, calculates actual) | +/− by Admin/Manager | Yes | Shows base weight, actual may include +0.25-0.75 |
+| **Share %** | Auto-calculated | No | Yes | Real-time |
+| **Share $** | Auto-calculated | No | Yes | Rounded to nearest $ |
+| **$/Hr** | Auto-calculated | No | **HIDDEN** (optional) | Pool Share ÷ Hours |
+
+**Important:** If actual weight has +0.25 to +0.75 added, it calculates at that rate but **shows base rate** to avoid infighting within category.
+
+#### Calculation Formula
+
+```
+Total Tipped Employee Contribution (matches PP Contribution Posting)
+  − Pre-Paid Pool $ (Prior Pool Mistake or Terminated Employee)
+    [Must have a name attached as beneficiary]
+  = Net Pool
+
+Individual:
+  Hours × Wage × Weight = Basis
+  Individual Basis ÷ Total Basis = Share %
+  Share % Column Always = 100%
+  Share % × Net Pool = Share → Round to nearest $
+  Total of all Rounded Shares must = Net Pool
+```
+
+#### Full Version Controls
+
+| Control | Action |
+|---------|--------|
+| **Print** | Checkbox: "Include Share/Hr Column?" (default: NOT printed) |
+| **Share** | Email to permissible addresses |
+| **Scenario Sand Box** | Navigate to SSB |
+| **Go To All Data Links** | Navigate to data pages |
+| **Log Out** | End session |
+
+#### Post-Print Workflow
+
+1. **Posted Employee Notice for Transparency** - gives recipients time to review for mistakes before Payroll
+2. **Reminder:** Any changes after initial printing will need to be Reprinted and Reposted
+3. **Auto Archive:** Day after Pay Day for that pay period
+4. **Next PP:** When archived, next PP dates become available in dropdown
 
 ---
 
@@ -952,15 +1153,39 @@ Audit_Log
 
 ## Development Phases
 
-### Phase 1: Demo (Current Priority)
-- Static/interactive demo for marketing
-- No authentication
-- Settings preview (some features blocked)
-- Sample data entry
-- Results/distribution display
-- PDF print capability
-- Lives on TipSharePro.com landing page
-- **Timeline:** First deliverable
+### Phase 1: Demo (Current Priority) - REVISED January 15, 2026
+
+**NEW ARCHITECTURE:** Standalone application, NOT integrated with Full Version
+
+| Feature | Specification |
+|---------|---------------|
+| **Hosting** | Standalone (could use Replit or similar lightweight hosting) |
+| **Distribution** | Via email link from TipSharePro |
+| **Authentication** | Simple login/password issued by TipSharePro |
+| **Settings Page** | Full 5-step configuration (contribution method, %, job categories, weights) |
+| **Employees** | 10 pre-set sample employees (wages/hours editable) |
+| **Distribution Preview** | Inline, scrollable below Settings - updates in real-time |
+| **Full Version Tease** | Faded-out controls visible to create desire |
+| **Print** | Distribution Table ONLY |
+| **SSB Upload** | ~~REMOVED~~ - Demo is 100% standalone |
+
+**Why Standalone?**
+- "Demo should be as uncomplicated as possible"
+- "If they want more then sign up for the free trial. It's free."
+- "We just want to wet their whistle"
+- Programming can still be reused for production
+
+**Tom's Strategic Reasoning (January 15, 2026):**
+> "All of this makes it so the Admin is less invested in DEMO and is more likely to want the Free Trial where they can start in the SSB. If they have questions which they should, I will talk them into the free trial. No need for Demo upload to SSB. I see a quicker turnaround from inquiry to actually getting the Free Trial where they are going to get started with actual employees and become invested before Free Trial ends."
+
+**Sales Funnel Logic:**
+1. Demo = "Wet their whistle" → Minimal investment
+2. Questions arise → Tom talks them into Free Trial
+3. Free Trial → Start in SSB with REAL employees
+4. Real employees = Investment → Conversion before trial ends
+5. One week in Demo = "I'm going to wonder what they're waiting for"
+
+**Timeline:** First deliverable - BUILD NOW
 
 ### Phase 2: Full Single-Location Version
 - Real authentication (email/password + 2FA)
@@ -1036,22 +1261,45 @@ Audit_Log
    - Subscription fee should cover storage + legal fees + accounting fees + employees + advertising
    - Request: Suggest how to "start slow on storage and build"
 
+#### Resolved Questions (January 15, 2026):
+
+5. **Navigation Hub / Page 2 Purpose (Q5):**
+   - **Answer:** Tom is open to suggestions
+   - Tabs are available based on BOTH title AND permissions
+   - Owner/Admin might give admin privileges to a bookkeeper
+   - Tom's vision: "A place to see all destinations available whether or not it's in their repertoire"
+   - **Implementation:** Show all navigation options, but gray out/disable those outside user's permissions
+
+6. **!!Note Behavior Before Launch Date (Q6):**
+   - **Answer:** Critical settings CAN be changed freely until Launch Date
+   - Even after Launch Date, user gets "I Read and Agree" checkbox but CAN still change
+   - No rules violated until change is actually in effect
+   - Launch Date = when commitment starts for Contribution %
+   - **Implementation:** !!Notes should be VISIBLE but non-blocking before Launch Date. After Launch Date, require acknowledgment checkbox before proceeding.
+
+7. **Change Notification Trigger (Q7):**
+   - **Pending clarification** - Original question about "Email to All Admin 2FA that changes have been scheduled" not directly answered
+   - Tom was focused on bigger Demo simplification direction
+
 #### Remaining Gaps:
 
-5. **Prepaid Entry Handling:**
+8. **Prepaid Entry Handling:**
    - Exact workflow for adjustments via prepaid line needs detailed specification
    - Prepaid amounts must flow to YTD and EOY totals
    - Employees in prepaid section "reside outside the normal table"
 
-6. **Trial Period Implementation:**
+9. **Trial Period Implementation:**
    - Free Trial IS the Full Version (no "Free Trial" label visible to customer)
    - Daily countdown display in last 10 days (or similar)
    - Last 5 days: Email and text alerts to Administrator
    - Functionality end date set by TipSharePro when sending trial
 
-7. **Trial-to-Paid Data Migration:**
-   - Does trial data persist when converting to paid? (Assumed YES)
-   - Any cleanup or verification required?
+10. **Trial-to-Paid Data Migration:**
+    - Does trial data persist when converting to paid? (Assumed YES)
+    - Any cleanup or verification required?
+
+11. **Demo Dialog Box Content:** ✅ RESOLVED
+    - Full text: "You can set hours to zero on any employee you want to eliminate from the pool if it holds too many recipients."
 
 ---
 
@@ -1097,35 +1345,67 @@ Tom's note: "If someone goes in and changes a variable and thinks it wise to bla
 
 ---
 
-## Job Categories & Weights (Detailed Specification)
+## Job Categories & Weights (Detailed Specification) - REVISED January 11, 2026
 
-### Predefined Job Categories
+### Color-Coded Category System (NEW)
 
-| Kitchen (BOH) | Front of House | Bar |
-|---------------|----------------|-----|
-| Lead Cook | Maitre D | Barista |
-| Line Cook | Host/Hostess | Bartender |
-| Pastry Chef | Cashier | Sommelier |
-| Prep Cook | Runner | Bar Back |
-| Pantry Chef | Busser | Dishwasher |
+**Tom's insight:** "The inclusion of colors is actually a great idea. It makes category identification easy to see on the posted transparency report and it simplifies choosing weights."
 
-**Plus 5 write-in positions** for custom roles not listed.
+Each job category is assigned a **color** for easy visual identification on the Distribution Table. A **color key** appears at the bottom of the Distribution Table showing category titles.
 
-### Weight System
+### 5 Category Colors
 
-- Range: 1 – 5 in 0.25 increments (17 options)
-- Weight 1: Lowest share component in pool
-- Weight 5: Highest share component in pool
-- Everyone in same Job Category gets same weight
+| Color | Default Category | Example Job Titles |
+|-------|------------------|-------------------|
+| **Orange** | BOH (Kitchen) | Lead Cook, Line Cook, Pastry Chef, Pantry Chef |
+| **Violet** | FOH (Non Tipped) | Host/Hostess, Busser, Cashier, Runner |
+| **Cyan** | Bar | Bartender, Barista, or custom (e.g., FOH Clam Shuckers) |
+| **Lime Green** | Support (FOH or BOH) | Dishwasher, Busser, Prep Cook, Bar Back |
+| **Yellow** | Custom (Big Leagues) | Banquet Chef, Maitre D, Sommelier |
 
-**Example Scenario (Clam Shuckers):**
-- Regular shuckers: Weight 3
-- Lead Shucker (super star, non-supervisory): Weight 5, own category
-- Combined with higher hourly wage = appropriately larger share
+### Category Assignment Rules
+
+- **5 write-in categories** available for custom titles
+- Assign a Job Category title to a different Color if desired, or use suggested defaults
+- If you don't have enough categories for all colors → don't use a color (save for future expansion)
+- If you have more categories than colors → combine something (you get 5 colors max)
+- **Color key** provided at bottom of Distribution Table with assigned titles
+
+### Weight System (SIMPLIFIED)
+
+**Base Category Weight:** Choose a **whole number 1-5** for each category based on impact on Customer Satisfaction.
+
+| Weight | Meaning |
+|--------|---------|
+| 1 | Lowest category in the pool (generally earns lowest share) |
+| 2-4 | Mid-range impact |
+| 5 | Highest category in the pool (generally earns highest share) |
+
+### Individual Weight Adjustment (NEW)
+
+Within the **Distribution Table**, Admin or Manager (with permission) can fine-tune individual employee weights:
+
+- When Admin highlights a name → category is displayed with weight shown
+- **+** or **−** buttons appear next to the weight
+- Click **+** to increase by 0.25 increment (up to +0.75 above base)
+- Click **−** to decrease by 0.25 increment (down to base weight)
+- Example: A category weight of 3 can be adjusted to 3.25, 3.50, or 3.75 for individual superstars
+
+**Permission Note:** The +/− adjustment is only available to Admin or Manager by permission. Data Entry Users do NOT have this permission.
+
+### Example Scenario (Clam Shuckers)
+
+Your operation has front house Live Clam Shuckers who steal the show every night:
+
+1. **All Clam Shuckers:** Give them a base weight of 3 (Cyan category)
+2. **Super Star Shucker:** Could create separate "Lead Shucker" category OR use +/− to bump to 3.75
+3. **Combined Effect:** Lead Shucker probably makes more per hour + higher weight = appropriately larger share
+
+**Important:** Lead Shucker can have their own category as long as they aren't supervising (detailed rules exist for supervisors).
 
 ### Key Principles
 
-1. **Hours x Rate x Weight** formula rewards:
+1. **Hours × Rate × Weight** formula rewards:
    - Experience (reflected in hourly rate)
    - Hours worked
    - Job category impact on customer satisfaction
@@ -1135,6 +1415,10 @@ Tom's note: "If someone goes in and changes a variable and thinks it wise to bla
 
 3. **Fairness over equality:**
    - "If the pool was done on a straight hours worked times a single job category weight, the Doctor and the Nurses would get the same rate per hour. That would be weird and frankly un-American."
+
+4. **Color = Easy Identification:**
+   - Posted transparency report shows colors for quick category recognition
+   - Simplifies weight selection process
 
 ### Estimated Impact
 
@@ -1196,6 +1480,21 @@ All requirements derived from:
    - textonly.png - Text wordmark only
 8. **Website Screenshots (data/20260109/Screenshots/):**
    - Current www.tipsharepro.com homepage design reference
+9. **January 11, 2026 Data Package (data/20260111/):**
+   - Edited Product Requirements Document.pdf - Tom's annotated PRD review
+   - Sample Dist. w-Pre Paids.xlsx - Distribution page showing pre-paid handling
+   - Server Tip Allocations 2025.xls - EOY allocations workbook from Tom's stores
+10. **January 11, 2026 Revised Documents (data/20260111/Mail2/):**
+    - **pdf Job Categories & WeightsV2 1-10-26.pdf** - Color-coded category system (Orange, Violet, Cyan, Lime Green, Yellow), simplified whole-number weights, +/- individual adjustment feature
+    - **Demo - Settings PageV2 1-10-26.pdf** - Revised Demo settings with color-coded categories
+    - **3 Page SettingsV2 1-10-26.pdf** - Full Version Page 3 with color-coded categories
+    - **pdf How Sand Box,Free Trial work.pdf** - Updated SSB document (Demo removed, focuses on SSB → Free Trial/Full Version flow)
+11. **January 14, 2026 Distribution Specifications (data/20260114/):**
+    - **Demo - Distribution PageV2 1-12-26.pdf** - Complete Demo Distribution Table specification with stat cards, columns, and interaction patterns
+    - **Demo - Settings PageV2 1-12-26.pdf** - Minor updates to Demo Settings
+    - **Full Page 7 PP DistributionsV2 1-12-26.pdf** - Full Version Page 7 Distribution Table with employee entry workflow, PP selection, and print options
+    - **Full - Page 3 SettingsV2 1-12-26.pdf** - Full Version Settings with % of Method for PP Tip Allocations
+    - **Tip Pool Distribution Example.xls** - Upgraded Excel distribution table example showing columns: Name, Hours, *Wage, Weight, *Basis, Share %, Share $, *$/Hr
 
 ---
 
@@ -1206,6 +1505,10 @@ All requirements derived from:
 | 1.0 | 2026-01-08 | PM | Initial comprehensive PRD |
 | 2.0 | 2026-01-09 | PM | Added Tom's feedback: 9-page flow chart, Scenario Sand Box detailed specs, Admin Role specifications, Job Categories & Weights detail, ?Note/!!Note help system, resolved Q&A items, detailed contribution criteria explanation |
 | 3.0 | 2026-01-09 | PM | Comprehensive update from Tom's documentation package: Demo Settings Page specs, Full Version Settings Page specs (Page 3), detailed Tim Notes, General Notes for implementation, Logo assets received, website screenshots analyzed, new design system direction |
+| 4.0 | 2026-01-15 | PM | **MAJOR UPDATE:** (1) Demo simplified to standalone - NO SSB upload, (2) Design System v2: dark look + bold colors, NO pastels, (3) Resolved Q&A on Navigation Hub and !!Note behavior, (4) Tom's directive: "Stop talking about steps - take some steps" - less documentation, more building |
+| 4.1 | 2026-01-15 | PM | Added Appendix J: EOY Data & Allocations - Distribution page with pre-paids reference, EOY auto-load columns specification, borrowed employees cross-location data matching, Tom's Excel files from data/20260111/ |
+| 4.2 | 2026-01-15 | PM | **COLOR-CODED CATEGORIES:** Major revision to Job Categories & Weights - 5 colors (Orange=BOH, Violet=FOH, Cyan=Bar, Lime Green=Support, Yellow=Custom), simplified whole-number weights 1-5, individual +/- adjustment (0.25 increments) in Distribution Table, color key at table bottom. Updated V2 documents for Demo, Page 3 Settings, and SSB. Demo removed from SSB document. |
+| 4.3 | 2026-01-15 | PM | **DISTRIBUTION TABLE SPECS:** Complete Demo Distribution Page specification (columns, stat cards, employee entry workflow, print options). Full Version Page 7 PP Distribution Table specification. Calculation formula: Hours × Wage × Weight = Basis → Basis ÷ Total Basis = Share %. Upgraded Excel distribution table example with hidden columns (*Wage, *Basis, *$/Hr). Tom's January 14 files (data/20260114/). |
 
 ---
 
@@ -1242,10 +1545,11 @@ All requirements derived from:
 
 ---
 
-## Appendix E: Design Feedback from Tom (January 9, 2026)
+## Appendix E: Design Feedback from Tom
 
-### Color Preferences
+### Design System Evolution
 
+#### January 9, 2026 - Initial Feedback:
 | Element | Tom's Feedback |
 |---------|----------------|
 | Foundation colors | "Mostly cool" - approved |
@@ -1255,17 +1559,46 @@ All requirements derived from:
 | Overall | "Throw in some color or I'll fade off to sleep" |
 | Logo reference | "Take a look at my Logo. Not bashful." |
 
+#### January 15, 2026 - DEFINITIVE DIRECTION:
+
+**Tom's exact words:** "Overall, I liked the first rendition better. This one is too sanitary. Restaurant people like clean but sanitary is too institutional. I liked that dark look on the first rendition. Unusual and not boring. I just wanted the contrasting colors to be bold. **Pastels are gay.** You did that on the new one with the use of the logo colors and I think it will be great. **Let's combine those 2 elements.**"
+
+### Final Design Direction (v2)
+
+| Principle | Implementation |
+|-----------|----------------|
+| **Base Theme** | DARK look from first rendition |
+| **Accent Colors** | BOLD logo colors (Orange, Lime Green, Navy, Cyan) |
+| **NO Pastels** | Light variants on white are "too light" - avoid |
+| **Badges** | Must have easily identifiable background colors |
+| **Overall Vibe** | "Unusual and not boring" - NOT "sanitary" or "institutional" |
+
+### Specific Feedback on Elements:
+
+| Element | Feedback |
+|---------|----------|
+| Light variant backgrounds | "I don't care for the light variant backgrounds, especially on white. They are too light." |
+| Badges | "I do like badges that have an easily identifiable background color" |
+| Color palette | "Do we just get 4 colors? **I will set the badge colors.**" |
+
 ### Logo Colors to Reference
 - **Orange** (#E85D04 approximate) - Bold, primary brand color
 - **Lime Green** (#82B536 approximate) - Growth, success, transparency
 - **Navy Blue** (#1A5276 approximate) - Trust, professionalism
 - **Light Blue/Cyan** (#3498DB approximate) - Accessibility, friendliness
 
-### Design Direction
-- Less pastel, more bold colors
-- Match energy of the TipSharePro logo
+### ACTION: Combine Two Designs
+1. **FROM Design 1:** Dark overall look, unusual, not boring
+2. **FROM Design 2:** Bold TipSharePro logo colors as accents
+3. **REMOVE:** All pastel/light variants
+4. **ADD:** Tom will specify additional badge colors
+
+### Design Direction Summary
+- Match energy of the TipSharePro logo - "Not bashful"
 - "Powerful * Fair * Transparent" tagline sets the tone
 - Restaurant/kitchen imagery in hero sections
+- Dark backgrounds with bold color pops
+- NO white-on-light-gray combinations
 
 ---
 
@@ -1410,4 +1743,131 @@ Based on screenshots of www.tipsharepro.com (January 9, 2026):
 
 **Key Takeaway:** The application design should match the BOLD energy of the current website and logo - not pastel or muted.
 
-*This document is ready for stakeholder review. All specifications meet the standards of being unambiguous, testable, traceable, complete, and feasible.*
+---
+
+## Appendix I: Tom's Process Directive (January 15, 2026)
+
+### Build More, Document Less
+
+**Tom's exact words:**
+> "I was expecting to see an actual demo settings page mock up that you were working on, but this is still an overview of the whole program. Got me jazzed! Back to the boring nuts and bolts, I guess."
+>
+> "**I want to see some buttons!**"
+>
+> "I can see why this exercise helps but I feel like I need to stop talking about all the steps we're going to take and **take some steps.**"
+>
+> "After this if you feel the need for another PDR **just show me the changes. I don't need another 15 pages of reading material!**"
+
+### Interpretation for Development
+
+| Directive | Action |
+|-----------|--------|
+| "I want to see buttons" | Prioritize working UI over documentation |
+| "Take some steps" | Start building the Demo Settings Page immediately |
+| "Just show changes" | Future PRD updates as diffs only, not full rewrites |
+| "No 15 pages of reading" | Keep documentation focused and actionable |
+
+### Next Steps (Per Tom's Direction)
+
+1. **IMMEDIATE:** Build Demo Settings Page mockup with real buttons
+2. **SHOW:** Working inline Distribution Preview
+3. **DELIVER:** Printable Demo Distribution Table
+4. **FOCUS:** Dark design + bold logo colors
+5. **STOP:** Extensive documentation until requested
+
+### Demo Week Timeline Question
+
+Tom's observation: "Now if they have it for a week, I'm going to wonder what they're waiting for?!"
+- Implies Demo should have sense of urgency
+- One week is expected decision timeline
+- If prospect takes longer → they may not be serious
+
+---
+
+---
+
+## Appendix J: EOY Data & Allocations (January 11, 2026)
+
+### Reference Files
+
+Tom provided working Excel files showing actual distribution and EOY allocation workflows:
+
+| File | Purpose | Key Data |
+|------|---------|----------|
+| Sample Dist. w-Pre Paids.xlsx | Distribution page with pre-paid handling | Hours × Rate × Weight calculation in action |
+| Server Tip Allocations 2025.xls | EOY tip allocations for IRS reporting | Auto-fill columns from pay period data |
+
+### Distribution Table Structure (from Sample Dist.)
+
+| Column | Source | Notes |
+|--------|--------|-------|
+| Name | Employee roster | |
+| Hours | Pay period entries | Editable |
+| Rate | Employee record | Hourly wage |
+| Variance | Job category weights | Hidden from posted report |
+| Basis | Calculated: Hours × Rate × Variance | **HIDDEN - never shown to users** |
+| % | Share percentage | Basis / Total Basis |
+| Share | Calculated share | Pool × % |
+| Received | Rounded amount | Whole dollars |
+| Actual Share | Final distributed amount | With adjustments |
+
+### Pre-Paid Handling
+
+The "Sample Dist. w-Pre Paids.xlsx" shows how pre-paid entries work:
+- Pre-paid entries appear OUTSIDE the normal distribution table
+- Used for corrections, advances, or makeup payments
+- Must flow to YTD and EOY totals
+- Separate from standard pool calculation
+
+### EOY Auto-Load Columns (from Server Tip Allocations)
+
+At End of Year, the following columns should **auto-populate** from existing data:
+
+| Column | Auto-Fill Source | Notes |
+|--------|------------------|-------|
+| **Name** | Employee roster | From active employee list |
+| **Report Sales** | PP Contribution Log totals | Sum of all pay period sales |
+| **8%** | Calculated | Report Sales × 0.08 (IRS minimum) |
+| **Reported Tips** | Payroll data | What employee reported as tips |
+| **Contribution** | PP Contribution totals | Sum of all contributions to pool |
+| **Allocation** | Calculated | 8% − Reported Tips (allocation amount) |
+
+### Sales Data Discrepancy Note
+
+**Tom's insight:** "Report sales is exactly what we will have on their PP contribution log. Those sales will always be off from what their POS system will generate (as mine did). Ever since Covid we have done more take-out, so it reduced sales a lot."
+
+- Server sales in tip pool ≠ POS total sales
+- Take-out orders reduce reported sales (non-tipped transactions)
+- The 8% calculation still applies to adjusted sales
+
+### Borrowed Employees (Multi-Location Issue)
+
+**Challenge:** Employees who work at multiple locations (marked with * in Tom's spreadsheet) need EOY data matched across locations.
+
+| Issue | Tom's Experience |
+|-------|-----------------|
+| Data matching | "Only an issue if their units are close together as mine were" |
+| Example employees | *Cheyenne Brooks, *Laura Lagunas Hern, *Jessica Brewster (worked at multiple stores) |
+| Resolution | Final "From All Stores" column combines allocations |
+
+### Implementation Requirements
+
+1. **Distribution Page:**
+   - Reference "Sample Dist. w-Pre Paids.xlsx" for layout
+   - Include Pre-Paid section below main table
+   - Hide Variance (weight) and Basis columns in posted version
+
+2. **EOY Page (Page 9 - All Allocations):**
+   - Auto-populate from YTD data
+   - Calculate 8% IRS allocation per employee
+   - Flag borrowed employees working multiple locations
+   - Provide "From All Stores" combined total column
+
+3. **Borrowed Employee Matching:**
+   - System should identify employees by unique ID across locations
+   - Aggregate EOY data from all locations where employee worked
+   - Display combined allocation in final column
+
+---
+
+*This document is ready for stakeholder review. Future updates will be focused on CHANGES ONLY per Tom's directive.*

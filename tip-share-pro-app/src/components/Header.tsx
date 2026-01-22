@@ -1,21 +1,13 @@
 'use client';
 
 import { useDemo } from '@/lib/DemoContext';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, HelpCircle } from 'lucide-react';
 
 export default function Header() {
-  const { state, handleLogout } = useDemo();
-
-  const stepTitles: Record<number, string> = {
-    1: 'Settings',
-    2: 'Data Entry',
-    3: 'Distribution Results',
-  };
-
-  const currentStepNumber = state.currentStep as 1 | 2 | 3;
+  const { state, handleLogout, setShowWelcomeDialog } = useDemo();
 
   return (
-    <header className="header">
+    <header className="header no-print">
       <div className="header-container">
         {/* Logo and Branding */}
         <div className="header-brand">
@@ -23,26 +15,16 @@ export default function Header() {
             <span className="header-logo-icon">$</span>
           </div>
           <div className="header-text">
-            <h1 className="header-title">Tip Share Pro</h1>
+            <h1 className="header-title">TipSharePro</h1>
             <p className="header-subtitle">Demo Mode</p>
           </div>
         </div>
 
-        {/* Current Step Indicator */}
-        <div className="header-step">
-          <span className="header-step-label">
-            Step {currentStepNumber} of 3:
-          </span>
-          <span className="header-step-title">
-            {stepTitles[currentStepNumber] || 'Settings'}
-          </span>
-        </div>
-
-        {/* User Info and Logout */}
-        <div className="header-user">
+        {/* User Info and Actions */}
+        <div className="header-actions">
           {state.user && (
             <div className="header-user-info">
-              <User className="w-4 h-4 text-slate-400" />
+              <User size={16} className="header-user-icon" />
               <span className="header-user-welcome">
                 Welcome, <strong>{state.user.name}</strong>
               </span>
@@ -53,14 +35,26 @@ export default function Header() {
               )}
             </div>
           )}
-          <button
-            onClick={handleLogout}
-            className="header-logout-btn"
-            title="Log out"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Log Out</span>
-          </button>
+
+          <div className="header-buttons">
+            <button
+              onClick={() => setShowWelcomeDialog(true)}
+              className="btn btn-outline btn-sm"
+              title="Show help"
+            >
+              <HelpCircle size={16} />
+              <span className="hide-mobile">Help</span>
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="btn btn-outline btn-sm"
+              title="Log out"
+            >
+              <LogOut size={16} />
+              <span className="hide-mobile">Log Out</span>
+            </button>
+          </div>
         </div>
       </div>
     </header>

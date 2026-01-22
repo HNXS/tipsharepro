@@ -1,12 +1,6 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import { DemoProvider } from '@/lib/DemoContext';
-
-const inter = Inter({
-  variable: '--font-inter',
-  subsets: ['latin'],
-});
 
 export const metadata: Metadata = {
   title: 'Tip Share Pro - Restaurant Tip Pool Management',
@@ -27,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} antialiased min-h-screen`}>
+      <body className="antialiased min-h-screen">
         <DemoProvider>{children}</DemoProvider>
       </body>
     </html>

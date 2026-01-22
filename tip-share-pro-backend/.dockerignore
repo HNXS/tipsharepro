@@ -1,0 +1,36 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+
+# Development
+.env*
+!.env.example
+.DS_Store
+*.log
+npm-debug.log*
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Testing
+coverage
+.nyc_output
+tests
+
+# Documentation
+*.md
+!README.md
+
+# Git
+.git
+.gitignore
+
+# Vercel (not needed for Docker)
+.vercel
+vercel.json
+api/

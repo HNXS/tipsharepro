@@ -3,23 +3,27 @@
 import { useState } from 'react';
 import { useDemo } from '@/lib/DemoContext';
 import {
-  VARIABLE_WEIGHT_OPTIONS,
+  WHOLE_WEIGHT_OPTIONS,
   HELP_TEXT,
   VariableWeight,
   ContributionMethod,
   PREDEFINED_CATEGORIES,
   getContributionRateOptions,
+  CONTRIBUTION_METHOD_LABELS,
+  CategoryColor,
 } from '@/lib/types';
 import HelpTooltip from './HelpTooltip';
-import { Lock, ChevronRight, Plus } from 'lucide-react';
+import { CategoryBadge, InlineCategoryDot } from './CategoryBadge';
+import { Lock, ChevronRight, ChevronLeft, ChevronDown, RotateCcw } from 'lucide-react';
 
-// Contribution method display labels
-const METHOD_LABELS: Record<ContributionMethod, string> = {
-  CC_SALES: 'CC Sales',
-  CC_TIPS: 'CC Tips',
-  ALL_TIPS: 'All Tips',
-  ALL_SALES: 'All Sales',
-};
+// Category group display info
+const CATEGORY_GROUPS: { key: keyof typeof PREDEFINED_CATEGORIES; title: string; color: CategoryColor }[] = [
+  { key: 'boh', title: 'BOH (Kitchen)', color: 'boh' },
+  { key: 'foh', title: 'FOH (Non Tipped)', color: 'foh' },
+  { key: 'bar', title: 'Bar', color: 'bar' },
+  { key: 'support', title: 'Support', color: 'support' },
+  { key: 'custom', title: 'Custom (Big Leagues)', color: 'custom' },
+];
 
 export default function SettingsPage() {
   const {
@@ -30,45 +34,90 @@ export default function SettingsPage() {
     updateJobCategory,
     addCustomCategory,
     setCurrentStep,
+    resetToDefaults,
   } = useDemo();
 
-  const [customCategoryInputs, setCustomCategoryInputs] = useState<string[]>(['', '', '', '', '']);
+  // Local state for 5 custom category write-in inputs
+  const [customInputs, setCustomInputs] = useState<string[]>(['', '', '', '', '']);
+  // Track which custom input slots have been used
+  const [usedCustomSlots, setUsedCustomSlots] = useState<Set<number>>(new Set());
 
   const { settings } = state;
   const contributionRateOptions = getContributionRateOptions(settings.contributionMethod);
 
-  // Handle custom category input
-  const handleCustomCategoryChange = (index: number, value: string) => {
-    const newInputs = [...customCategoryInputs];
+  // Handle custom category input change
+  const handleCustomInputChange = (index: number, value: string) => {
+    const newInputs = [...customInputs];
     newInputs[index] = value;
-    setCustomCategoryInputs(newInputs);
+    setCustomInputs(newInputs);
   };
 
-  // Add custom category on Enter or blur
-  const handleAddCustomCategory = (index: number) => {
-    const name = customCategoryInputs[index].trim();
-    if (name) {
+  // Add custom category when user finishes typing
+  const handleAddCustom = (index: number) => {
+    const name = customInputs[index].trim();
+    if (name && !usedCustomSlots.has(index)) {
       addCustomCategory(name);
-      const newInputs = [...customCategoryInputs];
-      newInputs[index] = '';
-      setCustomCategoryInputs(newInputs);
+      setUsedCustomSlots(new Set([...usedCustomSlots, index]));
     }
   };
+
+  // Calculate projected pool for display
+  const projectedPool = (settings.estimatedMonthlySales / 2) * (settings.contributionRate / 100);
 
   // Get custom categories from jobCategories
   const customCategories = settings.jobCategories.filter(cat => cat.group === 'custom');
 
+  // Smooth scroll to Distribution Table
+  const scrollToDistribution = () => {
+    const distributionSection = document.getElementById('distribution-table');
+    if (distributionSection) {
+      distributionSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="content-container">
+      {/* Settings Header with Actions */}
+      <div className="settings-header">
+        <h1 className="page-title">Demo Settings</h1>
+        <div className="settings-actions">
+          <button
+            onClick={resetToDefaults}
+            className="btn btn-outline btn-sm"
+            title="Reset to default settings"
+          >
+            <RotateCcw size={16} />
+            Default Settings
+          </button>
+        </div>
+      </div>
+
+      {/* Projected Pool Preview */}
+      <div className="projected-pool-card">
+        <div className="projected-pool-label">
+          Projected Pool (per pay period)
+          <HelpTooltip text={HELP_TEXT.projectedPool} />
+        </div>
+        <div className="projected-pool-value">
+          ${projectedPool.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+        </div>
+        <div className="projected-pool-formula">
+          (${settings.estimatedMonthlySales.toLocaleString()} / 2) x {settings.contributionRate}%
+        </div>
+      </div>
+
       {/* Step 1: Contribution Method */}
       <div className="card">
         <div className="card-header">
-          <h2 className="card-title">Step 1: Method for Contribution %</h2>
+          <h2 className="card-title">
+            <span className="step-number">1</span>
+            Method for Contribution %
+          </h2>
           <HelpTooltip text={HELP_TEXT.contributionMethod} />
         </div>
 
         <div className="method-selector">
-          {(Object.keys(METHOD_LABELS) as ContributionMethod[]).map((method) => (
+          {(Object.keys(CONTRIBUTION_METHOD_LABELS) as ContributionMethod[]).map((method) => (
             <label key={method} className="method-option">
               <input
                 type="radio"
@@ -78,7 +127,7 @@ export default function SettingsPage() {
                 onChange={() => setContributionMethod(method)}
                 className="method-radio"
               />
-              <span className="method-label">{METHOD_LABELS[method]}</span>
+              <span className="method-label">{CONTRIBUTION_METHOD_LABELS[method]}</span>
             </label>
           ))}
         </div>
@@ -87,7 +136,10 @@ export default function SettingsPage() {
       {/* Step 2: Estimated Monthly Amount */}
       <div className="card">
         <div className="card-header">
-          <h2 className="card-title">Step 2: Estimate Monthly $ Amount</h2>
+          <h2 className="card-title">
+            <span className="step-number">2</span>
+            Estimate Monthly $ Amount
+          </h2>
           <HelpTooltip text={HELP_TEXT.estimatedMonthlySales} />
         </div>
 
@@ -96,7 +148,7 @@ export default function SettingsPage() {
             <span className="input-prefix">$</span>
             <input
               type="number"
-              value={settings.estimatedMonthlySales}
+              value={settings.estimatedMonthlySales || ''}
               onChange={(e) => updateSettings({ estimatedMonthlySales: parseInt(e.target.value) || 0 })}
               className="form-input form-input-money"
               placeholder="80000"
@@ -111,7 +163,10 @@ export default function SettingsPage() {
       {/* Step 3: Contribution Percentage */}
       <div className="card">
         <div className="card-header">
-          <h2 className="card-title">Step 3: Enter Contribution %</h2>
+          <h2 className="card-title">
+            <span className="step-number">3</span>
+            Enter Contribution %
+          </h2>
           <HelpTooltip
             text={settings.contributionMethod === 'ALL_SALES'
               ? HELP_TEXT.contributionRateSales
@@ -145,91 +200,76 @@ export default function SettingsPage() {
       {/* Step 4: Job Categories */}
       <div className="card">
         <div className="card-header">
-          <h2 className="card-title">Step 4: Enter Job Categories</h2>
+          <h2 className="card-title">
+            <span className="step-number">4</span>
+            Enter Job Categories
+          </h2>
           <HelpTooltip text={HELP_TEXT.jobCategories} />
         </div>
 
         <div className="category-grid">
-          {/* Kitchen (BOH) */}
-          <div className="category-group">
-            <h3 className="category-group-title">Kitchen (BOH)</h3>
-            {PREDEFINED_CATEGORIES.kitchen.map((cat) => (
-              <label key={cat.id} className="category-checkbox">
-                <input
-                  type="checkbox"
-                  checked={settings.selectedCategories.includes(cat.id)}
-                  onChange={() => toggleCategorySelection(cat.id)}
-                />
-                <span>{cat.name}</span>
-              </label>
-            ))}
-          </div>
-
-          {/* Front of House */}
-          <div className="category-group">
-            <h3 className="category-group-title">Front of House</h3>
-            {PREDEFINED_CATEGORIES.frontOfHouse.map((cat) => (
-              <label key={cat.id} className="category-checkbox">
-                <input
-                  type="checkbox"
-                  checked={settings.selectedCategories.includes(cat.id)}
-                  onChange={() => toggleCategorySelection(cat.id)}
-                />
-                <span>{cat.name}</span>
-              </label>
-            ))}
-          </div>
-
-          {/* Bar */}
-          <div className="category-group">
-            <h3 className="category-group-title">Bar</h3>
-            {PREDEFINED_CATEGORIES.bar.map((cat) => (
-              <label key={cat.id} className="category-checkbox">
-                <input
-                  type="checkbox"
-                  checked={settings.selectedCategories.includes(cat.id)}
-                  onChange={() => toggleCategorySelection(cat.id)}
-                />
-                <span>{cat.name}</span>
-              </label>
-            ))}
-          </div>
+          {CATEGORY_GROUPS.map(({ key, title, color }) => (
+            <div key={key} className="category-group">
+              <h3 className="category-group-title">
+                <InlineCategoryDot categoryColor={color} size={10} className="mr-2" />
+                {title}
+              </h3>
+              {PREDEFINED_CATEGORIES[key].map((cat) => (
+                <label key={cat.id} className="category-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={settings.selectedCategories.includes(cat.id)}
+                    onChange={() => toggleCategorySelection(cat.id)}
+                  />
+                  <span className="category-checkbox-label">
+                    {cat.name}
+                  </span>
+                </label>
+              ))}
+            </div>
+          ))}
         </div>
 
-        {/* Custom Categories */}
-        <div className="custom-categories">
-          <h3 className="category-group-title">Custom Categories</h3>
+        {/* Custom Write-in Fields */}
+        <div className="custom-categories-section">
+          <h3 className="category-group-title mt-4">
+            <InlineCategoryDot categoryColor="custom" size={10} className="mr-2" />
+            Your Custom Categories (5 available)
+          </h3>
+          <p className="form-help mb-3">
+            Add up to 5 custom job categories for your specific needs.
+          </p>
           <div className="custom-category-inputs">
-            {customCategoryInputs.map((value, index) => (
+            {customInputs.map((value, index) => (
               <div key={index} className="custom-category-input-wrapper">
-                <input
-                  type="text"
-                  value={value}
-                  onChange={(e) => handleCustomCategoryChange(index, e.target.value)}
-                  onBlur={() => handleAddCustomCategory(index)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddCustomCategory(index)}
-                  placeholder={`Custom ${index + 1}`}
-                  className="form-input form-input-dashed"
-                />
+                {usedCustomSlots.has(index) ? (
+                  <div className="custom-category-filled">
+                    <CategoryBadge categoryColor="custom" label={customCategories[index]?.name || value} size="sm" />
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    value={value}
+                    onChange={(e) => handleCustomInputChange(index, e.target.value)}
+                    onBlur={() => handleAddCustom(index)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddCustom(index)}
+                    placeholder={`Custom ${index + 1}`}
+                    className="form-input form-input-dashed"
+                  />
+                )}
               </div>
             ))}
           </div>
-          {customCategories.length > 0 && (
-            <div className="custom-categories-list">
-              {customCategories.map((cat) => (
-                <span key={cat.id} className="custom-category-tag">
-                  {cat.name}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
       {/* Step 5: Job Category Weights */}
       <div className="card">
         <div className="card-header">
-          <h2 className="card-title">Step 5: Job Category Weights</h2>
+          <h2 className="card-title">
+            <span className="step-number">5</span>
+            Job Category Weights
+          </h2>
           <HelpTooltip text={HELP_TEXT.variableWeight} />
         </div>
 
@@ -239,19 +279,22 @@ export default function SettingsPage() {
           <div className="weight-list">
             {settings.jobCategories.map((category) => (
               <div key={category.id} className="weight-item">
-                <span className="weight-item-name">{category.name}</span>
+                <div className="weight-item-info">
+                  <CategoryBadge categoryColor={category.categoryColor} size="sm" />
+                  <span className="weight-item-name">{category.name}</span>
+                </div>
                 <select
-                  value={category.variableWeight}
+                  value={Math.round(category.variableWeight)}
                   onChange={(e) =>
                     updateJobCategory(category.id, {
-                      variableWeight: parseFloat(e.target.value) as VariableWeight,
+                      variableWeight: parseInt(e.target.value) as VariableWeight,
                     })
                   }
                   className="form-select weight-select"
                 >
-                  {VARIABLE_WEIGHT_OPTIONS.map((weight) => (
+                  {WHOLE_WEIGHT_OPTIONS.map((weight) => (
                     <option key={weight} value={weight}>
-                      {weight.toFixed(2)}
+                      {weight}
                     </option>
                   ))}
                 </select>
@@ -263,6 +306,9 @@ export default function SettingsPage() {
         <p className="form-help mt-4">
           Weight scale: 1 = Lowest share, 5 = Highest share of the tip pool
         </p>
+        <p className="form-help">
+          Fine-tune individual weights by ±0.25 increments in the Distribution Table below.
+        </p>
       </div>
 
       {/* Blocked Features Teaser */}
@@ -272,37 +318,37 @@ export default function SettingsPage() {
           <h3 className="promo-title">Full Version Features</h3>
         </div>
         <div className="promo-features">
-          <div className="promo-feature">
-            <Lock size={14} className="text-muted" />
+          <div className="promo-feature promo-feature-disabled">
+            <Lock size={14} />
             <span>Location Settings</span>
           </div>
-          <div className="promo-feature">
-            <Lock size={14} className="text-muted" />
+          <div className="promo-feature promo-feature-disabled">
+            <Lock size={14} />
             <span>Pay Period Start/End Dates</span>
           </div>
-          <div className="promo-feature">
-            <Lock size={14} className="text-muted" />
+          <div className="promo-feature promo-feature-disabled">
+            <Lock size={14} />
             <span>Launch Date</span>
           </div>
-          <div className="promo-feature">
-            <Lock size={14} className="text-muted" />
+          <div className="promo-feature promo-feature-disabled">
+            <Lock size={14} />
             <span>Users/Permissions</span>
           </div>
-          <div className="promo-feature">
-            <Lock size={14} className="text-muted" />
+          <div className="promo-feature promo-feature-disabled">
+            <Lock size={14} />
             <span>Scenario Sand Box</span>
           </div>
         </div>
       </div>
 
-      {/* Navigation Button */}
-      <div className="nav-buttons nav-buttons-end">
+      {/* Navigation */}
+      <div className="nav-buttons nav-buttons-between">
         <button
-          onClick={() => setCurrentStep(2)}
+          onClick={scrollToDistribution}
           className="btn btn-primary btn-lg"
         >
-          Continue to Data Entry
-          <ChevronRight size={20} />
+          <ChevronDown size={20} />
+          Go To Distribution Table
         </button>
       </div>
     </div>

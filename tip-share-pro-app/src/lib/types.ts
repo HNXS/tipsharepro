@@ -9,12 +9,39 @@ export type ContributionMethod = 'CC_SALES' | 'CC_TIPS' | 'ALL_TIPS' | 'ALL_SALE
 // Others (tips-based): 5-25% in 0.5 increments
 export type ContributionRate = number;
 
+// 5 Job Category Colors (Finalized by Tom - January 11, 2026)
+// BOH (Kitchen) - Orange, FOH (Non Tipped) - Violet, Bar - Cyan, Support - Lime Green, Custom - Yellow
+export type CategoryColor = 'boh' | 'foh' | 'bar' | 'support' | 'custom';
+
+// Category color mapping for display
+export const CATEGORY_COLOR_MAP: Record<CategoryColor, { name: string; bgClass: string; hex: string }> = {
+  boh: { name: 'BOH (Kitchen)', bgClass: 'badge-boh', hex: '#E85D04' },
+  foh: { name: 'FOH (Non Tipped)', bgClass: 'badge-foh', hex: '#8E44AD' },
+  bar: { name: 'Bar', bgClass: 'badge-bar', hex: '#35A0D2' },
+  support: { name: 'Support', bgClass: 'badge-support', hex: '#82B536' },
+  custom: { name: 'Custom', bgClass: 'badge-custom', hex: '#F1C40F' },
+};
+
 export interface JobCategory {
   id: string;
   name: string;
   variableWeight: VariableWeight;
   description?: string;
-  group?: 'kitchen' | 'frontOfHouse' | 'bar' | 'custom';
+  categoryColor: CategoryColor;  // Required: one of 5 badge colors
+  group?: 'kitchen' | 'frontOfHouse' | 'bar' | 'support' | 'custom';
+}
+
+// Employee status for tracking (Full version feature)
+export type EmployeeStatus = 'active' | 'new' | 'rehired' | 'borrowed' | 'split_job' | 'name_change';
+
+export interface Employee {
+  id: string;
+  name: string;
+  jobCategoryId: string;
+  hourlyRate: number;
+  hoursWorked: number;
+  status?: EmployeeStatus;
+  weightAdjustment?: number; // +/- adjustment (0.25 increments, max +0.75)
 }
 
 export interface Settings {
@@ -29,26 +56,49 @@ export interface Settings {
   payPeriodEndDate?: string;
 }
 
-export interface Employee {
+// Stat Card for Distribution Table header
+export interface StatCard {
   id: string;
-  name: string;
-  jobCategoryId: string;
-  hourlyRate: number;
-  hoursWorked: number;
+  label: string;
+  value: string | number;
+  isDemo?: boolean;
+  hasHelpNote?: boolean;
+  helpText?: string;
+  editable?: boolean;
+}
+
+// Distribution row for the Distribution Table
+export interface DistributionRow {
+  employeeId: string;
+  employeeName: string;
+  categoryColor: CategoryColor;
+  categoryName: string;
+  wages: number;           // Editable, hidden on print
+  hours: number;           // Editable
+  baseWeight: VariableWeight;
+  weightAdjustment: number; // +/- 0.25 increments (max +0.75)
+  effectiveWeight: number;  // baseWeight + adjustment
+  sharePercent: number;     // Auto-calculated
+  shareDollars: number;     // Auto-calculated, rounded
+  dollarsPerHour: number;   // Auto-calculated, optional on print
 }
 
 export interface DistributionResult {
   employeeId: string;
   employeeName: string;
   jobCategory: string;
+  categoryColor: CategoryColor;
   hoursWorked: number;
   hourlyRate: number;
   variableWeight: VariableWeight;
+  weightAdjustment: number;
+  effectiveWeight: number;
   // basis is calculated but NEVER shown to users
-  // basis = hoursWorked * hourlyRate * variableWeight
+  // basis = hoursWorked * hourlyRate * effectiveWeight
   sharePercentage: number;
   shareAmount: number;
   receivedAmount: number; // rounded share or adjusted for exact matching
+  dollarsPerHour: number;
 }
 
 export interface DemoState {
@@ -58,76 +108,98 @@ export interface DemoState {
   estimatedMonthlySales: number;
   projectedPool: number; // (Monthly Sales / 2) * Contribution %
   distributionResults: DistributionResult[];
+  // Demo-specific state
+  prePaidAmount: number;
+  netPool: number;
+  showWelcomeDialog: boolean;
+  printIncludeSharePerHour: boolean;
 }
 
-// Predefined job categories organized by group (from PRD)
+// Predefined job categories organized by 5 color groups (from PRD)
 export const PREDEFINED_CATEGORIES = {
-  kitchen: [
-    { id: 'lead-cook', name: 'Lead Cook', variableWeight: 3.5 as VariableWeight, group: 'kitchen' },
-    { id: 'line-cook', name: 'Line Cook', variableWeight: 3 as VariableWeight, group: 'kitchen' },
-    { id: 'pastry-chef', name: 'Pastry Chef', variableWeight: 3.25 as VariableWeight, group: 'kitchen' },
-    { id: 'prep-cook', name: 'Prep Cook', variableWeight: 2.5 as VariableWeight, group: 'kitchen' },
-    { id: 'pantry-chef', name: 'Pantry Chef', variableWeight: 2.75 as VariableWeight, group: 'kitchen' },
+  // BOH (Kitchen) - Orange #E85D04
+  boh: [
+    { id: 'lead-cook', name: 'Lead Cook', variableWeight: 4 as VariableWeight, categoryColor: 'boh' as CategoryColor, group: 'kitchen' as const },
+    { id: 'line-cook', name: 'Line Cook', variableWeight: 3 as VariableWeight, categoryColor: 'boh' as CategoryColor, group: 'kitchen' as const },
+    { id: 'pastry-chef', name: 'Pastry Chef', variableWeight: 3 as VariableWeight, categoryColor: 'boh' as CategoryColor, group: 'kitchen' as const },
+    { id: 'pantry-chef', name: 'Pantry Chef', variableWeight: 3 as VariableWeight, categoryColor: 'boh' as CategoryColor, group: 'kitchen' as const },
   ],
-  frontOfHouse: [
-    { id: 'maitre-d', name: "Maitre D'", variableWeight: 4 as VariableWeight, group: 'frontOfHouse' },
-    { id: 'host-hostess', name: 'Host/Hostess', variableWeight: 2.5 as VariableWeight, group: 'frontOfHouse' },
-    { id: 'cashier', name: 'Cashier', variableWeight: 2 as VariableWeight, group: 'frontOfHouse' },
-    { id: 'runner', name: 'Runner', variableWeight: 2.25 as VariableWeight, group: 'frontOfHouse' },
-    { id: 'busser', name: 'Busser', variableWeight: 2 as VariableWeight, group: 'frontOfHouse' },
+  // FOH (Non Tipped) - Violet #8E44AD
+  foh: [
+    { id: 'host-hostess', name: 'Host/Hostess', variableWeight: 2 as VariableWeight, categoryColor: 'foh' as CategoryColor, group: 'frontOfHouse' as const },
+    { id: 'busser', name: 'Busser', variableWeight: 2 as VariableWeight, categoryColor: 'foh' as CategoryColor, group: 'frontOfHouse' as const },
+    { id: 'cashier', name: 'Cashier', variableWeight: 2 as VariableWeight, categoryColor: 'foh' as CategoryColor, group: 'frontOfHouse' as const },
+    { id: 'runner', name: 'Runner', variableWeight: 2 as VariableWeight, categoryColor: 'foh' as CategoryColor, group: 'frontOfHouse' as const },
   ],
+  // Bar - Cyan #35A0D2
   bar: [
-    { id: 'barista', name: 'Barista', variableWeight: 2.75 as VariableWeight, group: 'bar' },
-    { id: 'bartender', name: 'Bartender', variableWeight: 3.5 as VariableWeight, group: 'bar' },
-    { id: 'sommelier', name: 'Sommelier', variableWeight: 4 as VariableWeight, group: 'bar' },
-    { id: 'bar-back', name: 'Bar Back', variableWeight: 2.25 as VariableWeight, group: 'bar' },
-    { id: 'dishwasher', name: 'Dishwasher', variableWeight: 1.5 as VariableWeight, group: 'bar' },
+    { id: 'bartender', name: 'Bartender', variableWeight: 4 as VariableWeight, categoryColor: 'bar' as CategoryColor, group: 'bar' as const },
+    { id: 'barista', name: 'Barista', variableWeight: 3 as VariableWeight, categoryColor: 'bar' as CategoryColor, group: 'bar' as const },
+    { id: 'bar-back', name: 'Bar Back', variableWeight: 2 as VariableWeight, categoryColor: 'bar' as CategoryColor, group: 'bar' as const },
+  ],
+  // Support (FOH or BOH) - Lime Green #82B536
+  support: [
+    { id: 'dishwasher', name: 'Dishwasher', variableWeight: 1 as VariableWeight, categoryColor: 'support' as CategoryColor, group: 'support' as const },
+    { id: 'prep-cook', name: 'Prep Cook', variableWeight: 2 as VariableWeight, categoryColor: 'support' as CategoryColor, group: 'support' as const },
+  ],
+  // Custom (Big Leagues) - Yellow #F1C40F
+  custom: [
+    { id: 'maitre-d', name: "Maitre D'", variableWeight: 5 as VariableWeight, categoryColor: 'custom' as CategoryColor, group: 'custom' as const },
+    { id: 'sommelier', name: 'Sommelier', variableWeight: 5 as VariableWeight, categoryColor: 'custom' as CategoryColor, group: 'custom' as const },
+    { id: 'banquet-chef', name: 'Banquet Chef', variableWeight: 5 as VariableWeight, categoryColor: 'custom' as CategoryColor, group: 'custom' as const },
   ],
 };
 
 // Flattened list of all predefined categories
 export const ALL_PREDEFINED_CATEGORIES: JobCategory[] = [
-  ...PREDEFINED_CATEGORIES.kitchen.map(c => ({ ...c, group: 'kitchen' as const })),
-  ...PREDEFINED_CATEGORIES.frontOfHouse.map(c => ({ ...c, group: 'frontOfHouse' as const })),
-  ...PREDEFINED_CATEGORIES.bar.map(c => ({ ...c, group: 'bar' as const })),
+  ...PREDEFINED_CATEGORIES.boh,
+  ...PREDEFINED_CATEGORIES.foh,
+  ...PREDEFINED_CATEGORIES.bar,
+  ...PREDEFINED_CATEGORIES.support,
+  ...PREDEFINED_CATEGORIES.custom,
 ];
 
-// Default job categories (selected by default for demo)
+// Default job categories (selected by default for demo) - 5 representing each color
 export const DEFAULT_JOB_CATEGORIES: JobCategory[] = [
-  { id: 'bartender', name: 'Bartender', variableWeight: 3.5, group: 'bar' },
-  { id: 'line-cook', name: 'Line Cook', variableWeight: 3, group: 'kitchen' },
-  { id: 'busser', name: 'Busser', variableWeight: 2, group: 'frontOfHouse' },
-  { id: 'host-hostess', name: 'Host/Hostess', variableWeight: 2.5, group: 'frontOfHouse' },
-  { id: 'dishwasher', name: 'Dishwasher', variableWeight: 1.5, group: 'bar' },
+  { id: 'line-cook', name: 'Line Cook', variableWeight: 3, categoryColor: 'boh', group: 'kitchen' },
+  { id: 'host-hostess', name: 'Host/Hostess', variableWeight: 2, categoryColor: 'foh', group: 'frontOfHouse' },
+  { id: 'bartender', name: 'Bartender', variableWeight: 4, categoryColor: 'bar', group: 'bar' },
+  { id: 'dishwasher', name: 'Dishwasher', variableWeight: 1, categoryColor: 'support', group: 'support' },
+  { id: 'busser', name: 'Busser', variableWeight: 2, categoryColor: 'foh', group: 'frontOfHouse' },
 ];
 
-// Default employees for demo (using new category IDs)
+// Demo employees (10 pre-set as per PRD)
 export const DEFAULT_EMPLOYEES: Employee[] = [
-  { id: '1', name: 'Sarah Johnson', jobCategoryId: 'host-hostess', hourlyRate: 18.00, hoursWorked: 72 },
-  { id: '2', name: 'Mike Chen', jobCategoryId: 'busser', hourlyRate: 17.50, hoursWorked: 68 },
-  { id: '3', name: 'Lisa Park', jobCategoryId: 'host-hostess', hourlyRate: 16.00, hoursWorked: 64 },
-  { id: '4', name: 'Tom Wilson', jobCategoryId: 'bartender', hourlyRate: 19.00, hoursWorked: 56 },
-  { id: '5', name: 'Juan Martinez', jobCategoryId: 'line-cook', hourlyRate: 22.00, hoursWorked: 80 },
-  { id: '6', name: 'Amy Rodriguez', jobCategoryId: 'busser', hourlyRate: 15.00, hoursWorked: 60 },
-  { id: '7', name: 'Dan Torres', jobCategoryId: 'host-hostess', hourlyRate: 14.00, hoursWorked: 45 },
-  { id: '8', name: 'Katie Middleton', jobCategoryId: 'dishwasher', hourlyRate: 16.50, hoursWorked: 52 },
+  { id: '1', name: 'Maria Santos', jobCategoryId: 'line-cook', hourlyRate: 22.00, hoursWorked: 80, status: 'active' },
+  { id: '2', name: 'James Wilson', jobCategoryId: 'bartender', hourlyRate: 24.00, hoursWorked: 64, status: 'active' },
+  { id: '3', name: 'Sarah Johnson', jobCategoryId: 'host-hostess', hourlyRate: 16.00, hoursWorked: 48, status: 'active' },
+  { id: '4', name: 'Mike Chen', jobCategoryId: 'busser', hourlyRate: 15.50, hoursWorked: 56, status: 'active' },
+  { id: '5', name: 'Lisa Park', jobCategoryId: 'dishwasher', hourlyRate: 16.00, hoursWorked: 72, status: 'active' },
+  { id: '6', name: 'Tom Rodriguez', jobCategoryId: 'line-cook', hourlyRate: 20.00, hoursWorked: 68, status: 'active' },
+  { id: '7', name: 'Amy Martinez', jobCategoryId: 'host-hostess', hourlyRate: 15.00, hoursWorked: 40, status: 'active' },
+  { id: '8', name: 'Dan Torres', jobCategoryId: 'busser', hourlyRate: 15.00, hoursWorked: 52, status: 'active' },
+  { id: '9', name: 'Katie Middleton', jobCategoryId: 'bartender', hourlyRate: 22.00, hoursWorked: 56, status: 'active' },
+  { id: '10', name: 'Chris Lee', jobCategoryId: 'dishwasher', hourlyRate: 15.50, hoursWorked: 64, status: 'active' },
 ];
 
 // Default settings
 export const DEFAULT_SETTINGS: Settings = {
-  companyName: "Tom's Restaurant Group",
+  companyName: "Demo Restaurant",
   contributionMethod: 'ALL_SALES',
   contributionRate: 3.25,
   estimatedMonthlySales: 80000,
   payPeriodType: 'bi-weekly',
   jobCategories: DEFAULT_JOB_CATEGORIES,
-  selectedCategories: ['bartender', 'line-cook', 'busser', 'host-hostess', 'dishwasher'],
+  selectedCategories: ['line-cook', 'host-hostess', 'bartender', 'dishwasher', 'busser'],
 };
 
 // Generate variable weight options (1-5 with 0.25 increments)
 export const VARIABLE_WEIGHT_OPTIONS: VariableWeight[] = [
   1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5
 ];
+
+// Whole number weight options (for Settings Step 5)
+export const WHOLE_WEIGHT_OPTIONS: number[] = [1, 2, 3, 4, 5];
 
 // Contribution rate options based on method
 export function getContributionRateOptions(method: ContributionMethod): number[] {
@@ -153,6 +225,18 @@ export function getDefaultRateForMethod(method: ContributionMethod): number {
   return method === 'ALL_SALES' ? 3.25 : 15;
 }
 
+// Get category color CSS class from category ID
+export function getCategoryColorClass(categoryId: string, categories: JobCategory[]): string {
+  const category = categories.find(c => c.id === categoryId);
+  if (!category) return 'badge-support'; // default fallback
+  return `badge-${category.categoryColor}`;
+}
+
+// Get category by ID
+export function getCategoryById(categoryId: string, categories: JobCategory[]): JobCategory | undefined {
+  return categories.find(c => c.id === categoryId);
+}
+
 // Help text for tooltips - aligned with PRD
 export const HELP_TEXT = {
   // Step 1: Contribution Method
@@ -171,6 +255,25 @@ export const HELP_TEXT = {
   projectedPool: 'Calculated as: (Monthly Sales / 2) x Contribution Rate. This is the approximate amount available for distribution each pay period.',
   hoursWorked: 'Total hours worked during the pay period.',
   hourlyRate: 'The employee\'s regular hourly pay rate.',
+  prePaid: 'Amount paid early to terminated employees or corrections from previous periods. Link to PDF for details.',
   // Backwards compatibility
   contributionRate: 'The percentage used to calculate the contribution to the tip pool.',
 };
+
+// Contribution method display labels
+export const CONTRIBUTION_METHOD_LABELS: Record<ContributionMethod, string> = {
+  CC_SALES: 'CC Sales',
+  CC_TIPS: 'CC Tips',
+  ALL_TIPS: 'All Tips',
+  ALL_SALES: 'All Sales',
+};
+
+// Demo welcome dialog text (from PRD)
+export const DEMO_WELCOME_TEXT = `The table displayed assumes your distribution employee's data is up to date and all that is needed is the hours entered. This is a good representation of the finalizing of Distributions. All updating of any employee data (new employee, wage increase, category change etc) can be accomplished before PPE so as not to hold up Pay Day.
+
+Enter Hours, Double Check for Errors, Print for posting and Email to Payroll.
+
+At this point just enter hours and see how your settings affected the pool. You can change wages, hours and if you click on the name cell, change category weights by .25 increments up to .75. Whole number Category weights are changeable in the Demo settings above. Return to the original Distribution table settings by pressing the 'default settings' button.`;
+
+// Demo dialog for reducing employees
+export const DEMO_EMPLOYEE_DIALOG = 'You can set hours to zero on any employee you want to eliminate from the pool if it holds too many recipients.';

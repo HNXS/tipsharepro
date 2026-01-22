@@ -44,52 +44,47 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4">
+    <div className="login-page">
       {/* Background pattern */}
-      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-10" />
+      <div className="login-bg-pattern" />
 
-      <div className="relative z-10 w-full max-w-md">
+      <div className="login-container">
         {/* Logo Section */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center mb-6">
+        <div className="login-header">
+          <div className="login-logo">
             <Image
               src="/logo-icon.png"
               alt="TipSharePro"
               width={80}
               height={80}
-              className="drop-shadow-2xl"
+              className="login-logo-image"
               priority
             />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">
-            TipSharePro
-          </h1>
-          <p className="text-sm font-medium tracking-widest text-orange-400 uppercase">
+          <h1 className="login-brand-name">TipSharePro</h1>
+          <p className="login-tagline">
             Powerful &bull; Fair &bull; Transparent
           </p>
         </div>
 
         {/* Login Card */}
-        <div className="card bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-2xl shadow-2xl">
-          <h2 className="text-xl font-semibold text-white mb-6 text-center">
+        <div className="login-card">
+          <h2 className="login-card-title">
             Sign in to continue
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="login-form">
             {/* Error Message */}
             {error && (
-              <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <div className="login-error">
+                <AlertCircle size={16} />
                 <span>{error}</span>
               </div>
             )}
 
             {/* Email Field */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-slate-300 mb-2"
-              >
+            <div className="form-group">
+              <label htmlFor="email" className="form-label">
                 Email Address
               </label>
               <input
@@ -97,7 +92,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+                className="form-input"
                 placeholder="demo@tipsharepro.com"
                 required
                 autoComplete="email"
@@ -106,11 +101,8 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
             </div>
 
             {/* Password Field */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-slate-300 mb-2"
-              >
+            <div className="form-group">
+              <label htmlFor="password" className="form-label">
                 Password
               </label>
               <input
@@ -118,7 +110,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+                className="form-input"
                 placeholder="Enter your password"
                 required
                 autoComplete="current-password"
@@ -130,16 +122,16 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
             <button
               type="submit"
               disabled={isLoading || !email || !password}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-500/50 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
+              className="btn btn-primary btn-lg btn-full"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 size={20} className="animate-spin" />
                   Signing in...
                 </>
               ) : (
                 <>
-                  <LogIn className="w-5 h-5" />
+                  <LogIn size={20} />
                   Sign In
                 </>
               )}
@@ -147,18 +139,16 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
           </form>
 
           {/* Demo Credentials Hint */}
-          <div className="mt-6 pt-6 border-t border-white/10">
-            <p className="text-sm text-slate-400 text-center">
-              Demo credentials:
-            </p>
-            <p className="text-sm text-slate-300 text-center mt-1 font-mono">
+          <div className="login-demo-hint">
+            <p className="login-demo-label">Demo credentials:</p>
+            <p className="login-demo-credentials">
               demo@tipsharepro.com / demo123
             </p>
           </div>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-sm text-slate-500 mt-8">
+        <p className="login-footer">
           &copy; {new Date().getFullYear()} TipSharePro. All rights reserved.
         </p>
       </div>

@@ -1,0 +1,118 @@
+# TipSharePro - Docker Compose Configuration
+# For local development and Coolify deployment
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # PostgreSQL Database
+  # ============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: tipsharepro-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tipsharepro
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: tipsharepro
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tipsharepro -d tipsharepro"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tipsharepro-network
+
+  # ============================================================================
+  # pgAdmin - Database Administration UI
+  # ============================================================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: tipsharepro-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@tipsharepro.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - tipsharepro-network
+
+  # ============================================================================
+  # Backend API (Express + Prisma)
+  # ============================================================================
+  backend:
+    build:
+      context: ./tip-share-pro-backend
+      dockerfile: Dockerfile
+    container_name: tipsharepro-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://tipsharepro:${POSTGRES_PASSWORD}@postgres:5432/tipsharepro
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ACCESS_EXPIRY: ${JWT_ACCESS_EXPIRY:-15m}
+      JWT_REFRESH_EXPIRY: ${JWT_REFRESH_EXPIRY:-7d}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-https://app.tipsharepro.com}
+      PORT: 3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - tipsharepro-network
+
+  # ============================================================================
+  # Frontend (Next.js)
+  # ============================================================================
+  frontend:
+    build:
+      context: ./tip-share-pro-app
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: /api
+    container_name: tipsharepro-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      BACKEND_INTERNAL_URL: http://backend:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - tipsharepro-network
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  tipsharepro-network:
+    driver: bridge

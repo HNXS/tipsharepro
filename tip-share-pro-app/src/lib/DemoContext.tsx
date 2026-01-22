@@ -11,6 +11,7 @@ import {
   JobCategory,
   VariableWeight,
   ContributionMethod,
+  CategoryColor,
   getDefaultRateForMethod,
   ALL_PREDEFINED_CATEGORIES,
 } from './types';
@@ -50,8 +51,14 @@ interface DemoContextType {
   updateEmployee: (employeeId: string, updates: Partial<Employee>) => void;
   addEmployee: (employee: Employee) => void;
   removeEmployee: (employeeId: string) => void;
-  // Data actions
+  adjustIndividualWeight: (employeeId: string, delta: number) => void;
+  // Distribution actions
   calculateDistribution: () => void;
+  setPrePaidAmount: (amount: number) => void;
+  // Demo actions
+  resetToDefaults: () => void;
+  setShowWelcomeDialog: (show: boolean) => void;
+  setPrintIncludeSharePerHour: (include: boolean) => void;
   // Loading state
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -59,48 +66,59 @@ interface DemoContextType {
 
 const DemoContext = createContext<DemoContextType | undefined>(undefined);
 
+// Calculate initial projected pool
+const calculateProjectedPool = (monthlySales: number, rate: number): number => {
+  return (monthlySales / 2) * (rate / 100);
+};
+
+const initialProjectedPool = calculateProjectedPool(
+  DEFAULT_SETTINGS.estimatedMonthlySales,
+  DEFAULT_SETTINGS.contributionRate
+);
+
 const initialState: ExtendedDemoState = {
   // Auth state
   isAuthenticated: false,
   user: null,
-  isLoading: true, // Start loading to check for existing session
+  isLoading: true,
   error: null,
   // App state
-  currentStep: 0, // 0 = login, 1-3 = app steps
+  currentStep: 0,
   settings: DEFAULT_SETTINGS,
   employees: DEFAULT_EMPLOYEES,
   estimatedMonthlySales: DEFAULT_SETTINGS.estimatedMonthlySales,
-  projectedPool: 0,
+  projectedPool: initialProjectedPool,
   distributionResults: [],
+  // Demo-specific state
+  prePaidAmount: 0,
+  netPool: initialProjectedPool,
+  showWelcomeDialog: true,
+  printIncludeSharePerHour: false,
 };
 
 export function DemoProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<ExtendedDemoState>(() => {
-    // Calculate initial projected pool based on settings
-    const projectedPool = (DEFAULT_SETTINGS.estimatedMonthlySales / 2) * (DEFAULT_SETTINGS.contributionRate / 100);
-    return { ...initialState, projectedPool, estimatedMonthlySales: DEFAULT_SETTINGS.estimatedMonthlySales };
-  });
+  const [state, setState] = useState<ExtendedDemoState>(initialState);
 
   // Check for existing session on mount
   useEffect(() => {
     const hasToken = checkAuth();
-    if (hasToken) {
-      // TODO: Validate session with API and fetch user info
-      // For now, just check if token exists
-      setState(prev => ({
-        ...prev,
-        isLoading: false,
-        // If we have a token but no user info, we'll need to fetch it
-        // For demo, we'll just mark as authenticated
-      }));
-    } else {
-      setState(prev => ({
-        ...prev,
-        isLoading: false,
-        currentStep: 0,
-      }));
-    }
+    setState(prev => ({
+      ...prev,
+      isLoading: false,
+      currentStep: hasToken ? 1 : 0,
+    }));
   }, []);
+
+  // Recalculate distribution when relevant state changes
+  useEffect(() => {
+    if (state.currentStep > 0 && state.employees.length > 0) {
+      // Auto-calculate distribution when settings or employees change
+      const timer = setTimeout(() => {
+        calculateDistributionInternal();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [state.settings, state.employees, state.prePaidAmount]);
 
   // Auth handlers
   const handleLoginSuccess = useCallback((user: AuthUser) => {
@@ -111,16 +129,16 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       currentStep: 1,
       isLoading: false,
       error: null,
+      showWelcomeDialog: true, // Show welcome dialog on login
     }));
   }, []);
 
   const handleLogout = useCallback(() => {
     clearToken();
-    setState(prev => ({
+    setState({
       ...initialState,
       isLoading: false,
-      projectedPool: prev.projectedPool,
-    }));
+    });
   }, []);
 
   const setCurrentStep = useCallback((step: 0 | 1 | 2 | 3) => {
@@ -139,17 +157,18 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setState(prev => {
       const newSettings = { ...prev.settings, ...updates };
       const monthlySales = newSettings.estimatedMonthlySales || prev.settings.estimatedMonthlySales;
-      const projectedPool = (monthlySales / 2) * (newSettings.contributionRate / 100);
+      const projectedPool = calculateProjectedPool(monthlySales, newSettings.contributionRate);
+      const netPool = projectedPool - prev.prePaidAmount;
       return {
         ...prev,
         settings: newSettings,
         projectedPool,
+        netPool,
         estimatedMonthlySales: monthlySales,
       };
     });
   }, []);
 
-  // Set contribution method and update rate to default for that method
   const setContributionMethod = useCallback((method: ContributionMethod) => {
     setState(prev => {
       const defaultRate = getDefaultRateForMethod(method);
@@ -158,12 +177,12 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         contributionMethod: method,
         contributionRate: defaultRate,
       };
-      const projectedPool = (prev.settings.estimatedMonthlySales / 2) * (defaultRate / 100);
-      return { ...prev, settings: newSettings, projectedPool };
+      const projectedPool = calculateProjectedPool(prev.settings.estimatedMonthlySales, defaultRate);
+      const netPool = projectedPool - prev.prePaidAmount;
+      return { ...prev, settings: newSettings, projectedPool, netPool };
     });
   }, []);
 
-  // Toggle category selection
   const toggleCategorySelection = useCallback((categoryId: string) => {
     setState(prev => {
       const isSelected = prev.settings.selectedCategories.includes(categoryId);
@@ -171,16 +190,11 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       let newJobCategories = [...prev.settings.jobCategories];
 
       if (isSelected) {
-        // Remove from selected
         newSelectedCategories = prev.settings.selectedCategories.filter(id => id !== categoryId);
-        // Remove from jobCategories
         newJobCategories = newJobCategories.filter(cat => cat.id !== categoryId);
       } else {
-        // Add to selected
         newSelectedCategories = [...prev.settings.selectedCategories, categoryId];
-        // Add to jobCategories if not already there
         if (!newJobCategories.find(cat => cat.id === categoryId)) {
-          // Find in predefined categories
           const predefined = ALL_PREDEFINED_CATEGORIES.find(cat => cat.id === categoryId);
           if (predefined) {
             newJobCategories.push(predefined);
@@ -199,7 +213,6 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // Add a custom category
   const addCustomCategory = useCallback((name: string) => {
     if (!name.trim()) return;
 
@@ -208,7 +221,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       const newCategory: JobCategory = {
         id,
         name: name.trim(),
-        variableWeight: 2.5,
+        variableWeight: 3,
+        categoryColor: 'custom',
         group: 'custom',
       };
 
@@ -278,18 +292,93 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  // Adjust individual employee weight by delta (±0.25 increments, max +0.75 total)
+  const adjustIndividualWeight = useCallback((employeeId: string, delta: number) => {
+    setState(prev => ({
+      ...prev,
+      employees: prev.employees.map(emp => {
+        if (emp.id !== employeeId) return emp;
 
-  const calculateDistribution = useCallback(() => {
+        const currentAdjustment = emp.weightAdjustment || 0;
+        const newAdjustment = currentAdjustment + delta;
+
+        // Clamp to valid range: -0.75 to +0.75
+        const clampedAdjustment = Math.max(-0.75, Math.min(0.75, newAdjustment));
+
+        return { ...emp, weightAdjustment: clampedAdjustment };
+      }),
+    }));
+  }, []);
+
+  // Set pre-paid amount and recalculate net pool
+  const setPrePaidAmount = useCallback((amount: number) => {
+    setState(prev => ({
+      ...prev,
+      prePaidAmount: amount,
+      netPool: prev.projectedPool - amount,
+    }));
+  }, []);
+
+  // Reset everything to default demo values
+  const resetToDefaults = useCallback(() => {
     setState(prev => {
-      const { employees, settings, projectedPool } = prev;
+      const projectedPool = calculateProjectedPool(
+        DEFAULT_SETTINGS.estimatedMonthlySales,
+        DEFAULT_SETTINGS.contributionRate
+      );
+      return {
+        ...prev,
+        settings: DEFAULT_SETTINGS,
+        employees: DEFAULT_EMPLOYEES.map(emp => ({ ...emp, weightAdjustment: 0 })),
+        estimatedMonthlySales: DEFAULT_SETTINGS.estimatedMonthlySales,
+        projectedPool,
+        prePaidAmount: 0,
+        netPool: projectedPool,
+        distributionResults: [],
+      };
+    });
+  }, []);
 
-      // Calculate basis for each employee (NEVER shown to users!)
-      // Basis = Hours × Rate × Variable Weight
-      const employeesWithBasis = employees.map(emp => {
+  // Show/hide welcome dialog
+  const setShowWelcomeDialog = useCallback((show: boolean) => {
+    setState(prev => ({ ...prev, showWelcomeDialog: show }));
+  }, []);
+
+  // Toggle print option for $/Hr column
+  const setPrintIncludeSharePerHour = useCallback((include: boolean) => {
+    setState(prev => ({ ...prev, printIncludeSharePerHour: include }));
+  }, []);
+
+  // Internal calculate distribution function (called by effect)
+  const calculateDistributionInternal = () => {
+    setState(prev => {
+      const { employees, settings, netPool } = prev;
+
+      // Filter employees with hours > 0
+      const activeEmployees = employees.filter(emp => emp.hoursWorked > 0);
+
+      if (activeEmployees.length === 0) {
+        return { ...prev, distributionResults: [] };
+      }
+
+      // Calculate basis for each employee (HIDDEN from users!)
+      // Basis = Hours × Rate × (Category Weight + Individual Adjustment)
+      const employeesWithBasis = activeEmployees.map(emp => {
         const category = settings.jobCategories.find(cat => cat.id === emp.jobCategoryId);
-        const variableWeight = category?.variableWeight || 2.5;
-        const basis = emp.hoursWorked * emp.hourlyRate * variableWeight;
-        return { ...emp, basis, variableWeight, categoryName: category?.name || 'Unknown' };
+        const baseWeight = category?.variableWeight || 2.5;
+        const weightAdjustment = emp.weightAdjustment || 0;
+        const effectiveWeight = baseWeight + weightAdjustment;
+        const basis = emp.hoursWorked * emp.hourlyRate * effectiveWeight;
+
+        return {
+          ...emp,
+          basis,
+          baseWeight,
+          weightAdjustment,
+          effectiveWeight,
+          categoryName: category?.name || 'Unknown',
+          categoryColor: category?.categoryColor || 'support' as CategoryColor,
+        };
       });
 
       // Calculate total basis
@@ -298,25 +387,36 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       // Calculate share percentage and amount for each employee
       const results: DistributionResult[] = employeesWithBasis.map(emp => {
         const sharePercentage = totalBasis > 0 ? (emp.basis / totalBasis) * 100 : 0;
-        const shareAmount = projectedPool * (sharePercentage / 100);
+        const shareAmount = netPool * (sharePercentage / 100);
+        const dollarsPerHour = emp.hoursWorked > 0 ? shareAmount / emp.hoursWorked : 0;
+
         return {
           employeeId: emp.id,
           employeeName: emp.name,
           jobCategory: emp.categoryName,
+          categoryColor: emp.categoryColor,
           hoursWorked: emp.hoursWorked,
           hourlyRate: emp.hourlyRate,
-          variableWeight: emp.variableWeight as VariableWeight,
+          variableWeight: emp.baseWeight as VariableWeight,
+          weightAdjustment: emp.weightAdjustment,
+          effectiveWeight: emp.effectiveWeight,
           sharePercentage,
           shareAmount,
-          receivedAmount: shareAmount, // Will be adjusted for exact matching
+          receivedAmount: shareAmount,
+          dollarsPerHour,
         };
       });
 
-      // Adjust received amounts to match pool exactly (round and redistribute difference)
-      const adjustedResults = adjustReceivedAmounts(results, projectedPool);
+      // Adjust received amounts to match pool exactly
+      const adjustedResults = adjustReceivedAmounts(results, netPool);
 
       return { ...prev, distributionResults: adjustedResults };
     });
+  };
+
+  // Public calculate distribution (explicit call)
+  const calculateDistribution = useCallback(() => {
+    calculateDistributionInternal();
   }, []);
 
   return (
@@ -340,8 +440,14 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         updateEmployee,
         addEmployee,
         removeEmployee,
-        // Data
+        adjustIndividualWeight,
+        // Distribution
         calculateDistribution,
+        setPrePaidAmount,
+        // Demo
+        resetToDefaults,
+        setShowWelcomeDialog,
+        setPrintIncludeSharePerHour,
         // Loading/Error
         setLoading,
         setError,
@@ -354,21 +460,22 @@ export function DemoProvider({ children }: { children: ReactNode }) {
 
 // Helper function to adjust received amounts so they sum exactly to the pool total
 function adjustReceivedAmounts(results: DistributionResult[], totalPool: number): DistributionResult[] {
-  // Round each share to 2 decimal places
+  // Round each share to whole dollars
   const rounded = results.map(r => ({
     ...r,
-    receivedAmount: Math.round(r.shareAmount * 100) / 100,
+    receivedAmount: Math.round(r.shareAmount),
+    dollarsPerHour: r.hoursWorked > 0 ? Math.round(r.shareAmount) / r.hoursWorked : 0,
   }));
 
   // Calculate the difference between total pool and sum of rounded amounts
   const totalRounded = rounded.reduce((sum, r) => sum + r.receivedAmount, 0);
-  let diff = Math.round((totalPool - totalRounded) * 100) / 100;
+  let diff = Math.round(totalPool) - totalRounded;
 
-  if (Math.abs(diff) > 0.001) {
-    // Sort by the fractional part of the original amount (ascending if diff < 0, descending if diff > 0)
+  if (diff !== 0) {
+    // Sort by the fractional part of the original amount
     const withError = rounded.map(r => ({
       ...r,
-      error: r.shareAmount - r.receivedAmount, // positive = rounded down
+      error: r.shareAmount - r.receivedAmount,
     }));
 
     if (diff > 0) {
@@ -379,12 +486,15 @@ function adjustReceivedAmounts(results: DistributionResult[], totalPool: number)
       withError.sort((a, b) => a.error - b.error);
     }
 
-    // Apply adjustments one cent at a time
+    // Apply adjustments one dollar at a time
     let i = 0;
-    while (Math.abs(diff) >= 0.01 && i < withError.length) {
-      const adjustment = diff > 0 ? 0.01 : -0.01;
-      withError[i].receivedAmount = Math.round((withError[i].receivedAmount + adjustment) * 100) / 100;
-      diff = Math.round((diff - adjustment) * 100) / 100;
+    while (diff !== 0 && i < withError.length) {
+      const adjustment = diff > 0 ? 1 : -1;
+      withError[i].receivedAmount += adjustment;
+      withError[i].dollarsPerHour = withError[i].hoursWorked > 0
+        ? withError[i].receivedAmount / withError[i].hoursWorked
+        : 0;
+      diff -= adjustment;
       i++;
     }
 

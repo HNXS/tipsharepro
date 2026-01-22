@@ -3,9 +3,14 @@
  *
  * Base client for making API requests to the backend.
  * Handles authentication, error handling, and response parsing.
+ *
+ * API requests are proxied through Next.js rewrites in production:
+ * /api/* -> backend:3001/api/v1/*
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+// Use relative /api path for proxied requests (Docker/Coolify deployment)
+// Falls back to localhost for local development without Docker
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 // Token storage key
 const TOKEN_KEY = 'demo_token';
