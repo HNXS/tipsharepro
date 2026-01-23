@@ -2167,3 +2167,503 @@ input[type="number"] {
   color: var(--text-tertiary);
   text-align: center;
 }
+
+/* ========================================
+   Settings Page - Additional Styles
+   ======================================== */
+
+/* Page Title */
+.page-title {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+/* Settings Header with Actions */
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.settings-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+/* Projected Pool Card */
+.projected-pool-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  text-align: center;
+}
+
+.projected-pool-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-body-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.projected-pool-value {
+  font-size: var(--text-display);
+  font-weight: var(--font-bold);
+  font-family: var(--font-mono);
+  color: var(--color-primary);
+  margin-bottom: var(--space-1);
+}
+
+.projected-pool-formula {
+  font-size: var(--text-body-sm);
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+}
+
+/* Input with Suffix (for % dropdown) */
+.input-with-suffix {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.input-suffix {
+  font-size: var(--text-h4);
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+}
+
+/* Outline Button */
+.btn-outline {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--bg-border);
+  padding: 0.75rem 1.5rem;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background-color: var(--bg-elevated);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Promo Card (Full Version Features Teaser) */
+.card-promo {
+  border: 1px dashed var(--bg-border);
+  background: var(--bg-elevated);
+}
+
+.promo-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.promo-icon {
+  color: var(--text-disabled);
+}
+
+.promo-title {
+  font-size: var(--text-h5);
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+}
+
+.promo-features {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.promo-feature {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-body-sm);
+  color: var(--text-secondary);
+}
+
+.promo-feature-disabled {
+  color: var(--text-disabled);
+  opacity: 0.6;
+}
+
+/* Step Number in Card Titles */
+.card-title .step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: var(--color-primary);
+  color: var(--color-midnight);
+  border-radius: var(--radius-full);
+  font-size: var(--text-body-sm);
+  font-weight: var(--font-bold);
+  margin-right: var(--space-2);
+}
+
+/* Weight Item Info */
+.weight-item-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Custom Category Section */
+.custom-categories-section {
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--bg-border);
+}
+
+.custom-category-input-wrapper {
+  min-width: 0;
+}
+
+.custom-category-filled {
+  padding: var(--space-2);
+}
+
+.form-input-dashed {
+  border-style: dashed;
+}
+
+/* Nav Buttons */
+.nav-buttons-between {
+  justify-content: flex-start;
+}
+
+/* ========================================
+   Distribution Table - Additional Styles
+   ======================================== */
+
+.distribution-section {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+.distribution-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.distribution-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.print-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-body-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.print-option input[type="checkbox"] {
+  accent-color: var(--color-primary);
+}
+
+/* Stat Cards Row */
+.stat-cards-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+@media (max-width: 1024px) {
+  .stat-cards-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .stat-cards-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  text-align: center;
+}
+
+.stat-card-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  margin-bottom: var(--space-1);
+}
+
+.stat-card-value {
+  font-size: var(--text-h4);
+  font-weight: var(--font-bold);
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+
+.stat-card-value-editable {
+  cursor: pointer;
+  transition: color var(--transition-base);
+}
+
+.stat-card-value-editable:hover {
+  color: var(--color-primary);
+}
+
+.stat-card-value-demo {
+  cursor: default;
+}
+
+.stat-card-prefix {
+  color: var(--text-secondary);
+}
+
+.stat-card-input-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-card-input {
+  width: 5rem;
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-h4);
+  font-weight: var(--font-bold);
+  text-align: center;
+  background: var(--bg-elevated);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+}
+
+.demo-label {
+  font-family: var(--font-primary);
+  font-size: var(--text-body-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+}
+
+/* Distribution Table */
+.distribution-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.distribution-table th {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-size: var(--text-caption);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  border-bottom: 1px solid var(--bg-border);
+}
+
+.distribution-table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--bg-border);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.distribution-table tbody tr:hover {
+  background: var(--bg-elevated);
+}
+
+.totals-row {
+  background: var(--bg-elevated);
+}
+
+.totals-row td {
+  border-top: 2px solid var(--bg-border);
+  font-weight: var(--font-bold);
+}
+
+/* Table Column Widths */
+.col-name { min-width: 180px; }
+.col-wages { width: 100px; text-align: right; }
+.col-hours { width: 100px; text-align: right; }
+.col-weight { width: 140px; text-align: center; }
+.col-share-percent { width: 100px; text-align: right; }
+.col-share-dollars { width: 100px; text-align: right; }
+.col-dollars-per-hour { width: 100px; text-align: right; }
+
+/* Employee Name Cell */
+.employee-name-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.employee-name {
+  font-weight: var(--font-medium);
+}
+
+.employee-category {
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+}
+
+/* Weight Adjuster */
+.weight-adjuster {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  padding: var(--space-1);
+}
+
+.weight-adjuster-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.weight-adjuster-btn:hover:not(:disabled) {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-midnight);
+}
+
+.weight-adjuster-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.weight-adjuster-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-body-sm);
+  font-weight: var(--font-medium);
+  min-width: 60px;
+  text-align: center;
+}
+
+.weight-adjustment-indicator {
+  font-size: var(--text-caption);
+  margin-left: var(--space-1);
+}
+
+.weight-adjustment-indicator.positive {
+  color: var(--color-success);
+}
+
+.weight-adjustment-indicator.negative {
+  color: var(--color-error);
+}
+
+/* Hide on Print */
+.hide-print {
+  /* Will be hidden via @media print */
+}
+
+@media print {
+  .hide-print {
+    display: none !important;
+  }
+}
+
+/* Distribution Footer */
+.distribution-footer {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--bg-border);
+}
+
+/* Animate Spin (for loading) */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Loading Screen */
+.loading-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-body);
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  color: var(--color-primary);
+}
+
+.loading-text {
+  font-size: var(--text-body);
+  color: var(--text-secondary);
+}
+
+/* Utility: margin-top helper */
+.mt-4 {
+  margin-top: var(--space-4);
+}
+
+.mb-3 {
+  margin-bottom: var(--space-3);
+}
+
+.mr-2 {
+  margin-right: var(--space-2);
+}
