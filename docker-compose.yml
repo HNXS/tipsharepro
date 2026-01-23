@@ -58,6 +58,7 @@ services:
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://tipsharepro:${POSTGRES_PASSWORD}@postgres:5432/tipsharepro
+      DIRECT_URL: postgresql://tipsharepro:${POSTGRES_PASSWORD}@postgres:5432/tipsharepro
       JWT_SECRET: ${JWT_SECRET}
       JWT_ACCESS_EXPIRY: ${JWT_ACCESS_EXPIRY:-15m}
       JWT_REFRESH_EXPIRY: ${JWT_REFRESH_EXPIRY:-7d}
