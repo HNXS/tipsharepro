@@ -12,6 +12,7 @@ import employeeRoutes from './employee.routes';
 import payPeriodRoutes from './pay-period.routes';
 import calculationRoutes from './calculation.routes';
 import dailyEntryRoutes from './daily-entry.routes';
+import adminRoutes from './admin.routes';
 
 const router = Router();
 
@@ -52,5 +53,8 @@ router.use('/pay-periods', dailyEntryRoutes);     // Daily entry endpoints
 
 // Preview calculation (standalone)
 router.use('/calculate', calculationRoutes);
+
+// Admin routes (platform owner only)
+router.use('/admin', adminRoutes);
 
 export default router;
