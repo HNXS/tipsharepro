@@ -5,7 +5,7 @@ import { useDemo } from '@/lib/DemoContext';
 import { CONTRIBUTION_METHOD_LABELS, HELP_TEXT, CategoryColor } from '@/lib/types';
 import { CategoryBadge, CategoryColorKey, InlineCategoryDot } from './CategoryBadge';
 import HelpTooltip from './HelpTooltip';
-import { Plus, Minus, Printer, ChevronUp } from 'lucide-react';
+import { Plus, Minus, Printer, ChevronLeft } from 'lucide-react';
 
 // Stat Card Component
 interface StatCardProps {
@@ -116,6 +116,7 @@ export default function DistributionTable() {
     adjustIndividualWeight,
     setPrePaidAmount,
     setPrintIncludeSharePerHour,
+    setCurrentStep,
   } = useDemo();
 
   const { settings, distributionResults, projectedPool, prePaidAmount, netPool, printIncludeSharePerHour } = state;
@@ -133,9 +134,9 @@ export default function DistributionTable() {
     window.print();
   };
 
-  // Scroll to settings
-  const scrollToSettings = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Navigate back to settings page
+  const goToSettings = () => {
+    setCurrentStep(1);
   };
 
   return (
@@ -291,8 +292,8 @@ export default function DistributionTable() {
 
       {/* Back to Settings Button */}
       <div className="distribution-footer">
-        <button onClick={scrollToSettings} className="btn btn-outline">
-          <ChevronUp size={16} />
+        <button onClick={goToSettings} className="btn btn-outline">
+          <ChevronLeft size={16} />
           Back to Settings
         </button>
       </div>

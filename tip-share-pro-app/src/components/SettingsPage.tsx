@@ -14,7 +14,7 @@ import {
 } from '@/lib/types';
 import HelpTooltip from './HelpTooltip';
 import { CategoryBadge, InlineCategoryDot } from './CategoryBadge';
-import { Lock, ChevronRight, ChevronLeft, ChevronDown, RotateCcw } from 'lucide-react';
+import { Lock, ChevronRight, RotateCcw } from 'lucide-react';
 
 // Category group display info
 const CATEGORY_GROUPS: { key: keyof typeof PREDEFINED_CATEGORIES; title: string; color: CategoryColor }[] = [
@@ -67,12 +67,9 @@ export default function SettingsPage() {
   // Get custom categories from jobCategories
   const customCategories = settings.jobCategories.filter(cat => cat.group === 'custom');
 
-  // Smooth scroll to Distribution Table
-  const scrollToDistribution = () => {
-    const distributionSection = document.getElementById('distribution-table');
-    if (distributionSection) {
-      distributionSection.scrollIntoView({ behavior: 'smooth' });
-    }
+  // Navigate to Distribution Table page
+  const goToDistribution = () => {
+    setCurrentStep(2);
   };
 
   return (
@@ -307,7 +304,7 @@ export default function SettingsPage() {
           Weight scale: 1 = Lowest share, 5 = Highest share of the tip pool
         </p>
         <p className="form-help">
-          Fine-tune individual weights by ±0.25 increments in the Distribution Table below.
+          Fine-tune individual weights by ±0.25 increments on the Distribution Table page.
         </p>
       </div>
 
@@ -344,11 +341,11 @@ export default function SettingsPage() {
       {/* Navigation */}
       <div className="nav-buttons nav-buttons-between">
         <button
-          onClick={scrollToDistribution}
+          onClick={goToDistribution}
           className="btn btn-primary btn-lg"
         >
-          <ChevronDown size={20} />
           Go To Distribution Table
+          <ChevronRight size={20} />
         </button>
       </div>
     </div>
