@@ -240,7 +240,7 @@ export function getCategoryById(categoryId: string, categories: JobCategory[]): 
 // Help text for tooltips - aligned with PRD
 export const HELP_TEXT = {
   // Step 1: Contribution Method
-  contributionMethod: 'TipSharePro recommends a percentage of sales. The taxing authorities require 8% of sales be reported for tip income as a true up (allocations) at the end of the year.',
+  contributionMethod: 'Choose how servers contribute to the tip pool:\n• CC Sales: Based on credit card sales only\n• CC Tips: Based on credit card tips only\n• All Tips: Based on all tips (cash + credit card)\n• All Sales: Based on all sales (recommended - same method IRS uses for tip allocation)',
   // Step 2: Estimated Monthly Amount
   estimatedMonthlySales: 'Use whichever criteria you selected above. Any relatively close estimate will suffice.',
   // Step 3: Contribution Rate (dynamic based on method)

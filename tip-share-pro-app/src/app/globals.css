@@ -2335,13 +2335,6 @@ input[type="number"] {
   margin-right: var(--space-2);
 }
 
-/* Weight Item Info */
-.weight-item-info {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
 /* Custom Category Section */
 .custom-categories-section {
   margin-top: var(--space-6);

@@ -274,7 +274,19 @@ export default function SettingsPage() {
           <p className="form-help">Select job categories in Step 4 to assign weights.</p>
         ) : (
           <div className="weight-list">
-            {settings.jobCategories.map((category) => (
+            {/* Sort by category (BOH, Bar, FOH, Support, Custom), then by weight (highest first), then alphabetically */}
+            {[...settings.jobCategories]
+              .sort((a, b) => {
+                const colorOrder = { boh: 1, bar: 2, foh: 3, support: 4, custom: 5 };
+                const aOrder = colorOrder[a.categoryColor] || 6;
+                const bOrder = colorOrder[b.categoryColor] || 6;
+                if (aOrder !== bOrder) return aOrder - bOrder;
+                // Within same category, sort by weight (highest first)
+                if (b.variableWeight !== a.variableWeight) return b.variableWeight - a.variableWeight;
+                // Finally, alphabetically
+                return a.name.localeCompare(b.name);
+              })
+              .map((category) => (
               <div key={category.id} className="weight-item">
                 <div className="weight-item-info">
                   <CategoryBadge categoryColor={category.categoryColor} size="sm" />

@@ -460,11 +460,12 @@ export function DemoProvider({ children }: { children: ReactNode }) {
 
 // Helper function to adjust received amounts so they sum exactly to the pool total
 function adjustReceivedAmounts(results: DistributionResult[], totalPool: number): DistributionResult[] {
-  // Round each share to whole dollars
-  const rounded = results.map(r => ({
+  // Round each share to whole dollars, preserving original order
+  const rounded = results.map((r, index) => ({
     ...r,
     receivedAmount: Math.round(r.shareAmount),
     dollarsPerHour: r.hoursWorked > 0 ? Math.round(r.shareAmount) / r.hoursWorked : 0,
+    _originalIndex: index, // Track original order
   }));
 
   // Calculate the difference between total pool and sum of rounded amounts
@@ -472,7 +473,7 @@ function adjustReceivedAmounts(results: DistributionResult[], totalPool: number)
   let diff = Math.round(totalPool) - totalRounded;
 
   if (diff !== 0) {
-    // Sort by the fractional part of the original amount
+    // Sort by the fractional part of the original amount (for rounding fairness)
     const withError = rounded.map(r => ({
       ...r,
       error: r.shareAmount - r.receivedAmount,
@@ -498,10 +499,12 @@ function adjustReceivedAmounts(results: DistributionResult[], totalPool: number)
       i++;
     }
 
-    return withError.map(({ error, ...r }) => r);
+    // Restore original order before returning
+    withError.sort((a, b) => a._originalIndex - b._originalIndex);
+    return withError.map(({ error, _originalIndex, ...r }) => r);
   }
 
-  return rounded;
+  return rounded.map(({ _originalIndex, ...r }) => r);
 }
 
 export function useDemo() {
