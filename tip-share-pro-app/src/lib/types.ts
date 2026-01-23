@@ -252,7 +252,7 @@ export const HELP_TEXT = {
   variableWeight: '1 is the lowest category in the pool. 5 is the highest. Don\'t get bogged down the first time.',
   // Other help text
   payPeriodType: 'How often your pay periods occur. This affects when tip pool distributions are calculated.',
-  projectedPool: 'Calculated as: (Monthly Sales / 2) x Contribution Rate. This is the approximate amount available for distribution each pay period.',
+  projectedPool: 'Calculated as: (Monthly Sales / 2) x Contribution Rate. This is the approximate amount available for distribution each pay period.\n\nWhy divide by 2? The default pay period is bi-weekly, meaning there are 2 pay periods per month. Dividing monthly sales by 2 gives the approximate sales for each pay period.',
   hoursWorked: 'Total hours worked during the pay period.',
   hourlyRate: 'The employee\'s regular hourly pay rate.',
   prePaid: 'Amount paid early to terminated employees or corrections from previous periods. Link to PDF for details.',
