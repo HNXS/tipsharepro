@@ -2,6 +2,7 @@
 
 import { useDemo } from '@/lib/DemoContext';
 import { LogOut, User, HelpCircle } from 'lucide-react';
+import Image from 'next/image';
 
 export default function Header() {
   const { state, handleLogout, setShowWelcomeDialog } = useDemo();
@@ -11,9 +12,13 @@ export default function Header() {
       <div className="header-container">
         {/* Logo and Branding */}
         <div className="header-brand">
-          <div className="header-logo">
-            <span className="header-logo-icon">$</span>
-          </div>
+          <Image
+            src="/logo-icon.png"
+            alt="TipSharePro"
+            width={48}
+            height={36}
+            className="header-logo-image"
+          />
           <div className="header-text">
             <h1 className="header-title">TipSharePro</h1>
             <p className="header-subtitle">Demo Mode</p>
