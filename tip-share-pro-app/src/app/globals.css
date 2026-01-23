@@ -2533,6 +2533,12 @@ input[type="number"] {
   font-weight: var(--font-bold);
 }
 
+/* Placeholder dashes in totals row - keep right alignment */
+.totals-row .totals-placeholder {
+  color: var(--text-muted);
+  font-weight: var(--font-normal);
+}
+
 /* Table Column Widths */
 .col-name { min-width: 180px; }
 .col-wages { width: 100px; text-align: right; }

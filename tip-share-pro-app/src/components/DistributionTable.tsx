@@ -129,6 +129,22 @@ export default function DistributionTable() {
   // Get unique categories used in distribution
   const usedCategories = [...new Set(distributionResults.map(r => r.categoryColor))] as CategoryColor[];
 
+  // Sort results by category (BOH → Bar → FOH → Support → Custom), then by Share $ (highest first)
+  const sortedResults = [...distributionResults].sort((a, b) => {
+    const categoryOrder: Record<CategoryColor, number> = {
+      boh: 1,
+      bar: 2,
+      foh: 3,
+      support: 4,
+      custom: 5,
+    };
+    const aOrder = categoryOrder[a.categoryColor] || 6;
+    const bOrder = categoryOrder[b.categoryColor] || 6;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    // Within same category, sort by share amount (highest first)
+    return b.receivedAmount - a.receivedAmount;
+  });
+
   // Handle print
   const handlePrint = () => {
     window.print();
@@ -210,7 +226,7 @@ export default function DistributionTable() {
             </tr>
           </thead>
           <tbody>
-            {distributionResults.map((result) => (
+            {sortedResults.map((result) => (
               <tr key={result.employeeId}>
                 <td className="col-name">
                   <div className="employee-name-cell">
@@ -268,11 +284,15 @@ export default function DistributionTable() {
               <td className="col-name">
                 <strong>Totals</strong>
               </td>
-              <td className="col-wages hide-print">—</td>
+              <td className="col-wages hide-print">
+                <span className="totals-placeholder">—</span>
+              </td>
               <td className="col-hours">
                 <strong>{totalHours.toFixed(1)}</strong>
               </td>
-              <td className="col-weight">—</td>
+              <td className="col-weight">
+                <span className="totals-placeholder">—</span>
+              </td>
               <td className="col-share-percent">
                 <strong>{totalSharePercent.toFixed(2)}%</strong>
               </td>
@@ -280,7 +300,7 @@ export default function DistributionTable() {
                 <strong>${totalShareDollars.toLocaleString()}</strong>
               </td>
               <td className={`col-dollars-per-hour ${!printIncludeSharePerHour ? 'hide-print' : ''}`}>
-                —
+                <span className="totals-placeholder">—</span>
               </td>
             </tr>
           </tfoot>
