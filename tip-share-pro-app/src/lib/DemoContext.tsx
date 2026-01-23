@@ -118,7 +118,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [state.settings, state.employees, state.prePaidAmount]);
+  }, [state.currentStep, state.settings, state.employees, state.prePaidAmount]);
 
   // Auth handlers
   const handleLoginSuccess = useCallback((user: AuthUser) => {

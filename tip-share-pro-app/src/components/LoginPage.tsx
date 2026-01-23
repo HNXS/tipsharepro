@@ -23,6 +23,21 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
     setError(null);
     setIsLoading(true);
 
+    // Demo mode: bypass API for demo credentials
+    const isDemoMode = email === 'demo@tipsharepro.com' && password === 'demo123';
+
+    if (isDemoMode) {
+      // Simulate brief loading delay for realism
+      await new Promise(resolve => setTimeout(resolve, 500));
+      onLoginSuccess({
+        name: 'Sarah Chen',
+        companyName: 'The Golden Fork',
+        role: 'manager',
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await login({ email, password });
 
