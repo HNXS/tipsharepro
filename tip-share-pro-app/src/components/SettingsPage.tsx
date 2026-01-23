@@ -100,7 +100,7 @@ export default function SettingsPage() {
           ${projectedPool.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </div>
         <div className="projected-pool-formula">
-          (${settings.estimatedMonthlySales.toLocaleString()} {isSalesBasedMethod(settings.contributionMethod) ? 'sales' : 'tips'} / 2) x {settings.contributionRate}%
+          (${settings.estimatedMonthlySales.toLocaleString('en-US')} {isSalesBasedMethod(settings.contributionMethod) ? 'sales' : 'tips'} / 2) x {settings.contributionRate}%
         </div>
       </div>
 

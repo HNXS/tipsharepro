@@ -58,7 +58,7 @@ function StatCard({ label, value, isDemo, helpText, editable, onChange, prefix }
           ) : (
             <>
               {prefix && <span className="stat-card-prefix">{prefix}</span>}
-              {typeof value === 'number' ? value.toLocaleString() : value}
+              {typeof value === 'number' ? value.toLocaleString('en-US') : value}
             </>
           )}
         </div>
@@ -237,26 +237,30 @@ export default function DistributionTable() {
                 </td>
                 <td className="col-wages hide-print">
                   <input
-                    type="number"
-                    value={result.hourlyRate}
-                    onChange={(e) => updateEmployee(result.employeeId, {
-                      hourlyRate: parseFloat(e.target.value) || 0
-                    })}
+                    type="text"
+                    inputMode="decimal"
+                    value={result.hourlyRate.toFixed(2)}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(',', '.');
+                      updateEmployee(result.employeeId, {
+                        hourlyRate: parseFloat(value) || 0
+                      });
+                    }}
                     className="table-input"
-                    step="0.25"
-                    min="0"
                   />
                 </td>
                 <td className="col-hours">
                   <input
-                    type="number"
-                    value={result.hoursWorked}
-                    onChange={(e) => updateEmployee(result.employeeId, {
-                      hoursWorked: parseFloat(e.target.value) || 0
-                    })}
+                    type="text"
+                    inputMode="decimal"
+                    value={result.hoursWorked % 1 === 0 ? result.hoursWorked.toString() : result.hoursWorked.toFixed(1)}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(',', '.');
+                      updateEmployee(result.employeeId, {
+                        hoursWorked: parseFloat(value) || 0
+                      });
+                    }}
                     className="table-input"
-                    step="0.5"
-                    min="0"
                   />
                 </td>
                 <td className="col-weight">
@@ -271,7 +275,7 @@ export default function DistributionTable() {
                   {result.sharePercentage.toFixed(2)}%
                 </td>
                 <td className="col-share-dollars">
-                  ${result.receivedAmount.toLocaleString()}
+                  ${result.receivedAmount.toLocaleString('en-US')}
                 </td>
                 <td className={`col-dollars-per-hour ${!printIncludeSharePerHour ? 'hide-print' : ''}`}>
                   ${result.dollarsPerHour.toFixed(2)}
@@ -297,7 +301,7 @@ export default function DistributionTable() {
                 <strong>{totalSharePercent.toFixed(2)}%</strong>
               </td>
               <td className="col-share-dollars">
-                <strong>${totalShareDollars.toLocaleString()}</strong>
+                <strong>${totalShareDollars.toLocaleString('en-US')}</strong>
               </td>
               <td className={`col-dollars-per-hour ${!printIncludeSharePerHour ? 'hide-print' : ''}`}>
                 <span className="totals-placeholder">—</span>

@@ -73,7 +73,7 @@ export default function DataEntryPage() {
               {formatCurrency(state.projectedPool)}
             </div>
             <p className="hero-formula">
-              = (${estimatedMonthlySales.toLocaleString()} / 2) x {contributionRate}%
+              = (${estimatedMonthlySales.toLocaleString('en-US')} / 2) x {contributionRate}%
             </p>
           </div>
         </div>
