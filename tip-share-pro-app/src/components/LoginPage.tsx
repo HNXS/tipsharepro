@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
-import { LogIn, AlertCircle, Loader2 } from 'lucide-react';
+import { LogIn, AlertCircle, Loader2, DollarSign } from 'lucide-react';
 import { login, ApiError } from '@/lib/api';
 
 interface LoginPageProps {
@@ -52,14 +51,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
         {/* Logo Section */}
         <div className="login-header">
           <div className="login-logo">
-            <Image
-              src="/logo-icon.png"
-              alt="TipSharePro"
-              width={80}
-              height={80}
-              className="login-logo-image"
-              priority
-            />
+            <DollarSign size={40} strokeWidth={2.5} color="#0C0A07" />
           </div>
           <h1 className="login-brand-name">TipSharePro</h1>
           <p className="login-tagline">
