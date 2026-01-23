@@ -1458,9 +1458,10 @@ input[type="number"] {
 
 /* Fixed-width badge container for alignment */
 .weight-item-info .badge {
-  min-width: 120px;
+  width: 140px;
   text-align: center;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .weight-item-name {
