@@ -201,10 +201,15 @@ export const VARIABLE_WEIGHT_OPTIONS: VariableWeight[] = [
 // Whole number weight options (for Settings Step 5)
 export const WHOLE_WEIGHT_OPTIONS: number[] = [1, 2, 3, 4, 5];
 
+// Helper: Check if method is sales-based (vs tips-based)
+export function isSalesBasedMethod(method: ContributionMethod): boolean {
+  return method === 'ALL_SALES' || method === 'CC_SALES';
+}
+
 // Contribution rate options based on method
 export function getContributionRateOptions(method: ContributionMethod): number[] {
-  if (method === 'ALL_SALES') {
-    // 1-5% in 0.25 increments
+  if (isSalesBasedMethod(method)) {
+    // Sales-based: 1-5% in 0.25 increments
     const options: number[] = [];
     for (let rate = 1; rate <= 5; rate += 0.25) {
       options.push(rate);
@@ -222,7 +227,18 @@ export function getContributionRateOptions(method: ContributionMethod): number[]
 
 // Get default contribution rate for a method
 export function getDefaultRateForMethod(method: ContributionMethod): number {
-  return method === 'ALL_SALES' ? 3.25 : 15;
+  return isSalesBasedMethod(method) ? 3.25 : 15;
+}
+
+// Get default monthly amount for a method
+export function getDefaultAmountForMethod(method: ContributionMethod): number {
+  switch (method) {
+    case 'ALL_SALES': return 80000;
+    case 'CC_SALES': return 60000;  // ~75% of sales are CC
+    case 'ALL_TIPS': return 12000;  // ~15% of sales
+    case 'CC_TIPS': return 9000;    // ~75% of tips are CC
+    default: return 80000;
+  }
 }
 
 // Get category color CSS class from category ID
@@ -252,7 +268,7 @@ export const HELP_TEXT = {
   variableWeight: '1 is the lowest category in the pool. 5 is the highest. Don\'t get bogged down the first time.',
   // Other help text
   payPeriodType: 'How often your pay periods occur. This affects when tip pool distributions are calculated.',
-  projectedPool: 'Calculated as: (Monthly Sales / 2) x Contribution Rate. This is the approximate amount available for distribution each pay period.\n\nWhy divide by 2? The default pay period is bi-weekly, meaning there are 2 pay periods per month. Dividing monthly sales by 2 gives the approximate sales for each pay period.',
+  projectedPool: 'Calculated as: (Monthly Amount / 2) x Contribution Rate. This is the approximate amount available for distribution each pay period.\n\nWhy divide by 2? The default pay period is bi-weekly, meaning there are 2 pay periods per month. Dividing the monthly amount by 2 gives the approximate amount for each pay period.\n\nNote: The monthly amount should be sales for sales-based methods (All Sales, CC Sales) or tips for tips-based methods (All Tips, CC Tips).',
   hoursWorked: 'Total hours worked during the pay period.',
   hourlyRate: 'The employee\'s regular hourly pay rate.',
   prePaid: 'Amount paid early to terminated employees or corrections from previous periods. Link to PDF for details.',

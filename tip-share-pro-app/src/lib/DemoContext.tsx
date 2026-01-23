@@ -13,6 +13,8 @@ import {
   ContributionMethod,
   CategoryColor,
   getDefaultRateForMethod,
+  getDefaultAmountForMethod,
+  isSalesBasedMethod,
   ALL_PREDEFINED_CATEGORIES,
 } from './types';
 import { isAuthenticated as checkAuth, clearToken } from './api';
@@ -171,15 +173,33 @@ export function DemoProvider({ children }: { children: ReactNode }) {
 
   const setContributionMethod = useCallback((method: ContributionMethod) => {
     setState(prev => {
+      const oldMethod = prev.settings.contributionMethod;
+      const waseSalesBased = isSalesBasedMethod(oldMethod);
+      const isSalesBased = isSalesBasedMethod(method);
+
       const defaultRate = getDefaultRateForMethod(method);
+
+      // If switching between sales-based and tips-based, update the amount
+      let newAmount = prev.settings.estimatedMonthlySales;
+      if (waseSalesBased !== isSalesBased) {
+        newAmount = getDefaultAmountForMethod(method);
+      }
+
       const newSettings = {
         ...prev.settings,
         contributionMethod: method,
         contributionRate: defaultRate,
+        estimatedMonthlySales: newAmount,
       };
-      const projectedPool = calculateProjectedPool(prev.settings.estimatedMonthlySales, defaultRate);
+      const projectedPool = calculateProjectedPool(newAmount, defaultRate);
       const netPool = projectedPool - prev.prePaidAmount;
-      return { ...prev, settings: newSettings, projectedPool, netPool };
+      return {
+        ...prev,
+        settings: newSettings,
+        projectedPool,
+        netPool,
+        estimatedMonthlySales: newAmount,
+      };
     });
   }, []);
 

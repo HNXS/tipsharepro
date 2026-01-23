@@ -11,6 +11,7 @@ import {
   getContributionRateOptions,
   CONTRIBUTION_METHOD_LABELS,
   CategoryColor,
+  isSalesBasedMethod,
 } from '@/lib/types';
 import HelpTooltip from './HelpTooltip';
 import { CategoryBadge, InlineCategoryDot } from './CategoryBadge';
@@ -99,7 +100,7 @@ export default function SettingsPage() {
           ${projectedPool.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </div>
         <div className="projected-pool-formula">
-          (${settings.estimatedMonthlySales.toLocaleString()} / 2) x {settings.contributionRate}%
+          (${settings.estimatedMonthlySales.toLocaleString()} {isSalesBasedMethod(settings.contributionMethod) ? 'sales' : 'tips'} / 2) x {settings.contributionRate}%
         </div>
       </div>
 
@@ -135,7 +136,7 @@ export default function SettingsPage() {
         <div className="card-header">
           <h2 className="card-title">
             <span className="step-number">2</span>
-            Estimate Monthly $ Amount
+            Estimate Monthly {isSalesBasedMethod(settings.contributionMethod) ? 'Sales' : 'Tips'}
           </h2>
           <HelpTooltip text={HELP_TEXT.estimatedMonthlySales} />
         </div>
@@ -148,12 +149,14 @@ export default function SettingsPage() {
               value={settings.estimatedMonthlySales || ''}
               onChange={(e) => updateSettings({ estimatedMonthlySales: parseInt(e.target.value) || 0 })}
               className="form-input form-input-money"
-              placeholder="80000"
+              placeholder={isSalesBasedMethod(settings.contributionMethod) ? '80000' : '12000'}
               min={0}
               step={1000}
             />
           </div>
-          <p className="form-help">Enter whole dollars only</p>
+          <p className="form-help">
+            Enter your estimated monthly {isSalesBasedMethod(settings.contributionMethod) ? 'sales' : 'tips'} in whole dollars
+          </p>
         </div>
       </div>
 
