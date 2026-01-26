@@ -39,7 +39,7 @@ export default function HelpTooltip({ text, position = 'top' }: HelpTooltipProps
         aria-label="Help information"
         aria-describedby={isVisible ? 'tooltip-content' : undefined}
       >
-        <HelpCircle size={16} />
+        <HelpCircle size={24} />
       </button>
 
       {isVisible && (

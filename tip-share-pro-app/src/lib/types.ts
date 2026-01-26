@@ -164,7 +164,7 @@ export const DEFAULT_JOB_CATEGORIES: JobCategory[] = [
   { id: 'busser', name: 'Busser', variableWeight: 2, categoryColor: 'foh', group: 'frontOfHouse' },
 ];
 
-// Demo employees (10 pre-set as per PRD)
+// Demo employees (10 pre-set + 5 empty slots for user customization)
 export const DEFAULT_EMPLOYEES: Employee[] = [
   { id: '1', name: 'Maria Santos', jobCategoryId: 'line-cook', hourlyRate: 22.00, hoursWorked: 80, status: 'active' },
   { id: '2', name: 'James Wilson', jobCategoryId: 'bartender', hourlyRate: 24.00, hoursWorked: 64, status: 'active' },
@@ -176,6 +176,12 @@ export const DEFAULT_EMPLOYEES: Employee[] = [
   { id: '8', name: 'Dan Torres', jobCategoryId: 'busser', hourlyRate: 15.00, hoursWorked: 52, status: 'active' },
   { id: '9', name: 'Katie Middleton', jobCategoryId: 'bartender', hourlyRate: 22.00, hoursWorked: 56, status: 'active' },
   { id: '10', name: 'Chris Lee', jobCategoryId: 'dishwasher', hourlyRate: 15.50, hoursWorked: 64, status: 'active' },
+  // 5 empty slots for user customization (set hours to 0 to exclude from calculation)
+  { id: '11', name: 'Your Name 1', jobCategoryId: 'line-cook', hourlyRate: 18.00, hoursWorked: 0, status: 'active' },
+  { id: '12', name: 'Your Name 2', jobCategoryId: 'bartender', hourlyRate: 18.00, hoursWorked: 0, status: 'active' },
+  { id: '13', name: 'Your Name 3', jobCategoryId: 'host-hostess', hourlyRate: 16.00, hoursWorked: 0, status: 'active' },
+  { id: '14', name: 'Your Name 4', jobCategoryId: 'busser', hourlyRate: 15.00, hoursWorked: 0, status: 'active' },
+  { id: '15', name: 'Your Name 5', jobCategoryId: 'dishwasher', hourlyRate: 15.00, hoursWorked: 0, status: 'active' },
 ];
 
 // Default settings

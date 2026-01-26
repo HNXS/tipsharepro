@@ -7,6 +7,54 @@ import { CategoryBadge, CategoryColorKey, InlineCategoryDot } from './CategoryBa
 import HelpTooltip from './HelpTooltip';
 import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock } from 'lucide-react';
 
+// Editable text input for names
+interface EditableTextInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  className?: string;
+  placeholder?: string;
+}
+
+function EditableTextInput({ value, onChange, className, placeholder }: EditableTextInputProps) {
+  const [localValue, setLocalValue] = useState(value);
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!isFocused) {
+      setLocalValue(value);
+    }
+  }, [value, isFocused]);
+
+  const handleFocus = () => {
+    setIsFocused(true);
+    setTimeout(() => inputRef.current?.select(), 0);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    if (localValue.trim()) {
+      onChange(localValue.trim());
+    } else {
+      setLocalValue(value);
+    }
+  };
+
+  return (
+    <input
+      ref={inputRef}
+      type="text"
+      value={localValue}
+      onChange={(e) => setLocalValue(e.target.value)}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.blur()}
+      className={className}
+      placeholder={placeholder}
+    />
+  );
+}
+
 // Editable number input that properly handles backspace and typing
 interface EditableNumberInputProps {
   value: number;
@@ -197,18 +245,43 @@ export default function DistributionTable() {
     resetDistributionToDefaults,
   } = useDemo();
 
-  const { settings, distributionResults, projectedPool, prePaidAmount, netPool, printIncludeSharePerHour } = state;
+  const { settings, employees, distributionResults, projectedPool, prePaidAmount, netPool, printIncludeSharePerHour } = state;
 
-  // Calculate totals
+  // Calculate totals from distribution results (active employees only)
   const totalHours = distributionResults.reduce((sum, r) => sum + r.hoursWorked, 0);
   const totalSharePercent = distributionResults.reduce((sum, r) => sum + r.sharePercentage, 0);
   const totalShareDollars = distributionResults.reduce((sum, r) => sum + r.receivedAmount, 0);
 
-  // Get unique categories used in distribution
+  // Get unique categories used in distribution (for color key)
   const usedCategories = [...new Set(distributionResults.map(r => r.categoryColor))] as CategoryColor[];
 
-  // Sort results by category (BOH → Bar → FOH → Support → Custom), then by Share $ (highest first)
-  const sortedResults = [...distributionResults].sort((a, b) => {
+  // Build display rows from ALL employees (including those with 0 hours)
+  const allEmployeeRows = employees.map(emp => {
+    const category = settings.jobCategories.find(cat => cat.id === emp.jobCategoryId);
+    const distResult = distributionResults.find(r => r.employeeId === emp.id);
+
+    return {
+      employeeId: emp.id,
+      employeeName: emp.name,
+      categoryColor: (category?.categoryColor || 'support') as CategoryColor,
+      jobCategory: category?.name || 'Unknown',
+      hoursWorked: emp.hoursWorked,
+      hourlyRate: emp.hourlyRate,
+      variableWeight: category?.variableWeight || 2,
+      weightAdjustment: emp.weightAdjustment || 0,
+      effectiveWeight: (category?.variableWeight || 2) + (emp.weightAdjustment || 0),
+      sharePercentage: distResult?.sharePercentage || 0,
+      receivedAmount: distResult?.receivedAmount || 0,
+      dollarsPerHour: distResult?.dollarsPerHour || 0,
+    };
+  });
+
+  // Sort: active employees (hours > 0) first by category then share, then inactive at the end
+  const sortedResults = [...allEmployeeRows].sort((a, b) => {
+    // Active employees come first
+    if (a.hoursWorked > 0 && b.hoursWorked === 0) return -1;
+    if (a.hoursWorked === 0 && b.hoursWorked > 0) return 1;
+
     const categoryOrder: Record<CategoryColor, number> = {
       boh: 1,
       bar: 2,
@@ -324,7 +397,12 @@ export default function DistributionTable() {
                 <td className={`col-name name-cell-${result.categoryColor}`}>
                   <div className="employee-name-cell">
                     <InlineCategoryDot categoryColor={result.categoryColor} size={10} />
-                    <span className="employee-name">{result.employeeName}</span>
+                    <EditableTextInput
+                      value={result.employeeName}
+                      onChange={(name) => updateEmployee(result.employeeId, { name })}
+                      className="table-input table-input-name"
+                      placeholder="Enter name"
+                    />
                     <span className="employee-category">{result.jobCategory}</span>
                   </div>
                 </td>
