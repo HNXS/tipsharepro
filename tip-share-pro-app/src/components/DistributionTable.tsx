@@ -188,7 +188,9 @@ interface WeightAdjusterProps {
 }
 
 function WeightAdjuster({ baseWeight, adjustment, effectiveWeight, onAdjust }: WeightAdjusterProps) {
-  const canDecrease = adjustment > -0.75;
+  // Can only decrease back to base weight (adjustment >= 0), not below
+  const canDecrease = adjustment > 0;
+  // Can increase up to +0.75 above base weight
   const canIncrease = adjustment < 0.75;
 
   return (
@@ -197,7 +199,7 @@ function WeightAdjuster({ baseWeight, adjustment, effectiveWeight, onAdjust }: W
         className="weight-adjuster-btn"
         onClick={() => onAdjust(-0.25)}
         disabled={!canDecrease}
-        title="Decrease weight by 0.25"
+        title="Decrease weight back toward base"
       >
         <Minus size={12} />
       </button>
@@ -228,9 +230,9 @@ Each employee's share is calculated based on:
 • Hours worked during the pay period
 • Hourly wage rate
 • Category weight (set in Settings)
-• Individual weight adjustments (+/- 0.25)
+• Individual weight adjustments (up to +0.75)
 
-Weights can be adjusted by clicking +/- buttons, up to +0.75 from the base category weight but not below it.
+Weights can be increased by +0.25 increments up to +0.75 above the base category weight, and decreased back down to the base weight but never below it.
 
 Print the table for transparency posting or email to payroll (full version).`;
 
@@ -372,7 +374,7 @@ export default function DistributionTable() {
         />
         <StatCard
           label="Top Contributors"
-          value="Barb B (aka: Malibu), Ken Dahl"
+          value="Barb B. (aka: Malibu) & Ken Dahl"
           isDemo
         />
       </div>

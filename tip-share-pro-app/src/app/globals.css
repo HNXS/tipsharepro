@@ -943,6 +943,7 @@ input[type="number"] {
   border: none;
   font-size: 1rem;
   font-weight: var(--font-medium);
+  text-align: inherit; /* Inherit alignment from parent cell */
   color: var(--text-primary);
   padding: 0.5rem;
 }
@@ -2539,14 +2540,27 @@ input[type="number"] {
   font-weight: var(--font-normal);
 }
 
-/* Table Column Widths */
-.col-name { min-width: 180px; }
-.col-wages { width: 100px; text-align: right; }
-.col-hours { width: 100px; text-align: right; }
-.col-weight { width: 140px; text-align: center; }
-.col-share-percent { width: 100px; text-align: right; }
-.col-share-dollars { width: 100px; text-align: right; }
-.col-dollars-per-hour { width: 100px; text-align: right; }
+/* Table Column Widths - apply to both th and td */
+.distribution-table th.col-name,
+.distribution-table td.col-name { min-width: 180px; text-align: left; }
+
+.distribution-table th.col-wages,
+.distribution-table td.col-wages { width: 100px; text-align: right; }
+
+.distribution-table th.col-hours,
+.distribution-table td.col-hours { width: 100px; text-align: right; }
+
+.distribution-table th.col-weight,
+.distribution-table td.col-weight { width: 140px; text-align: center; }
+
+.distribution-table th.col-share-percent,
+.distribution-table td.col-share-percent { width: 100px; text-align: right; }
+
+.distribution-table th.col-share-dollars,
+.distribution-table td.col-share-dollars { width: 100px; text-align: right; }
+
+.distribution-table th.col-dollars-per-hour,
+.distribution-table td.col-dollars-per-hour { width: 100px; text-align: right; }
 
 /* Employee Name Cell */
 .employee-name-cell {
