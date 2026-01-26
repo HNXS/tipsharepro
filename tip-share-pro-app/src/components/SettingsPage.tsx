@@ -22,8 +22,8 @@ const CATEGORY_GROUPS: { key: keyof typeof PREDEFINED_CATEGORIES; title: string;
   { key: 'boh', title: 'BOH (Kitchen)', color: 'boh' },
   { key: 'foh', title: 'FOH (Non Tipped)', color: 'foh' },
   { key: 'bar', title: 'Bar', color: 'bar' },
-  { key: 'support', title: 'Support', color: 'support' },
-  { key: 'custom', title: 'Custom (Big Leagues)', color: 'custom' },
+  { key: 'support', title: 'Support (FOH or BOH)', color: 'support' },
+  { key: 'custom', title: 'Custom', color: 'custom' },
 ];
 
 export default function SettingsPage() {
@@ -145,13 +145,16 @@ export default function SettingsPage() {
           <div className="input-with-prefix">
             <span className="input-prefix">$</span>
             <input
-              type="number"
-              value={settings.estimatedMonthlySales || ''}
-              onChange={(e) => updateSettings({ estimatedMonthlySales: parseInt(e.target.value) || 0 })}
+              type="text"
+              inputMode="numeric"
+              value={settings.estimatedMonthlySales > 0 ? settings.estimatedMonthlySales.toLocaleString('en-US') : ''}
+              onChange={(e) => {
+                // Remove commas and non-numeric characters for parsing
+                const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                updateSettings({ estimatedMonthlySales: parseInt(rawValue) || 0 });
+              }}
               className="form-input form-input-money"
-              placeholder={isSalesBasedMethod(settings.contributionMethod) ? '80000' : '12000'}
-              min={0}
-              step={1000}
+              placeholder={isSalesBasedMethod(settings.contributionMethod) ? '100,000' : '15,000'}
             />
           </div>
           <p className="form-help">
@@ -168,9 +171,13 @@ export default function SettingsPage() {
             Enter Contribution %
           </h2>
           <HelpTooltip
-            text={settings.contributionMethod === 'ALL_SALES'
-              ? HELP_TEXT.contributionRateSales
-              : HELP_TEXT.contributionRateTips}
+            text={
+              settings.contributionMethod === 'ALL_SALES'
+                ? HELP_TEXT.contributionRateAllSales
+                : settings.contributionMethod === 'CC_SALES'
+                ? HELP_TEXT.contributionRateCCSales
+                : HELP_TEXT.contributionRateTips
+            }
           />
         </div>
 
@@ -192,7 +199,9 @@ export default function SettingsPage() {
           <p className="form-help">
             {settings.contributionMethod === 'ALL_SALES'
               ? 'Range: 1% - 5% in 0.25% increments'
-              : 'Range: 5% - 25% in 0.5% increments'}
+              : settings.contributionMethod === 'CC_SALES'
+              ? 'Range: 1% - 10% in 0.25% increments'
+              : 'Range: 1% - 35% in 0.5% increments'}
           </p>
         </div>
       </div>

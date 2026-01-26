@@ -18,7 +18,7 @@ export const CATEGORY_COLOR_MAP: Record<CategoryColor, { name: string; bgClass: 
   boh: { name: 'BOH (Kitchen)', bgClass: 'badge-boh', hex: '#E85D04' },
   foh: { name: 'FOH (Non Tipped)', bgClass: 'badge-foh', hex: '#8E44AD' },
   bar: { name: 'Bar', bgClass: 'badge-bar', hex: '#35A0D2' },
-  support: { name: 'Support', bgClass: 'badge-support', hex: '#82B536' },
+  support: { name: 'Support (FOH or BOH)', bgClass: 'badge-support', hex: '#82B536' },
   custom: { name: 'Custom', bgClass: 'badge-custom', hex: '#F1C40F' },
 };
 
@@ -142,12 +142,8 @@ export const PREDEFINED_CATEGORIES = {
     { id: 'dishwasher', name: 'Dishwasher', variableWeight: 1 as VariableWeight, categoryColor: 'support' as CategoryColor, group: 'support' as const },
     { id: 'prep-cook', name: 'Prep Cook', variableWeight: 2 as VariableWeight, categoryColor: 'support' as CategoryColor, group: 'support' as const },
   ],
-  // Custom (Big Leagues) - Yellow #F1C40F
-  custom: [
-    { id: 'maitre-d', name: "Maitre D'", variableWeight: 5 as VariableWeight, categoryColor: 'custom' as CategoryColor, group: 'custom' as const },
-    { id: 'sommelier', name: 'Sommelier', variableWeight: 5 as VariableWeight, categoryColor: 'custom' as CategoryColor, group: 'custom' as const },
-    { id: 'banquet-chef', name: 'Banquet Chef', variableWeight: 5 as VariableWeight, categoryColor: 'custom' as CategoryColor, group: 'custom' as const },
-  ],
+  // Custom - Yellow #F1C40F (starts empty, user adds their own)
+  custom: [],
 };
 
 // Flattened list of all predefined categories
@@ -187,7 +183,7 @@ export const DEFAULT_SETTINGS: Settings = {
   companyName: "Demo Restaurant",
   contributionMethod: 'ALL_SALES',
   contributionRate: 3.25,
-  estimatedMonthlySales: 80000,
+  estimatedMonthlySales: 100000,
   payPeriodType: 'bi-weekly',
   jobCategories: DEFAULT_JOB_CATEGORIES,
   selectedCategories: ['line-cook', 'host-hostess', 'bartender', 'dishwasher', 'busser'],
@@ -208,20 +204,39 @@ export function isSalesBasedMethod(method: ContributionMethod): boolean {
 
 // Contribution rate options based on method
 export function getContributionRateOptions(method: ContributionMethod): number[] {
-  if (isSalesBasedMethod(method)) {
-    // Sales-based: 1-5% in 0.25 increments
-    const options: number[] = [];
-    for (let rate = 1; rate <= 5; rate += 0.25) {
-      options.push(rate);
+  switch (method) {
+    case 'ALL_SALES': {
+      // All Sales: 1-5% in 0.25 increments
+      const options: number[] = [];
+      for (let rate = 1; rate <= 5; rate += 0.25) {
+        options.push(rate);
+      }
+      return options;
     }
-    return options;
-  } else {
-    // Tips-based: 5-25% in 0.5 increments
-    const options: number[] = [];
-    for (let rate = 5; rate <= 25; rate += 0.5) {
-      options.push(rate);
+    case 'CC_SALES': {
+      // CC Sales: 1-10% in 0.25 increments
+      const options: number[] = [];
+      for (let rate = 1; rate <= 10; rate += 0.25) {
+        options.push(rate);
+      }
+      return options;
     }
-    return options;
+    case 'ALL_TIPS':
+    case 'CC_TIPS': {
+      // Tips-based: 1-35% in 0.5 increments
+      const options: number[] = [];
+      for (let rate = 1; rate <= 35; rate += 0.5) {
+        options.push(rate);
+      }
+      return options;
+    }
+    default: {
+      const options: number[] = [];
+      for (let rate = 1; rate <= 5; rate += 0.25) {
+        options.push(rate);
+      }
+      return options;
+    }
   }
 }
 
@@ -233,11 +248,11 @@ export function getDefaultRateForMethod(method: ContributionMethod): number {
 // Get default monthly amount for a method
 export function getDefaultAmountForMethod(method: ContributionMethod): number {
   switch (method) {
-    case 'ALL_SALES': return 80000;
-    case 'CC_SALES': return 60000;  // ~75% of sales are CC
-    case 'ALL_TIPS': return 12000;  // ~15% of sales
-    case 'CC_TIPS': return 9000;    // ~75% of tips are CC
-    default: return 80000;
+    case 'ALL_SALES': return 100000;
+    case 'CC_SALES': return 75000;  // ~75% of sales are CC
+    case 'ALL_TIPS': return 15000;  // ~15% of sales
+    case 'CC_TIPS': return 11000;   // ~75% of tips are CC
+    default: return 100000;
   }
 }
 
@@ -260,8 +275,11 @@ export const HELP_TEXT = {
   // Step 2: Estimated Monthly Amount
   estimatedMonthlySales: 'Use whichever criteria you selected above. Any relatively close estimate will suffice.',
   // Step 3: Contribution Rate (dynamic based on method)
+  contributionRateAllSales: 'For All Sales, choose a rate between 1% and 5% in 0.25% increments.',
+  contributionRateCCSales: 'For CC Sales, choose a rate between 1% and 10% in 0.25% increments.',
+  contributionRateTips: 'For tips-based calculations, choose a rate between 1% and 35% in 0.5% increments.',
+  // Legacy aliases for backwards compatibility
   contributionRateSales: 'For sales-based calculations, choose a rate between 1% and 5% in 0.25% increments.',
-  contributionRateTips: 'For tips-based calculations, choose a rate between 5% and 25% in 0.5% increments.',
   // Step 4: Job Categories
   jobCategories: 'Check the job categories you intend to use. Keep it simple and use as few positions as possible at first.',
   // Step 5: Variable Weights

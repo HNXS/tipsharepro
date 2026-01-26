@@ -1,11 +1,75 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDemo } from '@/lib/DemoContext';
 import { CONTRIBUTION_METHOD_LABELS, HELP_TEXT, CategoryColor } from '@/lib/types';
 import { CategoryBadge, CategoryColorKey, InlineCategoryDot } from './CategoryBadge';
 import HelpTooltip from './HelpTooltip';
 import { Plus, Minus, Printer, ChevronLeft } from 'lucide-react';
+
+// Editable number input that properly handles backspace and typing
+interface EditableNumberInputProps {
+  value: number;
+  onChange: (value: number) => void;
+  decimals?: number;
+  className?: string;
+}
+
+function EditableNumberInput({ value, onChange, decimals = 2, className }: EditableNumberInputProps) {
+  const [localValue, setLocalValue] = useState(value.toFixed(decimals));
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Sync local value when external value changes (but not during focus)
+  useEffect(() => {
+    if (!isFocused) {
+      setLocalValue(value.toFixed(decimals));
+    }
+  }, [value, decimals, isFocused]);
+
+  const handleFocus = () => {
+    setIsFocused(true);
+    // Select all text on focus for easy replacement
+    setTimeout(() => inputRef.current?.select(), 0);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    const parsed = parseFloat(localValue.replace(',', '.'));
+    if (!isNaN(parsed) && parsed >= 0) {
+      onChange(parsed);
+      setLocalValue(parsed.toFixed(decimals));
+    } else {
+      // Reset to original value if invalid
+      setLocalValue(value.toFixed(decimals));
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Allow typing freely - validate on blur
+    setLocalValue(e.target.value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      inputRef.current?.blur();
+    }
+  };
+
+  return (
+    <input
+      ref={inputRef}
+      type="text"
+      inputMode="decimal"
+      value={localValue}
+      onChange={handleChange}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      className={className}
+    />
+  );
+}
 
 // Stat Card Component
 interface StatCardProps {
@@ -236,30 +300,18 @@ export default function DistributionTable() {
                   </div>
                 </td>
                 <td className="col-wages hide-print">
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    value={result.hourlyRate.toFixed(2)}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(',', '.');
-                      updateEmployee(result.employeeId, {
-                        hourlyRate: parseFloat(value) || 0
-                      });
-                    }}
+                  <EditableNumberInput
+                    value={result.hourlyRate}
+                    onChange={(val) => updateEmployee(result.employeeId, { hourlyRate: val })}
+                    decimals={2}
                     className="table-input"
                   />
                 </td>
                 <td className="col-hours">
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    value={result.hoursWorked % 1 === 0 ? result.hoursWorked.toString() : result.hoursWorked.toFixed(1)}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(',', '.');
-                      updateEmployee(result.employeeId, {
-                        hoursWorked: parseFloat(value) || 0
-                      });
-                    }}
+                  <EditableNumberInput
+                    value={result.hoursWorked}
+                    onChange={(val) => updateEmployee(result.employeeId, { hoursWorked: val })}
+                    decimals={2}
                     className="table-input"
                   />
                 </td>
@@ -292,7 +344,7 @@ export default function DistributionTable() {
                 <span className="totals-placeholder">—</span>
               </td>
               <td className="col-hours">
-                <strong>{totalHours.toFixed(1)}</strong>
+                <strong>{totalHours.toFixed(2)}</strong>
               </td>
               <td className="col-weight">
                 <span className="totals-placeholder">—</span>

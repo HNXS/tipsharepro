@@ -94,7 +94,7 @@
   /* Support (FOH or BOH) - Lime Green */
   --badge-support: #82B536;
 
-  /* Custom (Big Leagues) - Yellow */
+  /* Custom - Yellow */
   --badge-custom: #F1C40F;
 
   /* ========================================
@@ -1010,8 +1010,8 @@ input[type="number"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: none;
   background: transparent;
@@ -1019,6 +1019,7 @@ input[type="number"] {
   cursor: help;
   color: var(--color-info);
   transition: all var(--transition-base);
+  font-size: 1.25rem;
 }
 
 .tooltip-trigger:hover {
@@ -2628,6 +2629,35 @@ input[type="number"] {
 @media print {
   .hide-print {
     display: none !important;
+  }
+
+  /* Hide weight adjuster buttons on print */
+  .weight-adjuster-btn {
+    display: none !important;
+  }
+
+  /* Hide adjustment indicator on print - just show final weight */
+  .weight-adjustment-indicator {
+    display: none !important;
+  }
+
+  /* Hide distribution actions (checkbox and print button) on print */
+  .distribution-actions {
+    display: none !important;
+  }
+
+  /* Hide back to settings button on print */
+  .distribution-footer {
+    display: none !important;
+  }
+
+  /* Clean up weight display for print */
+  .weight-adjuster {
+    justify-content: center;
+  }
+
+  .weight-adjuster-value {
+    font-weight: var(--font-semibold);
   }
 }
 
