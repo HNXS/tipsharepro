@@ -128,9 +128,10 @@ interface StatCardProps {
   editable?: boolean;
   onChange?: (value: number) => void;
   prefix?: string;
+  className?: string;
 }
 
-function StatCard({ label, value, isDemo, helpText, editable, onChange, prefix }: StatCardProps) {
+function StatCard({ label, value, isDemo, helpText, editable, onChange, prefix, className }: StatCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(typeof value === 'number' ? value : 0);
 
@@ -142,7 +143,7 @@ function StatCard({ label, value, isDemo, helpText, editable, onChange, prefix }
   };
 
   return (
-    <div className="stat-card">
+    <div className={`stat-card ${className || ''}`}>
       <div className="stat-card-label">
         {label}
         {helpText && <HelpTooltip text={helpText} />}
@@ -310,8 +311,17 @@ export default function DistributionTable() {
 
   return (
     <div id="distribution-table" className="distribution-section">
-      {/* Section Header */}
-      <div className="distribution-header">
+      {/* Print-only Header */}
+      <div className="print-header">
+        <img src="/tipsharepro-logo.svg" alt="TipSharePro" className="print-logo" />
+        <div className="print-header-text">
+          <h1 className="print-title">Distribution Table</h1>
+          <span className="print-location">Company/Location (Demo)</span>
+        </div>
+      </div>
+
+      {/* Section Header - hidden on print */}
+      <div className="distribution-header no-print">
         <h2 className="section-title">
           Distribution Table
           <HelpTooltip text={DISTRIBUTION_HELP} />
@@ -345,13 +355,14 @@ export default function DistributionTable() {
       </div>
 
       {/* Stat Cards Row */}
-      <div className="stat-cards-row">
-        <StatCard label="Day/Date" value="" isDemo />
-        <StatCard label="Location" value="" isDemo />
+      <div className="stat-cards-row print-stat-cards">
+        <StatCard label="Day/Date" value="" isDemo className="hide-print" />
+        <StatCard label="Location" value="" isDemo className="hide-print" />
         <StatCard label="Pay Period" value="" isDemo />
         <StatCard
           label="Contrib. Method"
           value={CONTRIBUTION_METHOD_LABELS[settings.contributionMethod]}
+          className="hide-print"
         />
         <StatCard
           label="Gross Pool"
