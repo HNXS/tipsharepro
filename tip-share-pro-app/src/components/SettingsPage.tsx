@@ -35,7 +35,7 @@ export default function SettingsPage() {
     updateJobCategory,
     addCustomCategory,
     setCurrentStep,
-    resetToDefaults,
+    resetSettingsToDefaults,
   } = useDemo();
 
   // Local state for 5 custom category write-in inputs
@@ -80,12 +80,12 @@ export default function SettingsPage() {
         <h1 className="page-title">Demo Settings</h1>
         <div className="settings-actions">
           <button
-            onClick={resetToDefaults}
+            onClick={resetSettingsToDefaults}
             className="btn btn-outline btn-sm"
-            title="Reset to default settings"
+            title="Reset settings to defaults"
           >
             <RotateCcw size={16} />
-            Default Settings
+            Reset Settings
           </button>
         </div>
       </div>

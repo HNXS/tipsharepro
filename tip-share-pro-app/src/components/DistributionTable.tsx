@@ -5,7 +5,7 @@ import { useDemo } from '@/lib/DemoContext';
 import { CONTRIBUTION_METHOD_LABELS, HELP_TEXT, CategoryColor } from '@/lib/types';
 import { CategoryBadge, CategoryColorKey, InlineCategoryDot } from './CategoryBadge';
 import HelpTooltip from './HelpTooltip';
-import { Plus, Minus, Printer, ChevronLeft } from 'lucide-react';
+import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock } from 'lucide-react';
 
 // Editable number input that properly handles backspace and typing
 interface EditableNumberInputProps {
@@ -173,6 +173,19 @@ function WeightAdjuster({ baseWeight, adjustment, effectiveWeight, onAdjust }: W
   );
 }
 
+// Help text for distribution table
+const DISTRIBUTION_HELP = `The Distribution Table shows how the tip pool is divided among employees.
+
+Each employee's share is calculated based on:
+• Hours worked during the pay period
+• Hourly wage rate
+• Category weight (set in Settings)
+• Individual weight adjustments (+/- 0.25)
+
+Weights can be adjusted by clicking +/- buttons, up to +0.75 from the base category weight but not below it.
+
+Print the table for transparency posting or email to payroll (full version).`;
+
 export default function DistributionTable() {
   const {
     state,
@@ -181,6 +194,7 @@ export default function DistributionTable() {
     setPrePaidAmount,
     setPrintIncludeSharePerHour,
     setCurrentStep,
+    resetDistributionToDefaults,
   } = useDemo();
 
   const { settings, distributionResults, projectedPool, prePaidAmount, netPool, printIncludeSharePerHour } = state;
@@ -223,8 +237,19 @@ export default function DistributionTable() {
     <div id="distribution-table" className="distribution-section">
       {/* Section Header */}
       <div className="distribution-header">
-        <h2 className="section-title">Distribution Table</h2>
+        <h2 className="section-title">
+          Distribution Table
+          <HelpTooltip text={DISTRIBUTION_HELP} />
+        </h2>
         <div className="distribution-actions">
+          <button
+            onClick={resetDistributionToDefaults}
+            className="btn btn-outline btn-sm"
+            title="Reset distribution table to defaults"
+          >
+            <RotateCcw size={16} />
+            Reset Table
+          </button>
           <label className="print-option">
             <input
               type="checkbox"
@@ -236,6 +261,10 @@ export default function DistributionTable() {
           <button onClick={handlePrint} className="btn btn-outline btn-sm">
             <Printer size={16} />
             Print
+          </button>
+          <button className="btn btn-faded btn-sm" title="Email feature available in full version">
+            <Mail size={16} />
+            <Lock size={12} className="lock-icon" />
           </button>
         </div>
       </div>
@@ -292,7 +321,7 @@ export default function DistributionTable() {
           <tbody>
             {sortedResults.map((result) => (
               <tr key={result.employeeId}>
-                <td className="col-name">
+                <td className={`col-name name-cell-${result.categoryColor}`}>
                   <div className="employee-name-cell">
                     <InlineCategoryDot categoryColor={result.categoryColor} size={10} />
                     <span className="employee-name">{result.employeeName}</span>

@@ -59,6 +59,8 @@ interface DemoContextType {
   setPrePaidAmount: (amount: number) => void;
   // Demo actions
   resetToDefaults: () => void;
+  resetSettingsToDefaults: () => void;
+  resetDistributionToDefaults: () => void;
   setShowWelcomeDialog: (show: boolean) => void;
   setPrintIncludeSharePerHour: (include: boolean) => void;
   // Loading state
@@ -359,6 +361,35 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  // Reset only settings to defaults (keeps distribution table employees)
+  const resetSettingsToDefaults = useCallback(() => {
+    setState(prev => {
+      const projectedPool = calculateProjectedPool(
+        DEFAULT_SETTINGS.estimatedMonthlySales,
+        DEFAULT_SETTINGS.contributionRate
+      );
+      const netPool = projectedPool - prev.prePaidAmount;
+      return {
+        ...prev,
+        settings: DEFAULT_SETTINGS,
+        estimatedMonthlySales: DEFAULT_SETTINGS.estimatedMonthlySales,
+        projectedPool,
+        netPool,
+      };
+    });
+  }, []);
+
+  // Reset only distribution table to defaults (keeps settings)
+  const resetDistributionToDefaults = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      employees: DEFAULT_EMPLOYEES.map(emp => ({ ...emp, weightAdjustment: 0 })),
+      prePaidAmount: 0,
+      netPool: prev.projectedPool,
+      distributionResults: [],
+    }));
+  }, []);
+
   // Show/hide welcome dialog
   const setShowWelcomeDialog = useCallback((show: boolean) => {
     setState(prev => ({ ...prev, showWelcomeDialog: show }));
@@ -466,6 +497,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         setPrePaidAmount,
         // Demo
         resetToDefaults,
+        resetSettingsToDefaults,
+        resetDistributionToDefaults,
         setShowWelcomeDialog,
         setPrintIncludeSharePerHour,
         // Loading/Error

@@ -2556,6 +2556,44 @@ input[type="number"] {
   gap: var(--space-2);
 }
 
+/* Category-colored name cells */
+.name-cell-boh {
+  background: rgba(232, 93, 4, 0.15);
+  border-left: 3px solid var(--badge-boh);
+}
+
+.name-cell-foh {
+  background: rgba(142, 68, 173, 0.15);
+  border-left: 3px solid var(--badge-foh);
+}
+
+.name-cell-bar {
+  background: rgba(53, 160, 210, 0.15);
+  border-left: 3px solid var(--badge-bar);
+}
+
+.name-cell-support {
+  background: rgba(130, 181, 54, 0.15);
+  border-left: 3px solid var(--badge-support);
+}
+
+.name-cell-custom {
+  background: rgba(241, 196, 15, 0.15);
+  border-left: 3px solid var(--badge-custom);
+}
+
+/* Print: ensure category colors show */
+@media print {
+  .name-cell-boh,
+  .name-cell-foh,
+  .name-cell-bar,
+  .name-cell-support,
+  .name-cell-custom {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
 .employee-name {
   font-weight: var(--font-medium);
 }
@@ -2722,6 +2760,25 @@ input[type="number"] {
 
 .mr-2 {
   margin-right: var(--space-2);
+}
+
+/* Lock icon on faded buttons */
+.lock-icon {
+  margin-left: -4px;
+  opacity: 0.8;
+}
+
+/* Email button with lock overlay */
+.btn-faded .lock-icon {
+  position: relative;
+  top: -2px;
+}
+
+/* Section title with help tooltip */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 /* ========================================
