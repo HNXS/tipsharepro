@@ -1,76 +1,109 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useDemo } from '@/lib/DemoContext';
 import {
   WHOLE_WEIGHT_OPTIONS,
   HELP_TEXT,
-  VariableWeight,
   ContributionMethod,
-  PREDEFINED_CATEGORIES,
   getContributionRateOptions,
   CONTRIBUTION_METHOD_LABELS,
   CategoryColor,
+  CATEGORY_COLOR_MAP,
   isSalesBasedMethod,
 } from '@/lib/types';
 import HelpTooltip from './HelpTooltip';
-import { CategoryBadge, InlineCategoryDot } from './CategoryBadge';
-import { Lock, ChevronRight, RotateCcw } from 'lucide-react';
+import { InlineCategoryDot } from './CategoryBadge';
+import { Lock, ChevronRight, RotateCcw, GripVertical, X, Plus } from 'lucide-react';
 
-// Category group display info
-const CATEGORY_GROUPS: { key: keyof typeof PREDEFINED_CATEGORIES; title: string; color: CategoryColor }[] = [
-  { key: 'boh', title: 'BOH (Kitchen)', color: 'boh' },
-  { key: 'foh', title: 'FOH (Non Tipped)', color: 'foh' },
-  { key: 'bar', title: 'Bar', color: 'bar' },
-  { key: 'support', title: 'Support (FOH or BOH)', color: 'support' },
-  { key: 'custom', title: 'Custom', color: 'custom' },
-];
+// The 5 category color keys in display order
+const CATEGORY_COLORS: CategoryColor[] = ['boh', 'foh', 'bar', 'support', 'custom'];
+
+// CSS hex colors for category backgrounds
+const CATEGORY_HEX: Record<CategoryColor, string> = {
+  boh: '#E85D04',
+  foh: '#8E44AD',
+  bar: '#35A0D2',
+  support: '#82B536',
+  custom: '#F1C40F',
+};
 
 export default function SettingsPage() {
   const {
     state,
     updateSettings,
     setContributionMethod,
-    toggleCategorySelection,
-    updateJobCategory,
-    addCustomCategory,
+    updateCategoryWeight,
+    updateCategoryName,
+    moveJobToCategory,
+    addJobToCategory,
+    removeJob,
     setCurrentStep,
     resetSettingsToDefaults,
   } = useDemo();
 
-  // Local state for 5 custom category write-in inputs
-  const [customInputs, setCustomInputs] = useState<string[]>(['', '', '', '', '']);
-  // Track which custom input slots have been used
-  const [usedCustomSlots, setUsedCustomSlots] = useState<Set<number>>(new Set());
+  // Local state for new job input
+  const [newJobName, setNewJobName] = useState('');
+  // Track which job is being dragged
+  const [draggedJobId, setDraggedJobId] = useState<string | null>(null);
+  const [dragOverCategory, setDragOverCategory] = useState<CategoryColor | null>(null);
 
   const { settings } = state;
   const contributionRateOptions = getContributionRateOptions(settings.contributionMethod);
 
-  // Handle custom category input change
-  const handleCustomInputChange = (index: number, value: string) => {
-    const newInputs = [...customInputs];
-    newInputs[index] = value;
-    setCustomInputs(newInputs);
-  };
-
-  // Add custom category when user finishes typing
-  const handleAddCustom = (index: number) => {
-    const name = customInputs[index].trim();
-    if (name && !usedCustomSlots.has(index)) {
-      addCustomCategory(name);
-      setUsedCustomSlots(new Set([...usedCustomSlots, index]));
-    }
-  };
-
   // Calculate projected pool for display
   const projectedPool = (settings.estimatedMonthlySales / 2) * (settings.contributionRate / 100);
 
-  // Get custom categories from jobCategories
-  const customCategories = settings.jobCategories.filter(cat => cat.group === 'custom');
+  // Group jobs by category
+  const jobsByCategory: Record<CategoryColor, typeof settings.jobCategories> = {
+    boh: [], foh: [], bar: [], support: [], custom: [],
+  };
+  settings.jobCategories.forEach(job => {
+    if (jobsByCategory[job.categoryColor]) {
+      jobsByCategory[job.categoryColor].push(job);
+    }
+  });
 
   // Navigate to Distribution Table page
   const goToDistribution = () => {
     setCurrentStep(2);
+  };
+
+  // Handle adding a new job via the write-in input
+  const handleAddJob = () => {
+    const name = newJobName.trim();
+    if (!name) return;
+    // Add to first category with fewest jobs, or 'custom' by default
+    addJobToCategory(name, 'custom');
+    setNewJobName('');
+  };
+
+  // Drag and drop handlers
+  const handleDragStart = (jobId: string) => {
+    setDraggedJobId(jobId);
+  };
+
+  const handleDragOver = (e: React.DragEvent, categoryColor: CategoryColor) => {
+    e.preventDefault();
+    setDragOverCategory(categoryColor);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverCategory(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, categoryColor: CategoryColor) => {
+    e.preventDefault();
+    if (draggedJobId) {
+      moveJobToCategory(draggedJobId, categoryColor);
+    }
+    setDraggedJobId(null);
+    setDragOverCategory(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedJobId(null);
+    setDragOverCategory(null);
   };
 
   return (
@@ -149,7 +182,6 @@ export default function SettingsPage() {
               inputMode="numeric"
               value={settings.estimatedMonthlySales > 0 ? settings.estimatedMonthlySales.toLocaleString('en-US') : ''}
               onChange={(e) => {
-                // Remove commas and non-numeric characters for parsing
                 const rawValue = e.target.value.replace(/[^0-9]/g, '');
                 updateSettings({ estimatedMonthlySales: parseInt(rawValue) || 0 });
               }}
@@ -206,129 +238,164 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Step 4: Job Categories */}
+      {/* Step 4: Define Categories */}
       <div className="card">
         <div className="card-header">
           <h2 className="card-title">
             <span className="step-number">4</span>
-            Enter Job Categories
+            Job Categories
           </h2>
           <HelpTooltip text={HELP_TEXT.jobCategories} />
         </div>
 
-        <div className="category-grid">
-          {CATEGORY_GROUPS.map(({ key, title, color }) => (
-            <div key={key} className="category-group">
-              <h3 className="category-group-title">
-                <InlineCategoryDot categoryColor={color} size={10} className="mr-2" />
-                {title}
-              </h3>
-              {PREDEFINED_CATEGORIES[key].map((cat) => (
-                <label key={cat.id} className="category-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={settings.selectedCategories.includes(cat.id)}
-                    onChange={() => toggleCategorySelection(cat.id)}
-                  />
-                  <span className="category-checkbox-label">
-                    {cat.name}
-                  </span>
-                </label>
-              ))}
+        <p className="form-help mb-4">
+          Categories are groups of jobs. You can rename any category below. Names and colors can be customized.
+        </p>
+
+        <div className="category-boxes-grid">
+          {CATEGORY_COLORS.map((color) => (
+            <div
+              key={color}
+              className="category-name-box"
+              style={{
+                borderColor: CATEGORY_HEX[color],
+                backgroundColor: `${CATEGORY_HEX[color]}20`,
+              }}
+            >
+              <InlineCategoryDot categoryColor={color} size={14} />
+              <input
+                type="text"
+                value={settings.categoryNames?.[color] || CATEGORY_COLOR_MAP[color].name}
+                onChange={(e) => updateCategoryName(color, e.target.value)}
+                className="category-name-input"
+                style={{ color: CATEGORY_HEX[color] }}
+              />
             </div>
           ))}
         </div>
-
-        {/* Custom Write-in Fields */}
-        <div className="custom-categories-section">
-          <h3 className="category-group-title mt-4">
-            <InlineCategoryDot categoryColor="custom" size={10} className="mr-2" />
-            Your Custom Categories (5 available)
-          </h3>
-          <p className="form-help mb-3">
-            Add up to 5 custom job categories for your specific needs.
-          </p>
-          <div className="custom-category-inputs">
-            {customInputs.map((value, index) => (
-              <div key={index} className="custom-category-input-wrapper">
-                {usedCustomSlots.has(index) ? (
-                  <div className="custom-category-filled">
-                    <CategoryBadge categoryColor="custom" label={customCategories[index]?.name || value} size="sm" />
-                  </div>
-                ) : (
-                  <input
-                    type="text"
-                    value={value}
-                    onChange={(e) => handleCustomInputChange(index, e.target.value)}
-                    onBlur={() => handleAddCustom(index)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddCustom(index)}
-                    placeholder={`Custom ${index + 1}`}
-                    className="form-input form-input-dashed"
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
-      {/* Step 5: Job Category Weights */}
+      {/* Step 5: Assign Jobs to Categories */}
       <div className="card">
         <div className="card-header">
           <h2 className="card-title">
             <span className="step-number">5</span>
+            Assign Jobs to Categories
+          </h2>
+          <HelpTooltip text="Drag and drop jobs between categories to reassign them. Type a new job name and press Enter to add it." />
+        </div>
+
+        {/* Add new job input */}
+        <div className="add-job-row">
+          <input
+            type="text"
+            value={newJobName}
+            onChange={(e) => setNewJobName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleAddJob()}
+            placeholder="Type a new job title and press Enter..."
+            className="form-input add-job-input"
+          />
+          <button
+            onClick={handleAddJob}
+            disabled={!newJobName.trim()}
+            className="btn btn-outline btn-sm"
+          >
+            <Plus size={16} />
+            Add
+          </button>
+        </div>
+
+        {/* Category drop zones with jobs */}
+        <div className="job-assignment-grid">
+          {CATEGORY_COLORS.map((color) => (
+            <div
+              key={color}
+              className={`job-category-zone ${dragOverCategory === color ? 'job-category-zone-active' : ''}`}
+              style={{ borderColor: CATEGORY_HEX[color] }}
+              onDragOver={(e) => handleDragOver(e, color)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, color)}
+            >
+              <div
+                className="job-category-zone-header"
+                style={{ backgroundColor: CATEGORY_HEX[color] }}
+              >
+                <span className="job-category-zone-title">
+                  {settings.categoryNames?.[color] || CATEGORY_COLOR_MAP[color].name}
+                </span>
+              </div>
+              <div className="job-category-zone-body">
+                {jobsByCategory[color].length === 0 ? (
+                  <p className="job-zone-empty">Drop jobs here</p>
+                ) : (
+                  jobsByCategory[color].map((job) => (
+                    <div
+                      key={job.id}
+                      className={`job-pill ${draggedJobId === job.id ? 'job-pill-dragging' : ''}`}
+                      draggable
+                      onDragStart={() => handleDragStart(job.id)}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <GripVertical size={12} className="job-pill-grip" />
+                      <span className="job-pill-name">{job.name}</span>
+                      <button
+                        className="job-pill-remove"
+                        onClick={() => removeJob(job.id)}
+                        title="Remove job"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Step 6: Job Category Weights */}
+      <div className="card">
+        <div className="card-header">
+          <h2 className="card-title">
+            <span className="step-number">6</span>
             Job Category Weights
           </h2>
           <HelpTooltip text={HELP_TEXT.variableWeight} />
         </div>
 
-        {settings.jobCategories.length === 0 ? (
-          <p className="form-help">Select job categories in Step 4 to assign weights.</p>
-        ) : (
-          <div className="weight-list">
-            {/* Sort by category (BOH, Bar, FOH, Support, Custom), then by weight (highest first), then alphabetically */}
-            {[...settings.jobCategories]
-              .sort((a, b) => {
-                const colorOrder = { boh: 1, bar: 2, foh: 3, support: 4, custom: 5 };
-                const aOrder = colorOrder[a.categoryColor] || 6;
-                const bOrder = colorOrder[b.categoryColor] || 6;
-                if (aOrder !== bOrder) return aOrder - bOrder;
-                // Within same category, sort by weight (highest first)
-                if (b.variableWeight !== a.variableWeight) return b.variableWeight - a.variableWeight;
-                // Finally, alphabetically
-                return a.name.localeCompare(b.name);
-              })
-              .map((category) => (
-              <div key={category.id} className="weight-item">
-                <div className="weight-item-info">
-                  <CategoryBadge categoryColor={category.categoryColor} size="sm" />
-                  <span className="weight-item-name">{category.name}</span>
-                </div>
-                <select
-                  value={Math.round(category.variableWeight)}
-                  onChange={(e) =>
-                    updateJobCategory(category.id, {
-                      variableWeight: parseInt(e.target.value) as VariableWeight,
-                    })
-                  }
-                  className="form-select weight-select"
+        <div className="weight-list">
+          {CATEGORY_COLORS.map((color) => (
+            <div key={color} className="weight-item">
+              <div className="weight-item-info">
+                <div
+                  className="category-weight-badge"
+                  style={{ backgroundColor: CATEGORY_HEX[color] }}
                 >
-                  {WHOLE_WEIGHT_OPTIONS.map((weight) => (
-                    <option key={weight} value={weight}>
-                      {weight}
-                    </option>
-                  ))}
-                </select>
+                  {settings.categoryNames?.[color] || CATEGORY_COLOR_MAP[color].name}
+                </div>
+                <span className="weight-item-jobs">
+                  {jobsByCategory[color].map(j => j.name).join(', ') || 'No jobs assigned'}
+                </span>
               </div>
-            ))}
-          </div>
-        )}
+              <select
+                value={settings.categoryWeights?.[color] || 1}
+                onChange={(e) => updateCategoryWeight(color, parseInt(e.target.value))}
+                className="form-select weight-select"
+              >
+                {WHOLE_WEIGHT_OPTIONS.map((weight) => (
+                  <option key={weight} value={weight}>
+                    {weight}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </div>
 
         <p className="form-help mt-4">
-          Weight scale: 1 = Lowest share, 5 = Highest share of the tip pool
-        </p>
-        <p className="form-help">
-          Fine-tune individual weights by ±0.25 increments on the Distribution Table page.
+          Weight scale: 1 = Lowest share, 5 = Highest share of the tip pool.
+          Fine-tune individual weights by +0.25 increments (up to +0.75) on the Distribution Table page.
         </p>
       </div>
 

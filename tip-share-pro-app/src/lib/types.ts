@@ -52,6 +52,9 @@ export interface Settings {
   payPeriodType: 'weekly' | 'bi-weekly' | 'semi-monthly' | 'monthly';
   jobCategories: JobCategory[];
   selectedCategories: string[]; // IDs of selected categories (predefined + custom)
+  // Category-level settings (5 categories)
+  categoryWeights: Record<CategoryColor, number>;
+  categoryNames: Record<CategoryColor, string>;
   payPeriodStartDate?: string;
   payPeriodEndDate?: string;
 }
@@ -155,13 +158,39 @@ export const ALL_PREDEFINED_CATEGORIES: JobCategory[] = [
   ...PREDEFINED_CATEGORIES.custom,
 ];
 
-// Default job categories (selected by default for demo) - 5 representing each color
+// Default category weights (whole numbers 1-5)
+export const DEFAULT_CATEGORY_WEIGHTS: Record<CategoryColor, number> = {
+  boh: 3,
+  foh: 2,
+  bar: 4,
+  support: 1,
+  custom: 1,
+};
+
+// Default category names (editable by user)
+export const DEFAULT_CATEGORY_NAMES: Record<CategoryColor, string> = {
+  boh: 'BOH (Kitchen)',
+  foh: 'FOH (Non-Tipped)',
+  bar: 'Bar',
+  support: 'Support (FOH or BOH)',
+  custom: 'Custom',
+};
+
+// Default job categories (selected by default for demo) - jobs inherit category weight
 export const DEFAULT_JOB_CATEGORIES: JobCategory[] = [
+  { id: 'lead-cook', name: 'Lead Cook', variableWeight: 3, categoryColor: 'boh', group: 'kitchen' },
   { id: 'line-cook', name: 'Line Cook', variableWeight: 3, categoryColor: 'boh', group: 'kitchen' },
+  { id: 'pastry-chef', name: 'Pastry Chef', variableWeight: 3, categoryColor: 'boh', group: 'kitchen' },
+  { id: 'pantry-chef', name: 'Pantry Chef', variableWeight: 3, categoryColor: 'boh', group: 'kitchen' },
   { id: 'host-hostess', name: 'Host/Hostess', variableWeight: 2, categoryColor: 'foh', group: 'frontOfHouse' },
-  { id: 'bartender', name: 'Bartender', variableWeight: 4, categoryColor: 'bar', group: 'bar' },
-  { id: 'dishwasher', name: 'Dishwasher', variableWeight: 1, categoryColor: 'support', group: 'support' },
   { id: 'busser', name: 'Busser', variableWeight: 2, categoryColor: 'foh', group: 'frontOfHouse' },
+  { id: 'cashier', name: 'Cashier', variableWeight: 2, categoryColor: 'foh', group: 'frontOfHouse' },
+  { id: 'runner', name: 'Runner', variableWeight: 2, categoryColor: 'foh', group: 'frontOfHouse' },
+  { id: 'bartender', name: 'Bartender', variableWeight: 4, categoryColor: 'bar', group: 'bar' },
+  { id: 'barista', name: 'Barista', variableWeight: 4, categoryColor: 'bar', group: 'bar' },
+  { id: 'bar-back', name: 'Bar Back', variableWeight: 4, categoryColor: 'bar', group: 'bar' },
+  { id: 'dishwasher', name: 'Dishwasher', variableWeight: 1, categoryColor: 'support', group: 'support' },
+  { id: 'prep-cook', name: 'Prep Cook', variableWeight: 1, categoryColor: 'support', group: 'support' },
 ];
 
 // Demo employees (10 pre-set + 5 empty slots for user customization)
@@ -192,7 +221,9 @@ export const DEFAULT_SETTINGS: Settings = {
   estimatedMonthlySales: 100000,
   payPeriodType: 'bi-weekly',
   jobCategories: DEFAULT_JOB_CATEGORIES,
-  selectedCategories: ['line-cook', 'host-hostess', 'bartender', 'dishwasher', 'busser'],
+  selectedCategories: DEFAULT_JOB_CATEGORIES.map(j => j.id),
+  categoryWeights: { ...DEFAULT_CATEGORY_WEIGHTS },
+  categoryNames: { ...DEFAULT_CATEGORY_NAMES },
 };
 
 // Generate variable weight options (1-5 with 0.25 increments)
@@ -288,8 +319,8 @@ export const HELP_TEXT = {
   contributionRateSales: 'For sales-based calculations, choose a rate between 1% and 5% in 0.25% increments.',
   // Step 4: Job Categories
   jobCategories: 'Check the job categories you intend to use. Keep it simple and use as few positions as possible at first.',
-  // Step 5: Variable Weights
-  variableWeight: '1 is the lowest category in the pool. 5 is the highest. Don\'t get bogged down the first time.',
+  // Step 6: Category Weights
+  variableWeight: 'Any whole number will be fine at this point. You will see the effect on individual distributions and be able to change them. The weights can all be the same for that matter and their wages and hours will determine shares.',
   // Other help text
   payPeriodType: 'How often your pay periods occur. This affects when tip pool distributions are calculated.',
   projectedPool: 'Calculated as: (Monthly Amount / 2) x Contribution Rate. This is the approximate amount available for distribution each pay period.\n\nWhy divide by 2? The default pay period is bi-weekly, meaning there are 2 pay periods per month. Dividing the monthly amount by 2 gives the approximate amount for each pay period.\n\nNote: The monthly amount should be sales for sales-based methods (All Sales, CC Sales) or tips for tips-based methods (All Tips, CC Tips).',

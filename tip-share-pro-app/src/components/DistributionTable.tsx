@@ -233,7 +233,7 @@ Each employee's share is calculated based on:
 • Category weight (set in Settings)
 • Individual weight adjustments (up to +0.75)
 
-Weights can be increased by +0.25 increments up to +0.75 above the base category weight, and decreased back down to the base weight but never below it.
+A person in a category with weight 3.0 can be bumped up to 3.75, then back down to 3.0, but never below the category weight.
 
 Print the table for transparency posting or email to payroll (full version).`;
 
@@ -262,17 +262,20 @@ export default function DistributionTable() {
   const allEmployeeRows = employees.map(emp => {
     const category = settings.jobCategories.find(cat => cat.id === emp.jobCategoryId);
     const distResult = distributionResults.find(r => r.employeeId === emp.id);
+    const categoryColor = (category?.categoryColor || 'support') as CategoryColor;
+    // Use category-level weight from settings.categoryWeights
+    const baseWeight = settings.categoryWeights?.[categoryColor] ?? category?.variableWeight ?? 2;
 
     return {
       employeeId: emp.id,
       employeeName: emp.name,
-      categoryColor: (category?.categoryColor || 'support') as CategoryColor,
+      categoryColor,
       jobCategory: category?.name || 'Unknown',
       hoursWorked: emp.hoursWorked,
       hourlyRate: emp.hourlyRate,
-      variableWeight: category?.variableWeight || 2,
+      variableWeight: baseWeight,
       weightAdjustment: emp.weightAdjustment || 0,
-      effectiveWeight: (category?.variableWeight || 2) + (emp.weightAdjustment || 0),
+      effectiveWeight: baseWeight + (emp.weightAdjustment || 0),
       sharePercentage: distResult?.sharePercentage || 0,
       receivedAmount: distResult?.receivedAmount || 0,
       dollarsPerHour: distResult?.dollarsPerHour || 0,

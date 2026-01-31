@@ -16,6 +16,7 @@ import {
   getDefaultAmountForMethod,
   isSalesBasedMethod,
   ALL_PREDEFINED_CATEGORIES,
+  DEFAULT_CATEGORY_WEIGHTS,
 } from './types';
 import { isAuthenticated as checkAuth, clearToken } from './api';
 
@@ -49,6 +50,12 @@ interface DemoContextType {
   addJobCategory: (category: JobCategory) => void;
   removeJobCategory: (categoryId: string) => void;
   addCustomCategory: (name: string) => void;
+  // Category-level actions
+  updateCategoryWeight: (color: CategoryColor, weight: number) => void;
+  updateCategoryName: (color: CategoryColor, name: string) => void;
+  moveJobToCategory: (jobId: string, newCategoryColor: CategoryColor) => void;
+  addJobToCategory: (name: string, categoryColor: CategoryColor) => void;
+  removeJob: (jobId: string) => void;
   // Employee actions
   updateEmployee: (employeeId: string, updates: Partial<Employee>) => void;
   addEmployee: (employee: Employee) => void;
@@ -259,6 +266,96 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  // Update a category's weight and sync all jobs in that category
+  const updateCategoryWeight = useCallback((color: CategoryColor, weight: number) => {
+    setState(prev => {
+      const newCategoryWeights = { ...prev.settings.categoryWeights, [color]: weight };
+      // Update all jobs in this category to use the new weight
+      const newJobCategories = prev.settings.jobCategories.map(job =>
+        job.categoryColor === color
+          ? { ...job, variableWeight: weight as VariableWeight }
+          : job
+      );
+      return {
+        ...prev,
+        settings: {
+          ...prev.settings,
+          categoryWeights: newCategoryWeights,
+          jobCategories: newJobCategories,
+        },
+      };
+    });
+  }, []);
+
+  // Update a category's display name
+  const updateCategoryName = useCallback((color: CategoryColor, name: string) => {
+    setState(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        categoryNames: { ...prev.settings.categoryNames, [color]: name },
+      },
+    }));
+  }, []);
+
+  // Move a job from one category to another
+  const moveJobToCategory = useCallback((jobId: string, newCategoryColor: CategoryColor) => {
+    setState(prev => {
+      const newWeight = prev.settings.categoryWeights[newCategoryColor] || 1;
+      const groupMap: Record<CategoryColor, string> = {
+        boh: 'kitchen', foh: 'frontOfHouse', bar: 'bar', support: 'support', custom: 'custom',
+      };
+      const newJobCategories = prev.settings.jobCategories.map(job =>
+        job.id === jobId
+          ? { ...job, categoryColor: newCategoryColor, variableWeight: newWeight as VariableWeight, group: groupMap[newCategoryColor] as JobCategory['group'] }
+          : job
+      );
+      return {
+        ...prev,
+        settings: { ...prev.settings, jobCategories: newJobCategories },
+      };
+    });
+  }, []);
+
+  // Add a new job to a specific category
+  const addJobToCategory = useCallback((name: string, categoryColor: CategoryColor) => {
+    if (!name.trim()) return;
+    setState(prev => {
+      const id = name.trim().toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
+      const weight = prev.settings.categoryWeights[categoryColor] || 1;
+      const groupMap: Record<CategoryColor, string> = {
+        boh: 'kitchen', foh: 'frontOfHouse', bar: 'bar', support: 'support', custom: 'custom',
+      };
+      const newJob: JobCategory = {
+        id,
+        name: name.trim(),
+        variableWeight: weight as VariableWeight,
+        categoryColor,
+        group: groupMap[categoryColor] as JobCategory['group'],
+      };
+      return {
+        ...prev,
+        settings: {
+          ...prev.settings,
+          jobCategories: [...prev.settings.jobCategories, newJob],
+          selectedCategories: [...prev.settings.selectedCategories, id],
+        },
+      };
+    });
+  }, []);
+
+  // Remove a job
+  const removeJob = useCallback((jobId: string) => {
+    setState(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        jobCategories: prev.settings.jobCategories.filter(j => j.id !== jobId),
+        selectedCategories: prev.settings.selectedCategories.filter(id => id !== jobId),
+      },
+    }));
+  }, []);
+
   const updateJobCategory = useCallback((categoryId: string, updates: Partial<JobCategory>) => {
     setState(prev => ({
       ...prev,
@@ -314,7 +411,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  // Adjust individual employee weight by delta (±0.25 increments, max +0.75 total)
+  // Adjust individual employee weight by delta (±0.25 increments, max +0.75 above base, never below base)
   const adjustIndividualWeight = useCallback((employeeId: string, delta: number) => {
     setState(prev => ({
       ...prev,
@@ -324,8 +421,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         const currentAdjustment = emp.weightAdjustment || 0;
         const newAdjustment = currentAdjustment + delta;
 
-        // Clamp to valid range: -0.75 to +0.75
-        const clampedAdjustment = Math.max(-0.75, Math.min(0.75, newAdjustment));
+        // Clamp: can only go UP from base (0 to +0.75), never below base
+        const clampedAdjustment = Math.max(0, Math.min(0.75, newAdjustment));
 
         return { ...emp, weightAdjustment: clampedAdjustment };
       }),
@@ -416,7 +513,9 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       // Basis = Hours × Rate × (Category Weight + Individual Adjustment)
       const employeesWithBasis = activeEmployees.map(emp => {
         const category = settings.jobCategories.find(cat => cat.id === emp.jobCategoryId);
-        const baseWeight = category?.variableWeight || 2.5;
+        // Use category-level weight from categoryWeights map
+        const categoryColor = category?.categoryColor || 'support';
+        const baseWeight = settings.categoryWeights?.[categoryColor] ?? category?.variableWeight ?? 2;
         const weightAdjustment = emp.weightAdjustment || 0;
         const effectiveWeight = baseWeight + weightAdjustment;
         const basis = emp.hoursWorked * emp.hourlyRate * effectiveWeight;
@@ -487,6 +586,12 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         addJobCategory,
         removeJobCategory,
         addCustomCategory,
+        // Category-level
+        updateCategoryWeight,
+        updateCategoryName,
+        moveJobToCategory,
+        addJobToCategory,
+        removeJob,
         // Employees
         updateEmployee,
         addEmployee,
