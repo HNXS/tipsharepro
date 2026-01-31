@@ -1007,7 +1007,7 @@ input[type="number"] {
   font-weight: var(--font-medium);
   text-align: inherit; /* Inherit alignment from parent cell */
   color: var(--text-primary);
-  padding: 0.5rem;
+  padding: 0.15rem 0.25rem;
 }
 
 .table-input:focus {
@@ -2788,27 +2788,29 @@ input[type="number"] {
   font-weight: var(--font-normal);
 }
 
-/* Table Column Widths - apply to both th and td */
-.distribution-table th.col-name,
+/* Table Column Widths */
 .distribution-table td.col-name { min-width: 180px; text-align: left; }
-
-.distribution-table th.col-wages,
 .distribution-table td.col-wages { width: 100px; text-align: right; }
-
-.distribution-table th.col-hours,
 .distribution-table td.col-hours { width: 100px; text-align: right; }
-
-.distribution-table th.col-weight,
 .distribution-table td.col-weight { width: 140px; text-align: center; }
-
-.distribution-table th.col-share-percent,
 .distribution-table td.col-share-percent { width: 100px; text-align: right; }
-
-.distribution-table th.col-share-dollars,
 .distribution-table td.col-share-dollars { width: 100px; text-align: right; }
-
-.distribution-table th.col-dollars-per-hour,
 .distribution-table td.col-dollars-per-hour { width: 100px; text-align: right; }
+
+/* Column headings - all centered */
+.distribution-table th.col-name { min-width: 180px; text-align: center; }
+.distribution-table th.col-wages { width: 100px; text-align: center; }
+.distribution-table th.col-hours { width: 100px; text-align: center; }
+.distribution-table th.col-weight { width: 140px; text-align: center; }
+.distribution-table th.col-share-percent { width: 100px; text-align: center; }
+.distribution-table th.col-share-dollars { width: 100px; text-align: center; }
+.distribution-table th.col-dollars-per-hour { width: 100px; text-align: center; }
+
+/* Totals row - match data alignment */
+.totals-row td.col-name { text-align: left; }
+.totals-row td.col-hours { text-align: right; }
+.totals-row td.col-share-percent { text-align: right; }
+.totals-row td.col-share-dollars { text-align: right; }
 
 /* Employee Name Cell */
 .employee-name-cell {

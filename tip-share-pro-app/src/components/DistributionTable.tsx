@@ -18,6 +18,7 @@ interface EditableTextInputProps {
 function EditableTextInput({ value, onChange, className, placeholder }: EditableTextInputProps) {
   const [localValue, setLocalValue] = useState(value);
   const [isFocused, setIsFocused] = useState(false);
+  const selectOnFocus = useRef(true);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -28,7 +29,15 @@ function EditableTextInput({ value, onChange, className, placeholder }: Editable
 
   const handleFocus = () => {
     setIsFocused(true);
-    setTimeout(() => inputRef.current?.select(), 0);
+    selectOnFocus.current = true;
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (selectOnFocus.current) {
+      selectOnFocus.current = false;
+      e.preventDefault();
+      inputRef.current?.select();
+    }
   };
 
   const handleBlur = () => {
@@ -47,6 +56,7 @@ function EditableTextInput({ value, onChange, className, placeholder }: Editable
       value={localValue}
       onChange={(e) => setLocalValue(e.target.value)}
       onFocus={handleFocus}
+      onMouseUp={handleMouseUp}
       onBlur={handleBlur}
       onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.blur()}
       className={className}
@@ -66,6 +76,7 @@ interface EditableNumberInputProps {
 function EditableNumberInput({ value, onChange, decimals = 2, className }: EditableNumberInputProps) {
   const [localValue, setLocalValue] = useState(value.toFixed(decimals));
   const [isFocused, setIsFocused] = useState(false);
+  const selectOnFocus = useRef(true);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Sync local value when external value changes (but not during focus)
@@ -77,8 +88,16 @@ function EditableNumberInput({ value, onChange, decimals = 2, className }: Edita
 
   const handleFocus = () => {
     setIsFocused(true);
-    // Select all text on focus for easy replacement
-    setTimeout(() => inputRef.current?.select(), 0);
+    selectOnFocus.current = true;
+  };
+
+  // Use mouseUp to select all - more reliable than selecting in onFocus
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (selectOnFocus.current) {
+      selectOnFocus.current = false;
+      e.preventDefault();
+      inputRef.current?.select();
+    }
   };
 
   const handleBlur = () => {
@@ -112,6 +131,7 @@ function EditableNumberInput({ value, onChange, decimals = 2, className }: Edita
       value={localValue}
       onChange={handleChange}
       onFocus={handleFocus}
+      onMouseUp={handleMouseUp}
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       className={className}
@@ -398,7 +418,6 @@ export default function DistributionTable() {
         <StatCard
           label="Top Contributors"
           value="Barb B. (aka: Malibu) & Ken Dahl"
-          isDemo
         />
       </div>
 
