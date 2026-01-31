@@ -38,10 +38,10 @@ export default function WelcomeDialog({ onClose }: WelcomeDialogProps) {
             <h3>Quick Tips:</h3>
             <ul>
               <li>
-                <strong>Settings above</strong> - Configure your contribution method and job categories
+                <strong>Settings above</strong> - Configure your contribution method, % and job category weights
               </li>
               <li>
-                <strong>Distribution Table below</strong> - View and adjust the tip pool allocation
+                <strong>Distribution Table below</strong> - View and adjust the tip pool totals
               </li>
               <li>
                 <strong>Edit inline</strong> - Click on hours or wages to modify values

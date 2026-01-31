@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useDemo } from '@/lib/DemoContext';
 import {
   WHOLE_WEIGHT_OPTIONS,
@@ -40,16 +40,32 @@ export default function SettingsPage() {
     removeJob,
     setCurrentStep,
     resetSettingsToDefaults,
+    resetToDefaults,
   } = useDemo();
+
+  const { settings } = state;
+  const contributionRateOptions = getContributionRateOptions(settings.contributionMethod);
+
+  // Local state for monthly estimate input (only format with commas on blur)
+  const [monthlyInputValue, setMonthlyInputValue] = useState(
+    settings.estimatedMonthlySales > 0 ? settings.estimatedMonthlySales.toLocaleString('en-US') : ''
+  );
+  const [monthlyInputFocused, setMonthlyInputFocused] = useState(false);
+
+  // Sync from external state when not focused
+  useEffect(() => {
+    if (!monthlyInputFocused) {
+      setMonthlyInputValue(
+        settings.estimatedMonthlySales > 0 ? settings.estimatedMonthlySales.toLocaleString('en-US') : ''
+      );
+    }
+  }, [settings.estimatedMonthlySales, monthlyInputFocused]);
 
   // Local state for new job input
   const [newJobName, setNewJobName] = useState('');
   // Track which job is being dragged
   const [draggedJobId, setDraggedJobId] = useState<string | null>(null);
   const [dragOverCategory, setDragOverCategory] = useState<CategoryColor | null>(null);
-
-  const { settings } = state;
-  const contributionRateOptions = getContributionRateOptions(settings.contributionMethod);
 
   // Calculate projected pool for display
   const projectedPool = (settings.estimatedMonthlySales / 2) * (settings.contributionRate / 100);
@@ -120,6 +136,14 @@ export default function SettingsPage() {
             <RotateCcw size={16} />
             Reset Settings
           </button>
+          <button
+            onClick={resetToDefaults}
+            className="btn btn-outline btn-sm"
+            title="Reset everything to defaults"
+          >
+            <RotateCcw size={16} />
+            Reset All
+          </button>
         </div>
       </div>
 
@@ -180,10 +204,25 @@ export default function SettingsPage() {
             <input
               type="text"
               inputMode="numeric"
-              value={settings.estimatedMonthlySales > 0 ? settings.estimatedMonthlySales.toLocaleString('en-US') : ''}
+              value={monthlyInputValue}
               onChange={(e) => {
-                const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                // Allow free typing - strip non-digits for the stored value
+                const display = e.target.value;
+                setMonthlyInputValue(display);
+                const rawValue = display.replace(/[^0-9]/g, '');
                 updateSettings({ estimatedMonthlySales: parseInt(rawValue) || 0 });
+              }}
+              onFocus={() => {
+                setMonthlyInputFocused(true);
+                // Show raw number (no commas) for easier editing
+                const raw = settings.estimatedMonthlySales;
+                setMonthlyInputValue(raw > 0 ? String(raw) : '');
+              }}
+              onBlur={() => {
+                setMonthlyInputFocused(false);
+                // Format with commas on blur
+                const val = settings.estimatedMonthlySales;
+                setMonthlyInputValue(val > 0 ? val.toLocaleString('en-US') : '');
               }}
               className="form-input form-input-money"
               placeholder={isSalesBasedMethod(settings.contributionMethod) ? '100,000' : '15,000'}

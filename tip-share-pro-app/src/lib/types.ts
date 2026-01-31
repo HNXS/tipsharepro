@@ -339,12 +339,12 @@ export const CONTRIBUTION_METHOD_LABELS: Record<ContributionMethod, string> = {
   ALL_SALES: 'All Sales',
 };
 
-// Demo welcome dialog text (from PRD)
-export const DEMO_WELCOME_TEXT = `The table displayed assumes your distribution employee's data is up to date and all that is needed is the hours entered. This is a good representation of the finalizing of Distributions. All updating of any employee data (new employee, wage increase, category change etc) can be accomplished before PPE so as not to hold up Pay Day.
+// Demo welcome dialog text (from Opening Statement 1-23-26)
+export const DEMO_WELCOME_TEXT = `You can change any data you wish in this demo but at first make changes slowly so you can see the real time effect. The table displayed assumes your distribution employees' data is up to date and all that is needed is the hours entered. This is a good representation of the finalizing of Distributions. All updating of any employee data (new employee, wage increase, category change etc) can be accomplished before PPE so as not to hold up Pay Day.
 
-Enter Hours, Double Check for Errors, Print for posting and Email to Payroll.
+Enter Hours, Double Check for Errors, Print for Transparency posting and Email to Payroll.
 
-At this point just enter hours and see how your settings affected the pool. You can change wages, hours and if you click on the name cell, change category weights by .25 increments up to .75. Whole number Category weights are changeable in the Demo settings above. Return to the original Distribution table settings by pressing the 'default settings' button.`;
+At this point just enter hours and see how your settings affected the pool. You can change Names, Category weights, wages, hours and if you click on the name cell, change category weights by .25 increments up to .75 in case for instance, a lead cook needs more differentiation from a cook who just started yesterday. Whole number Category weights are changeable in the Demo settings above. Return to the original Distribution table settings by pressing the 'default settings' button.`;
 
 // Demo dialog for reducing employees
 export const DEMO_EMPLOYEE_DIALOG = 'You can set hours to zero on any employee you want to eliminate from the pool if it holds too many recipients.';

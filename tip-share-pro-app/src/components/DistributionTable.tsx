@@ -246,6 +246,7 @@ export default function DistributionTable() {
     setPrintIncludeSharePerHour,
     setCurrentStep,
     resetDistributionToDefaults,
+    resetToDefaults,
   } = useDemo();
 
   const { settings, employees, distributionResults, projectedPool, prePaidAmount, netPool, printIncludeSharePerHour } = state;
@@ -337,6 +338,14 @@ export default function DistributionTable() {
           >
             <RotateCcw size={16} />
             Reset Table
+          </button>
+          <button
+            onClick={resetToDefaults}
+            className="btn btn-outline btn-sm"
+            title="Reset everything to defaults"
+          >
+            <RotateCcw size={16} />
+            Reset All
           </button>
           <label className="print-option">
             <input
