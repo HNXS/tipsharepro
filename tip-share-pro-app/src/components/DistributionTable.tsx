@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useDemo } from '@/lib/DemoContext';
-import { CONTRIBUTION_METHOD_LABELS, HELP_TEXT, CategoryColor } from '@/lib/types';
-import { CategoryBadge, CategoryColorKey, InlineCategoryDot } from './CategoryBadge';
+import { CONTRIBUTION_METHOD_LABELS, HELP_TEXT, CategoryColor, CATEGORY_COLOR_MAP } from '@/lib/types';
+import { InlineCategoryDot } from './CategoryBadge';
 import HelpTooltip from './HelpTooltip';
 import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock } from 'lucide-react';
 
@@ -255,8 +255,8 @@ export default function DistributionTable() {
   const totalSharePercent = distributionResults.reduce((sum, r) => sum + r.sharePercentage, 0);
   const totalShareDollars = distributionResults.reduce((sum, r) => sum + r.receivedAmount, 0);
 
-  // Get unique categories used in distribution (for color key)
-  const usedCategories = [...new Set(distributionResults.map(r => r.categoryColor))] as CategoryColor[];
+  // Always show all 5 categories in the color key
+  const allCategories: CategoryColor[] = ['boh', 'foh', 'bar', 'support', 'custom'];
 
   // Build display rows from ALL employees (including those with 0 hours)
   const allEmployeeRows = employees.map(emp => {
@@ -486,8 +486,18 @@ export default function DistributionTable() {
         </table>
       </div>
 
-      {/* Color Key */}
-      <CategoryColorKey categories={usedCategories} className="mt-4" />
+      {/* Color Key - always show all 5 categories */}
+      <div className="category-color-key mt-4">
+        {allCategories.map((color) => (
+          <div key={color} className="color-key-item">
+            <span
+              className={`color-key-dot ${color}`}
+              style={{ backgroundColor: CATEGORY_COLOR_MAP[color].hex }}
+            />
+            <span>{settings.categoryNames?.[color] || CATEGORY_COLOR_MAP[color].name}</span>
+          </div>
+        ))}
+      </div>
 
       {/* Back to Settings Button */}
       <div className="distribution-footer">

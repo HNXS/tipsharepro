@@ -21,7 +21,7 @@ interface CategoryBadgeProps {
  * - FOH (Non Tipped) - Violet #8E44AD
  * - Bar - Cyan #35A0D2
  * - Support - Lime Green #82B536
- * - Custom (Big Leagues) - Yellow #F1C40F
+ * - Custom - Yellow #F1C40F
  */
 export function CategoryBadge({
   categoryColor,
