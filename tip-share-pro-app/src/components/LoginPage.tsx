@@ -14,8 +14,8 @@ interface LoginPageProps {
 }
 
 export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('demo@tipsharepro.com');
+  const [password, setPassword] = useState('demo123');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -102,7 +102,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="form-input"
-                placeholder="demo@tipsharepro.com"
+                placeholder="Enter your email"
                 required
                 autoComplete="email"
                 disabled={isLoading}
