@@ -356,7 +356,7 @@ export default function SettingsPage() {
               onDrop={(e) => handleDrop(e, color)}
             >
               <div
-                className="job-category-zone-header"
+                className={`job-category-zone-header${color === 'custom' ? ' job-category-zone-header-custom' : ''}`}
                 style={{ backgroundColor: CATEGORY_HEX[color] }}
               >
                 <span className="job-category-zone-title">

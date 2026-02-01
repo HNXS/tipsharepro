@@ -1651,6 +1651,12 @@ input[type="number"] {
   text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 
+/* Yellow background needs dark text for readability */
+.job-category-zone-header-custom {
+  color: var(--color-midnight);
+  text-shadow: none;
+}
+
 .job-category-zone-title {
   display: block;
   text-align: center;
@@ -4003,5 +4009,36 @@ input[type="number"] {
   /* Remove the dropdown arrow on print */
   .table-select-job::-ms-expand {
     display: none;
+  }
+}
+
+/* ===== Print: Job category zones — black ink on solid color ===== */
+@media print {
+  .job-category-zone-header {
+    color: #000 !important;
+    text-shadow: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .job-pill {
+    background: transparent !important;
+    color: #000 !important;
+    border: 1px solid #999;
+  }
+
+  .job-pill-grip,
+  .job-pill-remove {
+    display: none !important;
+  }
+
+  .job-category-zone {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    border-color: #999 !important;
+  }
+
+  .job-category-zone-body {
+    background: transparent !important;
   }
 }
