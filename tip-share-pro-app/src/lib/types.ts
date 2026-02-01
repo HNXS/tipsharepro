@@ -42,6 +42,7 @@ export interface Employee {
   hoursWorked: number;
   status?: EmployeeStatus;
   weightAdjustment?: number; // +/- adjustment (0.25 increments, max +0.75)
+  sortOrder?: number; // Manual sort order from drag-and-drop; undefined = auto-sort
 }
 
 export interface Settings {

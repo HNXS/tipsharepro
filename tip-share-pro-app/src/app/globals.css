@@ -3870,3 +3870,138 @@ input[type="number"] {
   padding: var(--space-4) var(--space-5);
   border-top: 1px solid var(--bg-border);
 }
+
+/* ===== Distribution Table: Job Selector Dropdown ===== */
+.table-select-job {
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 1px 4px;
+  cursor: pointer;
+  max-width: 120px;
+  appearance: auto;
+  transition: border-color var(--transition-base);
+}
+
+.table-select-job:hover {
+  border-color: var(--bg-border);
+}
+
+.table-select-job:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* ===== Distribution Table: Grip Handle (Drag-and-Drop) ===== */
+.col-grip {
+  width: 28px;
+  padding: 0 2px !important;
+  text-align: center;
+}
+
+.row-grip-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  color: var(--text-tertiary);
+  opacity: 0.5;
+  transition: opacity var(--transition-base), color var(--transition-base);
+}
+
+.row-grip-handle:hover {
+  opacity: 1;
+  color: var(--text-secondary);
+}
+
+.row-grip-handle:active {
+  cursor: grabbing;
+}
+
+/* Drag-and-drop visual feedback */
+.row-dragging {
+  opacity: 0.4;
+}
+
+.row-drag-over {
+  border-top: 2px solid var(--color-primary) !important;
+}
+
+/* ===== Distribution Table: Add Employee Row ===== */
+.add-employee-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px dashed var(--bg-border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  background: var(--bg-surface);
+}
+
+.add-employee-name-input {
+  flex: 1;
+  min-width: 120px;
+  max-width: 200px;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-body-sm);
+  background: var(--bg-elevated);
+  border: 1px solid var(--bg-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+}
+
+.add-employee-name-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
+}
+
+.add-employee-name-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.add-employee-job-select {
+  max-width: 140px;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-body-sm);
+  background: var(--bg-elevated);
+  border: 1px solid var(--bg-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+}
+
+.add-employee-job-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.add-employee-btn {
+  white-space: nowrap;
+}
+
+/* ===== Print overrides for new distribution features ===== */
+@media print {
+  .col-grip,
+  .row-grip-handle,
+  .add-employee-row {
+    display: none !important;
+  }
+
+  .table-select-job {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    font-size: 0.45rem;
+    color: #000 !important;
+  }
+
+  /* Remove the dropdown arrow on print */
+  .table-select-job::-ms-expand {
+    display: none;
+  }
+}

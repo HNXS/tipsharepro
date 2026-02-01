@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useDemo } from '@/lib/DemoContext';
-import { CONTRIBUTION_METHOD_LABELS, HELP_TEXT, CategoryColor, CATEGORY_COLOR_MAP } from '@/lib/types';
+import { CONTRIBUTION_METHOD_LABELS, HELP_TEXT, CategoryColor, CATEGORY_COLOR_MAP, JobCategory } from '@/lib/types';
 import { InlineCategoryDot } from './CategoryBadge';
 import HelpTooltip from './HelpTooltip';
-import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock } from 'lucide-react';
+import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock, GripVertical } from 'lucide-react';
 
 // Editable text input for names
 interface EditableTextInputProps {
@@ -244,6 +244,93 @@ function WeightAdjuster({ baseWeight, adjustment, effectiveWeight, onAdjust }: W
   );
 }
 
+// Job/Category Selector - grouped <select> with jobs organized by category color
+interface JobCategorySelectorProps {
+  value: string; // current jobCategoryId
+  jobCategories: JobCategory[];
+  categoryNames: Record<CategoryColor, string>;
+  onChange: (jobCategoryId: string) => void;
+  className?: string;
+}
+
+function JobCategorySelector({ value, jobCategories, categoryNames, onChange, className }: JobCategorySelectorProps) {
+  const categoryColors: CategoryColor[] = ['boh', 'bar', 'foh', 'support', 'custom'];
+
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={`table-select-job ${className || ''}`}
+      onDragStart={(e) => e.stopPropagation()}
+    >
+      {categoryColors.map(color => {
+        const jobs = jobCategories.filter(j => j.categoryColor === color);
+        if (jobs.length === 0) return null;
+        return (
+          <optgroup key={color} label={categoryNames[color] || CATEGORY_COLOR_MAP[color].name}>
+            {jobs.map(job => (
+              <option key={job.id} value={job.id}>{job.name}</option>
+            ))}
+          </optgroup>
+        );
+      })}
+    </select>
+  );
+}
+
+// Add Employee Row component
+interface AddEmployeeRowProps {
+  jobCategories: JobCategory[];
+  categoryNames: Record<CategoryColor, string>;
+  onAdd: (name: string, jobCategoryId: string) => void;
+}
+
+function AddEmployeeRow({ jobCategories, categoryNames, onAdd }: AddEmployeeRowProps) {
+  const [name, setName] = useState('');
+  const [jobCategoryId, setJobCategoryId] = useState(jobCategories[0]?.id || '');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const selectedJob = jobCategories.find(j => j.id === jobCategoryId);
+  const selectedColor = (selectedJob?.categoryColor || 'support') as CategoryColor;
+
+  const handleAdd = () => {
+    if (!name.trim() || !jobCategoryId) return;
+    onAdd(name.trim(), jobCategoryId);
+    setName('');
+    inputRef.current?.focus();
+  };
+
+  return (
+    <div className="add-employee-row no-print">
+      <InlineCategoryDot categoryColor={selectedColor} size={10} />
+      <input
+        ref={inputRef}
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+        placeholder="New employee name"
+        className="add-employee-name-input"
+      />
+      <JobCategorySelector
+        value={jobCategoryId}
+        jobCategories={jobCategories}
+        categoryNames={categoryNames}
+        onChange={setJobCategoryId}
+        className="add-employee-job-select"
+      />
+      <button
+        onClick={handleAdd}
+        disabled={!name.trim()}
+        className="btn btn-outline btn-sm add-employee-btn"
+      >
+        <Plus size={14} />
+        Add
+      </button>
+    </div>
+  );
+}
+
 // Help text for distribution table
 const DISTRIBUTION_HELP = `The Distribution Table shows how the tip pool is divided among employees.
 
@@ -261,7 +348,9 @@ export default function DistributionTable() {
   const {
     state,
     updateEmployee,
+    addEmployee,
     adjustIndividualWeight,
+    reorderEmployees,
     setPrePaidAmount,
     setPrintIncludeSharePerHour,
     setCurrentStep,
@@ -271,6 +360,10 @@ export default function DistributionTable() {
 
   const { settings, employees, distributionResults, projectedPool, prePaidAmount, netPool, printIncludeSharePerHour } = state;
 
+  // Drag-and-drop state
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
   // Calculate totals from distribution results (active employees only)
   const totalHours = distributionResults.reduce((sum, r) => sum + r.hoursWorked, 0);
   const totalSharePercent = distributionResults.reduce((sum, r) => sum + r.sharePercentage, 0);
@@ -278,6 +371,9 @@ export default function DistributionTable() {
 
   // Always show all 5 categories in the color key
   const allCategories: CategoryColor[] = ['boh', 'foh', 'bar', 'support', 'custom'];
+
+  // Check if any employee has sortOrder defined (manual sort mode)
+  const hasManualSort = employees.some(emp => emp.sortOrder !== undefined);
 
   // Build display rows from ALL employees (including those with 0 hours)
   const allEmployeeRows = employees.map(emp => {
@@ -291,7 +387,9 @@ export default function DistributionTable() {
       employeeId: emp.id,
       employeeName: emp.name,
       categoryColor,
+      jobCategoryId: emp.jobCategoryId,
       jobCategory: category?.name || 'Unknown',
+      sortOrder: emp.sortOrder,
       hoursWorked: emp.hoursWorked,
       hourlyRate: emp.hourlyRate,
       variableWeight: baseWeight,
@@ -303,9 +401,13 @@ export default function DistributionTable() {
     };
   });
 
-  // Sort: active employees (hours > 0) first by category then share, then inactive at the end
+  // Sort: if manual sortOrder exists use it, otherwise auto-sort
   const sortedResults = [...allEmployeeRows].sort((a, b) => {
-    // Active employees come first
+    if (hasManualSort && a.sortOrder !== undefined && b.sortOrder !== undefined) {
+      return a.sortOrder - b.sortOrder;
+    }
+
+    // Auto-sort: active employees (hours > 0) first by category then share, then inactive at the end
     if (a.hoursWorked > 0 && b.hoursWorked === 0) return -1;
     if (a.hoursWorked === 0 && b.hoursWorked > 0) return 1;
 
@@ -322,6 +424,69 @@ export default function DistributionTable() {
     // Within same category, sort by share amount (highest first)
     return b.receivedAmount - a.receivedAmount;
   });
+
+  // DnD handlers
+  const handleDragStart = (e: React.DragEvent<HTMLTableRowElement>, employeeId: string) => {
+    setDraggedId(employeeId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', employeeId);
+    // Slight delay to let the browser capture the drag image before fading
+    requestAnimationFrame(() => {
+      const row = e.currentTarget;
+      row.classList.add('row-dragging');
+    });
+  };
+
+  const handleDragEnd = (e: React.DragEvent<HTMLTableRowElement>) => {
+    e.currentTarget.classList.remove('row-dragging');
+    setDraggedId(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLTableRowElement>, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(index);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLTableRowElement>, targetIndex: number) => {
+    e.preventDefault();
+    setDragOverIndex(null);
+    if (!draggedId) return;
+
+    const sourceIndex = sortedResults.findIndex(r => r.employeeId === draggedId);
+    if (sourceIndex === -1 || sourceIndex === targetIndex) return;
+
+    // Build new order from the current sorted display, then splice
+    const newOrder = sortedResults.map(r => r.employeeId);
+    newOrder.splice(sourceIndex, 1);
+    newOrder.splice(targetIndex, 0, draggedId);
+
+    reorderEmployees(newOrder);
+    setDraggedId(null);
+  };
+
+  // Handle job change from the row dropdown
+  const handleJobChange = (employeeId: string, newJobCategoryId: string) => {
+    updateEmployee(employeeId, { jobCategoryId: newJobCategoryId, weightAdjustment: 0 });
+  };
+
+  // Handle adding a new employee from the add row
+  const handleAddEmployee = (name: string, jobCategoryId: string) => {
+    const newId = String(Date.now());
+    addEmployee({
+      id: newId,
+      name,
+      jobCategoryId,
+      hourlyRate: 15,
+      hoursWorked: 0,
+      status: 'active',
+    });
+  };
 
   // Handle print
   const handlePrint = () => {
@@ -426,6 +591,7 @@ export default function DistributionTable() {
         <table className="distribution-table">
           <thead>
             <tr>
+              <th className="col-grip no-print"></th>
               <th className="col-name">Name</th>
               <th className="col-wages hide-print">Wages</th>
               <th className="col-hours">Hours</th>
@@ -436,8 +602,22 @@ export default function DistributionTable() {
             </tr>
           </thead>
           <tbody>
-            {sortedResults.map((result) => (
-              <tr key={result.employeeId}>
+            {sortedResults.map((result, index) => (
+              <tr
+                key={result.employeeId}
+                draggable
+                onDragStart={(e) => handleDragStart(e, result.employeeId)}
+                onDragEnd={handleDragEnd}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, index)}
+                className={`${draggedId === result.employeeId ? 'row-dragging' : ''} ${dragOverIndex === index && draggedId !== result.employeeId ? 'row-drag-over' : ''}`}
+              >
+                <td className="col-grip no-print">
+                  <span className="row-grip-handle" title="Drag to reorder">
+                    <GripVertical size={14} />
+                  </span>
+                </td>
                 <td className={`col-name name-cell-${result.categoryColor}`}>
                   <div className="employee-name-cell">
                     <InlineCategoryDot categoryColor={result.categoryColor} size={10} />
@@ -447,7 +627,12 @@ export default function DistributionTable() {
                       className="table-input table-input-name"
                       placeholder="Enter name"
                     />
-                    <span className="employee-category">{result.jobCategory}</span>
+                    <JobCategorySelector
+                      value={result.jobCategoryId}
+                      jobCategories={settings.jobCategories}
+                      categoryNames={settings.categoryNames}
+                      onChange={(jobId) => handleJobChange(result.employeeId, jobId)}
+                    />
                   </div>
                 </td>
                 <td className="col-wages hide-print">
@@ -488,6 +673,7 @@ export default function DistributionTable() {
           </tbody>
           <tfoot>
             <tr className="totals-row">
+              <td className="col-grip no-print"></td>
               <td className="col-name">
                 <strong>Totals</strong>
               </td>
@@ -512,6 +698,13 @@ export default function DistributionTable() {
             </tr>
           </tfoot>
         </table>
+
+        {/* Add Employee Row */}
+        <AddEmployeeRow
+          jobCategories={settings.jobCategories}
+          categoryNames={settings.categoryNames}
+          onAdd={handleAddEmployee}
+        />
       </div>
 
       {/* Color Key - always show all 5 categories */}

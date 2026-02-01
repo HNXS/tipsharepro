@@ -61,6 +61,7 @@ interface DemoContextType {
   addEmployee: (employee: Employee) => void;
   removeEmployee: (employeeId: string) => void;
   adjustIndividualWeight: (employeeId: string, delta: number) => void;
+  reorderEmployees: (orderedIds: string[]) => void;
   // Distribution actions
   calculateDistribution: () => void;
   setPrePaidAmount: (amount: number) => void;
@@ -429,6 +430,18 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  // Reorder employees: accepts a new ordered list of employee IDs and assigns sortOrder
+  const reorderEmployees = useCallback((orderedIds: string[]) => {
+    setState(prev => {
+      const idToOrder = new Map(orderedIds.map((id, i) => [id, i]));
+      const updated = prev.employees.map(emp => ({
+        ...emp,
+        sortOrder: idToOrder.get(emp.id) ?? emp.sortOrder ?? 0,
+      }));
+      return { ...prev, employees: updated };
+    });
+  }, []);
+
   // Set pre-paid amount and recalculate net pool
   const setPrePaidAmount = useCallback((amount: number) => {
     setState(prev => ({
@@ -597,6 +610,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         addEmployee,
         removeEmployee,
         adjustIndividualWeight,
+        reorderEmployees,
         // Distribution
         calculateDistribution,
         setPrePaidAmount,
