@@ -502,11 +502,13 @@ export default function DistributionTable() {
     <div id="distribution-table" className="distribution-section">
       {/* Print-only Header */}
       <div className="print-header">
-        <img src="/tipsharepro-logo.svg" alt="TipSharePro" className="print-logo" />
-        <div className="print-header-text">
-          <h1 className="print-title">Distribution Table</h1>
-          <span className="print-location">Company/Location (Demo)</span>
+        <img src="/logo-full.png" alt="TipSharePro" className="print-logo" />
+        <div className="print-header-right">
+          <span className="print-date">{new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} &mdash; {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
         </div>
+      </div>
+      <div className="print-sub-header">
+        <span className="print-fine-print">TipSharePro &middot; demo.tipsharepro.com</span>
       </div>
 
       {/* Section Header - hidden on print */}
