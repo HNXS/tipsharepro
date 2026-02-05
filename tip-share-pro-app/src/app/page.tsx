@@ -41,7 +41,7 @@ export default function Home() {
             <span className="footer-brand-name">TipSharePro</span> - Sharing The Customer&apos;s Appreciation
           </p>
           <p className="footer-copyright">
-            &copy; {new Date().getFullYear()} TipSharePro. Fair and transparent tip pooling for your team.
+            &copy; {new Date().getFullYear()} TipSharePro. Fair and transparent tip sharing for your team.
           </p>
         </footer>
         {state.showWelcomeDialog && (
@@ -64,7 +64,7 @@ export default function Home() {
             <span className="footer-brand-name">TipSharePro</span> - Sharing The Customer&apos;s Appreciation
           </p>
           <p className="footer-copyright">
-            &copy; {new Date().getFullYear()} TipSharePro. Fair and transparent tip pooling for your team.
+            &copy; {new Date().getFullYear()} TipSharePro. Fair and transparent tip sharing for your team.
           </p>
         </footer>
       </div>
