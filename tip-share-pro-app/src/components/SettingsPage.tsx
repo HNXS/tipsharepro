@@ -51,6 +51,9 @@ export default function SettingsPage() {
     settings.estimatedMonthlySales > 0 ? settings.estimatedMonthlySales.toLocaleString('en-US') : ''
   );
   const [monthlyInputFocused, setMonthlyInputFocused] = useState(false);
+  
+  // Ref for the contribution rate select to focus on Enter
+  const contributionRateRef = useRef<HTMLSelectElement>(null);
 
   // Sync from external state when not focused
   useEffect(() => {
@@ -212,17 +215,26 @@ export default function SettingsPage() {
                 const rawValue = display.replace(/[^0-9]/g, '');
                 updateSettings({ estimatedMonthlySales: parseInt(rawValue) || 0 });
               }}
-              onFocus={() => {
+              onFocus={(e) => {
                 setMonthlyInputFocused(true);
                 // Show raw number (no commas) for easier editing
                 const raw = settings.estimatedMonthlySales;
                 setMonthlyInputValue(raw > 0 ? String(raw) : '');
+                // Select all text for easy replacement
+                e.target.select();
               }}
               onBlur={() => {
                 setMonthlyInputFocused(false);
                 // Format with commas on blur
                 const val = settings.estimatedMonthlySales;
                 setMonthlyInputValue(val > 0 ? val.toLocaleString('en-US') : '');
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  // Move focus to the contribution rate dropdown
+                  contributionRateRef.current?.focus();
+                }
               }}
               className="form-input form-input-money"
               placeholder={isSalesBasedMethod(settings.contributionMethod) ? '100,000' : '15,000'}
@@ -255,6 +267,7 @@ export default function SettingsPage() {
         <div className="form-group">
           <div className="input-with-suffix">
             <select
+              ref={contributionRateRef}
               value={settings.contributionRate}
               onChange={(e) => updateSettings({ contributionRate: parseFloat(e.target.value) })}
               className="form-select"
