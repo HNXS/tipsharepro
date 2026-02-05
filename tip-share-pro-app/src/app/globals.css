@@ -3033,22 +3033,25 @@ input[type="number"] {
     color: #999 !important;
   }
 
-  /* ── Hide tooltips and interactive chrome ── */
+  /* ── Hide ALL tooltips and interactive chrome EVERYWHERE ── */
   .help-tooltip-trigger,
   .tooltip-trigger,
+  .tooltip-container,
   .weight-adjuster-btn,
   .weight-adjustment-indicator,
   .distribution-actions,
   .distribution-footer,
-  .distribution-header {
-    display: none !important;
-  }
-
-  /* Hide help tooltip question mark icons everywhere on print */
-  .stat-card-label .tooltip-trigger,
+  .distribution-header,
+  button[aria-label="Help information"],
+  .stat-card-label .tooltip-container,
   .stat-card-label button,
-  .stat-card-label svg {
+  .stat-card-label svg,
+  .stat-card-label > div:last-child {
     display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
   }
 
   /* ── Weight display: match table font, normal weight ── */
@@ -3082,74 +3085,76 @@ input[type="number"] {
     border-collapse: collapse;
     width: 100% !important;
     table-layout: fixed;
+    border: 2px solid #333 !important;
   }
 
   /* Column widths for print (portrait) — no grip, no wages */
   .distribution-table th.col-name,
   .distribution-table td.col-name {
-    width: 32%;
-    min-width: 0;
-    text-align: left;
+    width: 32% !important;
+    min-width: 0 !important;
+    text-align: left !important;
   }
   .distribution-table th.col-hours,
   .distribution-table td.col-hours {
-    width: 12%;
-    text-align: center;
+    width: 12% !important;
+    text-align: center !important;
   }
   .distribution-table th.col-weight,
   .distribution-table td.col-weight {
-    width: 12%;
-    text-align: center;
+    width: 12% !important;
+    text-align: center !important;
   }
   .distribution-table th.col-share-percent,
   .distribution-table td.col-share-percent {
-    width: 14%;
-    text-align: center;
+    width: 14% !important;
+    text-align: center !important;
   }
   .distribution-table th.col-share-dollars,
   .distribution-table td.col-share-dollars {
-    width: 14%;
-    text-align: center;
+    width: 14% !important;
+    text-align: center !important;
   }
   .distribution-table th.col-dollars-per-hour,
   .distribution-table td.col-dollars-per-hour {
-    width: 12%;
-    text-align: center;
+    width: 12% !important;
+    text-align: center !important;
   }
 
+  /* ALL table cells get borders */
   .distribution-table th,
   .distribution-table td {
-    padding: 0.2rem 0.35rem;
-    line-height: 1.3;
+    padding: 0.2rem 0.35rem !important;
+    line-height: 1.3 !important;
     color: #000 !important;
-    border-left: 1px solid #ccc;
-    border-right: 1px solid #ccc;
+    border: 1px solid #999 !important;
   }
 
+  /* Table header styling */
   .distribution-table th {
-    font-size: 0.55rem;
-    font-weight: 600;
-    padding: 0.25rem 0.35rem;
-    border-bottom: 2px solid #000;
-    border-top: 1px solid #ccc;
-    text-align: center;
+    font-size: 0.55rem !important;
+    font-weight: 600 !important;
+    padding: 0.25rem 0.35rem !important;
+    border-bottom: 2px solid #333 !important;
+    text-align: center !important;
     color: #000 !important;
-    background: #f5f5f5 !important;
+    background: #f0f0f0 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
   .distribution-table th.col-name {
-    text-align: left;
+    text-align: left !important;
   }
 
-  .distribution-table tbody tr {
-    border-bottom: 1px solid #ccc;
-  }
-
-  /* Table outer border */
-  .distribution-table {
-    border: 1px solid #999 !important;
+  /* Force center alignment on all numeric inputs inside cells */
+  .distribution-table td.col-hours input,
+  .distribution-table td.col-hours .table-input,
+  .distribution-table td.col-weight input,
+  .distribution-table td.col-weight .weight-adjuster-value,
+  .distribution-table td.col-share-percent,
+  .distribution-table td.col-share-dollars {
+    text-align: center !important;
   }
 
   /* ── Name cell: compact, full job name visible ── */
