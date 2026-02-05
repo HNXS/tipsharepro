@@ -2618,6 +2618,15 @@ input[type="number"] {
   accent-color: var(--color-primary);
 }
 
+/* Stat Cards Container (for print layout with logo) */
+.stat-cards-container {
+  display: contents; /* On screen, just pass through to stat-cards-row */
+}
+
+.print-logo-container {
+  display: none; /* Hidden on screen */
+}
+
 /* Stat Cards Row */
 .stat-cards-row {
   display: grid;
@@ -2926,36 +2935,62 @@ input[type="number"] {
     display: flex !important;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.35rem;
     padding-bottom: 0.25rem;
-    border-bottom: 1.5px solid #333;
+    border-bottom: 1px solid #999;
   }
 
-  .print-logo {
-    height: 40px;
-    width: auto;
+  .print-header-left {
+    display: flex !important;
+    align-items: center;
+  }
+
+  .print-header-center {
+    display: flex !important;
+    align-items: center;
   }
 
   .print-header-right {
     display: flex !important;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.1rem;
+    align-items: center;
+  }
+
+  .print-url {
+    font-size: 0.6rem;
+    color: #666 !important;
   }
 
   .print-date {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: #333 !important;
   }
 
+  .print-fine-print {
+    font-size: 0.6rem;
+    color: #666 !important;
+  }
+
   .print-sub-header {
-    display: block !important;
+    display: none !important;
+  }
+
+  /* Logo container next to stat cards */
+  .stat-cards-container {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 0.5rem;
     margin-bottom: 0.35rem;
   }
 
-  .print-fine-print {
-    font-size: 0.5rem;
-    color: #999 !important;
+  .print-logo-container {
+    display: flex !important;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .print-logo {
+    height: 60px;
+    width: auto;
   }
 
   /* ── Stat Cards ── */
@@ -2963,7 +2998,7 @@ input[type="number"] {
     display: flex !important;
     flex-wrap: wrap;
     gap: 0.2rem 0.35rem;
-    margin-bottom: 0.35rem;
+    flex: 1;
   }
 
   .print-stat-cards .stat-card {
@@ -3107,21 +3142,18 @@ input[type="number"] {
     max-width: none !important;
   }
 
-  /* Job dropdown on print: plain text, left-aligned always */
+  /* Job dropdown hidden on print - use plain text instead */
   .table-select-job {
-    appearance: none;
-    -webkit-appearance: none;
-    border: none !important;
-    padding: 0 !important;
+    display: none !important;
+  }
+
+  /* Job name as plain text on print */
+  .job-name-print {
+    display: block !important;
     font-size: 0.45rem;
     color: #555 !important;
     text-align: left;
-    display: block;
-    width: 100%;
-  }
-
-  .table-select-job::-ms-expand {
-    display: none;
+    line-height: 1.2;
   }
 
   /* Inline category dot on print */
@@ -3181,11 +3213,24 @@ input[type="number"] {
     print-color-adjust: exact;
   }
 
-  /* Grip column hidden */
+  /* Grip column and actions hidden */
   .col-grip,
+  .col-actions,
   .row-grip-handle,
   .add-employee-row {
     display: none !important;
+  }
+
+  /* Fix potential thick line from backgrounds */
+  .distribution-section,
+  .table-container,
+  .distribution-table {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .distribution-table tbody tr:last-child td {
+    border-bottom: none !important;
   }
 }
 

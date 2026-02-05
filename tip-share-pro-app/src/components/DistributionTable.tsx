@@ -255,26 +255,32 @@ interface JobCategorySelectorProps {
 
 function JobCategorySelector({ value, jobCategories, categoryNames, onChange, className }: JobCategorySelectorProps) {
   const categoryColors: CategoryColor[] = ['boh', 'bar', 'foh', 'support', 'custom'];
+  const selectedJob = jobCategories.find(j => j.id === value);
 
   return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={`table-select-job ${className || ''}`}
-      onDragStart={(e) => e.stopPropagation()}
-    >
-      {categoryColors.map(color => {
-        const jobs = jobCategories.filter(j => j.categoryColor === color);
-        if (jobs.length === 0) return null;
-        return (
-          <optgroup key={color} label={categoryNames[color] || CATEGORY_COLOR_MAP[color].name}>
-            {jobs.map(job => (
-              <option key={job.id} value={job.id}>{job.name}</option>
-            ))}
-          </optgroup>
-        );
-      })}
-    </select>
+    <>
+      {/* Screen: interactive dropdown */}
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`table-select-job no-print ${className || ''}`}
+        onDragStart={(e) => e.stopPropagation()}
+      >
+        {categoryColors.map(color => {
+          const jobs = jobCategories.filter(j => j.categoryColor === color);
+          if (jobs.length === 0) return null;
+          return (
+            <optgroup key={color} label={categoryNames[color] || CATEGORY_COLOR_MAP[color].name}>
+              {jobs.map(job => (
+                <option key={job.id} value={job.id}>{job.name}</option>
+              ))}
+            </optgroup>
+          );
+        })}
+      </select>
+      {/* Print: plain text job name */}
+      <span className="job-name-print print-only">{selectedJob?.name || ''}</span>
+    </>
   );
 }
 
@@ -503,13 +509,15 @@ export default function DistributionTable() {
     <div id="distribution-table" className="distribution-section">
       {/* Print-only Header */}
       <div className="print-header">
-        <img src="/logo-full.png" alt="TipSharePro" className="print-logo" />
-        <div className="print-header-right">
+        <div className="print-header-left">
+          <span className="print-url">demo.tipsharepro.com</span>
+        </div>
+        <div className="print-header-center">
           <span className="print-date">{new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} &mdash; {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
         </div>
-      </div>
-      <div className="print-sub-header">
-        <span className="print-fine-print">TipSharePro &middot; demo.tipsharepro.com</span>
+        <div className="print-header-right">
+          <span className="print-fine-print">Tip Distribution Report</span>
+        </div>
       </div>
 
       {/* Section Header - hidden on print */}
@@ -554,39 +562,44 @@ export default function DistributionTable() {
         </div>
       </div>
 
-      {/* Stat Cards Row */}
-      <div className="stat-cards-row print-stat-cards">
-        <StatCard label="Day/Date" value="" isDemo className="hide-print" />
-        <StatCard label="Location" value="" isDemo className="hide-print" />
-        <StatCard label="Pay Period" value="" isDemo />
-        <StatCard
-          label="Contrib. Method"
-          value={CONTRIBUTION_METHOD_LABELS[settings.contributionMethod]}
-          className="hide-print"
-        />
-        <StatCard
-          label="Gross Pool"
-          value={Math.round(projectedPool)}
-          prefix="$"
-          helpText={HELP_TEXT.projectedPool}
-        />
-        <StatCard
-          label="Pre-Paid"
-          value={prePaidAmount}
-          prefix="$"
-          editable
-          onChange={setPrePaidAmount}
-          helpText={HELP_TEXT.prePaid}
-        />
-        <StatCard
-          label="Net Pool"
-          value={Math.round(netPool)}
-          prefix="$"
-        />
-        <StatCard
-          label="Top Contributors"
-          value="Barb B. (aka: Malibu) & Ken Dahl"
-        />
+      {/* Stat Cards Row with Logo for Print */}
+      <div className="stat-cards-container">
+        <div className="print-logo-container print-only">
+          <img src="/logo-full.png" alt="TipSharePro" className="print-logo" />
+        </div>
+        <div className="stat-cards-row print-stat-cards">
+          <StatCard label="Day/Date" value="" isDemo className="hide-print" />
+          <StatCard label="Location" value="" isDemo className="hide-print" />
+          <StatCard label="Pay Period" value="" isDemo />
+          <StatCard
+            label="Contrib. Method"
+            value={CONTRIBUTION_METHOD_LABELS[settings.contributionMethod]}
+            className="hide-print"
+          />
+          <StatCard
+            label="Gross Pool"
+            value={Math.round(projectedPool)}
+            prefix="$"
+            helpText={HELP_TEXT.projectedPool}
+          />
+          <StatCard
+            label="Pre-Paid"
+            value={prePaidAmount}
+            prefix="$"
+            editable
+            onChange={setPrePaidAmount}
+            helpText={HELP_TEXT.prePaid}
+          />
+          <StatCard
+            label="Net Pool"
+            value={Math.round(netPool)}
+            prefix="$"
+          />
+          <StatCard
+            label="Top Contributors"
+            value="Barb B. (aka: Malibu) & Ken Dahl"
+          />
+        </div>
       </div>
 
       {/* Distribution Table */}
