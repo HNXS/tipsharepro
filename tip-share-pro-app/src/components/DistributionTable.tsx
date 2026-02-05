@@ -500,9 +500,12 @@ export default function DistributionTable() {
     window.print();
   };
 
-  // Navigate back to settings page
+  // Smooth scroll back to settings section
   const goToSettings = () => {
-    setCurrentStep(1);
+    const element = document.getElementById('settings-section');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   return (

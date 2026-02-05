@@ -3342,6 +3342,24 @@ input[type="number"] {
   color: var(--text-secondary);
 }
 
+/* Section Divider between Settings and Distribution */
+.section-divider {
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--bg-border), transparent);
+  margin: var(--space-8) 0;
+}
+
+/* Smooth scroll behavior for the whole page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Add some padding to sections for scroll offset */
+#settings-section,
+#distribution-section {
+  scroll-margin-top: var(--space-4);
+}
+
 /* Utility: margin-top helper */
 .mt-4 {
   margin-top: var(--space-4);

@@ -23,54 +23,40 @@ export default function Home() {
     );
   }
 
-  // Page 1: Login
+  // Login page
   if (state.currentStep === 0) {
     return <LoginPage onLoginSuccess={handleLoginSuccess} />;
   }
 
-  // Page 2: Settings
-  if (state.currentStep === 1) {
-    return (
-      <div className="app-container">
-        <Header />
-        <main className="main-content">
+  // Main app: Settings + Distribution Table on same page
+  return (
+    <div className="app-container">
+      <Header />
+      <main className="main-content">
+        {/* Settings Section */}
+        <section id="settings-section">
           <SettingsPage />
-        </main>
-        <footer className="app-footer no-print">
-          <p className="footer-brand">
-            <span className="footer-brand-name">TipSharePro</span> - Sharing The Customer&apos;s Appreciation
-          </p>
-          <p className="footer-copyright">
-            &copy; {new Date().getFullYear()} TipSharePro. Fair and transparent tip sharing for your team.
-          </p>
-        </footer>
-        {state.showWelcomeDialog && (
-          <WelcomeDialog onClose={() => setShowWelcomeDialog(false)} />
-        )}
-      </div>
-    );
-  }
-
-  // Page 3: Distribution Table
-  if (state.currentStep === 2) {
-    return (
-      <div className="app-container">
-        <Header />
-        <main className="main-content">
+        </section>
+        
+        {/* Divider */}
+        <div className="section-divider" />
+        
+        {/* Distribution Table Section */}
+        <section id="distribution-section">
           <DistributionTable />
-        </main>
-        <footer className="app-footer no-print">
-          <p className="footer-brand">
-            <span className="footer-brand-name">TipSharePro</span> - Sharing The Customer&apos;s Appreciation
-          </p>
-          <p className="footer-copyright">
-            &copy; {new Date().getFullYear()} TipSharePro. Fair and transparent tip sharing for your team.
-          </p>
-        </footer>
-      </div>
-    );
-  }
-
-  // Fallback (shouldn't happen)
-  return null;
+        </section>
+      </main>
+      <footer className="app-footer no-print">
+        <p className="footer-brand">
+          <span className="footer-brand-name">TipSharePro</span> - Sharing The Customer&apos;s Appreciation
+        </p>
+        <p className="footer-copyright">
+          &copy; {new Date().getFullYear()} TipSharePro. Fair and transparent tip sharing for your team.
+        </p>
+      </footer>
+      {state.showWelcomeDialog && (
+        <WelcomeDialog onClose={() => setShowWelcomeDialog(false)} />
+      )}
+    </div>
+  );
 }

@@ -83,9 +83,12 @@ export default function SettingsPage() {
     }
   });
 
-  // Navigate to Distribution Table page
+  // Smooth scroll to Distribution Table section
   const goToDistribution = () => {
-    setCurrentStep(2);
+    const element = document.getElementById('distribution-section');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   // Handle adding a new job via the write-in input
