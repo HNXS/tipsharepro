@@ -27,10 +27,10 @@ export default function HelpTooltip({ text, position = 'top' }: HelpTooltipProps
   };
 
   return (
-    <div className="tooltip-container">
+    <div className="tooltip-container no-print">
       <button
         type="button"
-        className="tooltip-trigger"
+        className="tooltip-trigger no-print"
         onMouseEnter={showTooltip}
         onMouseLeave={hideTooltip}
         onFocus={showTooltip}
