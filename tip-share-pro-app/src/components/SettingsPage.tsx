@@ -48,7 +48,7 @@ export default function SettingsPage() {
 
   // Local state for monthly estimate input (only format with commas on blur)
   const [monthlyInputValue, setMonthlyInputValue] = useState(
-    settings.estimatedMonthlySales > 0 ? settings.estimatedMonthlySales.toLocaleString('en-US') : ''
+    settings.estimatedMonthlySales > 0 ? settings.estimatedMonthlySales.toLocaleString('en-US') : '0'
   );
   const [monthlyInputFocused, setMonthlyInputFocused] = useState(false);
   
@@ -59,7 +59,7 @@ export default function SettingsPage() {
   useEffect(() => {
     if (!monthlyInputFocused) {
       setMonthlyInputValue(
-        settings.estimatedMonthlySales > 0 ? settings.estimatedMonthlySales.toLocaleString('en-US') : ''
+        settings.estimatedMonthlySales > 0 ? settings.estimatedMonthlySales.toLocaleString('en-US') : '0'
       );
     }
   }, [settings.estimatedMonthlySales, monthlyInputFocused]);
@@ -217,17 +217,17 @@ export default function SettingsPage() {
               }}
               onFocus={(e) => {
                 setMonthlyInputFocused(true);
-                // Show raw number (no commas) for easier editing
+                // Show raw number (no commas) for easier editing, empty if 0 so user can type fresh
                 const raw = settings.estimatedMonthlySales;
                 setMonthlyInputValue(raw > 0 ? String(raw) : '');
                 // Select all text for easy replacement
-                e.target.select();
+                setTimeout(() => e.target.select(), 0);
               }}
               onBlur={() => {
                 setMonthlyInputFocused(false);
-                // Format with commas on blur
+                // Format with commas on blur, show "0" if empty
                 const val = settings.estimatedMonthlySales;
-                setMonthlyInputValue(val > 0 ? val.toLocaleString('en-US') : '');
+                setMonthlyInputValue(val > 0 ? val.toLocaleString('en-US') : '0');
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -237,7 +237,7 @@ export default function SettingsPage() {
                 }
               }}
               className="form-input form-input-money"
-              placeholder={isSalesBasedMethod(settings.contributionMethod) ? '100,000' : '15,000'}
+              placeholder="0"
             />
           </div>
           <p className="form-help">
