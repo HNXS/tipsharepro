@@ -5,7 +5,7 @@ import { useDemo } from '@/lib/DemoContext';
 import { CONTRIBUTION_METHOD_LABELS, HELP_TEXT, CategoryColor, CATEGORY_COLOR_MAP, JobCategory } from '@/lib/types';
 import { InlineCategoryDot } from './CategoryBadge';
 import HelpTooltip from './HelpTooltip';
-import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock, GripVertical } from 'lucide-react';
+import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock, GripVertical, Trash2 } from 'lucide-react';
 
 // Editable text input for names
 interface EditableTextInputProps {
@@ -349,6 +349,7 @@ export default function DistributionTable() {
     state,
     updateEmployee,
     addEmployee,
+    removeEmployee,
     adjustIndividualWeight,
     reorderEmployees,
     setPrePaidAmount,
@@ -601,6 +602,7 @@ export default function DistributionTable() {
               <th className="col-share-percent">Share %</th>
               <th className="col-share-dollars">Share $</th>
               <th className={`col-dollars-per-hour ${!printIncludeSharePerHour ? 'hide-print' : ''}`}>$/Hr</th>
+              <th className="col-actions no-print"></th>
             </tr>
           </thead>
           <tbody>
@@ -670,6 +672,15 @@ export default function DistributionTable() {
                 <td className={`col-dollars-per-hour ${!printIncludeSharePerHour ? 'hide-print' : ''}`}>
                   ${result.dollarsPerHour.toFixed(2)}
                 </td>
+                <td className="col-actions no-print">
+                  <button
+                    className="btn-delete-employee"
+                    onClick={() => removeEmployee(result.employeeId)}
+                    title="Remove employee"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -697,6 +708,7 @@ export default function DistributionTable() {
               <td className={`col-dollars-per-hour ${!printIncludeSharePerHour ? 'hide-print' : ''}`}>
                 <span className="totals-placeholder">—</span>
               </td>
+              <td className="col-actions no-print"></td>
             </tr>
           </tfoot>
         </table>

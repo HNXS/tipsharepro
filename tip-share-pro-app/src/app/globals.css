@@ -3969,6 +3969,35 @@ input[type="number"] {
   cursor: grabbing;
 }
 
+/* Delete employee button */
+.col-actions {
+  width: 32px;
+  padding: 0 4px !important;
+  text-align: center;
+}
+
+.btn-delete-employee {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  opacity: 0.4;
+  transition: opacity var(--transition-base), color var(--transition-base), background var(--transition-base);
+}
+
+.btn-delete-employee:hover {
+  opacity: 1;
+  color: var(--color-danger, #dc3545);
+  background: rgba(220, 53, 69, 0.1);
+}
+
 /* Drag-and-drop visual feedback */
 .row-dragging {
   opacity: 0.4;
