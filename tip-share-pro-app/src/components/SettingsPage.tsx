@@ -134,8 +134,14 @@ export default function SettingsPage() {
 
   return (
     <div className="content-container">
+      {/* Print-only Settings Header with Logo */}
+      <div className="print-settings-header print-only">
+        <img src="/logo-full.png" alt="TipSharePro" className="print-settings-logo" />
+        <div className="print-settings-title">Demo Settings</div>
+      </div>
+
       {/* Settings Header with Actions */}
-      <div className="settings-header">
+      <div className="settings-header no-print">
         <h1 className="page-title">Demo Settings</h1>
         <div className="settings-actions">
           <button
