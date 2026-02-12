@@ -14,7 +14,8 @@ import {
 } from '@/lib/types';
 import HelpTooltip from './HelpTooltip';
 import { InlineCategoryDot } from './CategoryBadge';
-import { Lock, ChevronRight, RotateCcw, GripVertical, X, Plus } from 'lucide-react';
+import { Lock, ChevronRight, RotateCcw, GripVertical, X, Plus, Printer } from 'lucide-react';
+import PrintDialog from './PrintDialog';
 
 // The 5 category color keys in display order
 const CATEGORY_COLORS: CategoryColor[] = ['boh', 'foh', 'bar', 'support', 'custom'];
@@ -63,6 +64,9 @@ export default function SettingsPage() {
       );
     }
   }, [settings.estimatedMonthlySales, monthlyInputFocused]);
+
+  // Print dialog state
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
 
   // Local state for new job input
   const [newJobName, setNewJobName] = useState('');
@@ -149,6 +153,14 @@ export default function SettingsPage() {
           >
             <RotateCcw size={16} />
             Reset All
+          </button>
+          <button
+            onClick={() => setShowPrintDialog(true)}
+            className="btn btn-outline btn-sm"
+            title="Print settings configuration"
+          >
+            <Printer size={16} />
+            Print Settings
           </button>
         </div>
       </div>
@@ -494,6 +506,22 @@ export default function SettingsPage() {
           <ChevronRight size={20} />
         </button>
       </div>
+
+      {/* Print Footer — hidden on screen, shown on print */}
+      <div className="print-footer">
+        <span className="print-footer-brand">TipSharePro</span>
+        <span className="print-footer-date">
+          {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+        </span>
+      </div>
+
+      {/* Print Dialog */}
+      {showPrintDialog && (
+        <PrintDialog
+          target="settings"
+          onClose={() => setShowPrintDialog(false)}
+        />
+      )}
     </div>
   );
 }

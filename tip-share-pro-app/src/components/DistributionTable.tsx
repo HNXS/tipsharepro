@@ -6,6 +6,7 @@ import { CONTRIBUTION_METHOD_LABELS, HELP_TEXT, CategoryColor, CATEGORY_COLOR_MA
 import { InlineCategoryDot } from './CategoryBadge';
 import HelpTooltip from './HelpTooltip';
 import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock, GripVertical, Trash2 } from 'lucide-react';
+import PrintDialog from './PrintDialog';
 
 // Editable text input for names
 interface EditableTextInputProps {
@@ -367,6 +368,9 @@ export default function DistributionTable() {
 
   const { settings, employees, distributionResults, projectedPool, prePaidAmount, netPool, printIncludeSharePerHour } = state;
 
+  // Print dialog state
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
+
   // Drag-and-drop state
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -497,7 +501,7 @@ export default function DistributionTable() {
 
   // Handle print
   const handlePrint = () => {
-    window.print();
+    setShowPrintDialog(true);
   };
 
   // Smooth scroll back to settings section
@@ -546,14 +550,6 @@ export default function DistributionTable() {
             <RotateCcw size={16} />
             Reset All
           </button>
-          <label className="print-option">
-            <input
-              type="checkbox"
-              checked={printIncludeSharePerHour}
-              onChange={(e) => setPrintIncludeSharePerHour(e.target.checked)}
-            />
-            <span>Include $/Hr on print</span>
-          </label>
           <button onClick={handlePrint} className="btn btn-outline btn-sm">
             <Printer size={16} />
             Print
@@ -757,6 +753,24 @@ export default function DistributionTable() {
           Back to Settings
         </button>
       </div>
+
+      {/* Print Footer — hidden on screen, shown on print */}
+      <div className="print-footer">
+        <span className="print-footer-brand">TipSharePro</span>
+        <span className="print-footer-date">
+          {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+        </span>
+      </div>
+
+      {/* Print Dialog */}
+      {showPrintDialog && (
+        <PrintDialog
+          target="distribution"
+          onClose={() => setShowPrintDialog(false)}
+          printIncludeSharePerHour={printIncludeSharePerHour}
+          setPrintIncludeSharePerHour={setPrintIncludeSharePerHour}
+        />
+      )}
     </div>
   );
 }
