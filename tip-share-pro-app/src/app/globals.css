@@ -3535,21 +3535,41 @@ input[type="number"] {
     print-color-adjust: exact;
   }
 
-  /* Hide interactive elements on settings print */
+  /* Force all dark backgrounds to white for settings print */
+  body.print-target-settings .method-option,
+  body.print-target-settings .input-with-prefix,
+  body.print-target-settings .input-with-suffix,
+  body.print-target-settings .weight-item,
+  body.print-target-settings .form-input,
+  body.print-target-settings .form-select,
+  body.print-target-settings .form-input-money,
+  body.print-target-settings .weight-select,
+  body.print-target-settings .method-radio {
+    background: #fff !important;
+    color: #000 !important;
+    border-color: #ccc !important;
+  }
+
   body.print-target-settings .method-radio,
   body.print-target-settings .form-select,
   body.print-target-settings .form-input,
   body.print-target-settings .weight-select {
-    border: 1px solid #ccc;
-    background: transparent !important;
-    color: #000 !important;
     -webkit-appearance: none;
     appearance: none;
     font-size: 0.75rem;
   }
 
+  body.print-target-settings .input-prefix,
+  body.print-target-settings .input-suffix {
+    color: #000 !important;
+  }
+
   body.print-target-settings select {
     background-image: none !important;
+  }
+
+  body.print-target-settings .weight-item-jobs {
+    color: #333 !important;
   }
 
   body.print-target-settings .form-help {
