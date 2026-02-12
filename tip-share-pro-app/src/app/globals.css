@@ -3034,9 +3034,15 @@ input[type="number"] {
   }
 
   /* ── Global: force white bg + black text so print works with/without backgrounds ── */
+  html,
   body {
     background: #fff !important;
     color: #000 !important;
+  }
+
+  /* Remove min-height that can force extra blank pages */
+  .app-container {
+    min-height: auto !important;
   }
 
   /* Reset dark-theme backgrounds to white for print */
