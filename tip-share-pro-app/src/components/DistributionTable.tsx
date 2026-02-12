@@ -210,16 +210,34 @@ interface WeightAdjusterProps {
 }
 
 function WeightAdjuster({ baseWeight, adjustment, effectiveWeight, onAdjust }: WeightAdjusterProps) {
+  const [isEditing, setIsEditing] = useState(false);
   // Can only decrease back to base weight (adjustment >= 0), not below
   const canDecrease = adjustment > 0;
   // Can increase up to +0.75 above base weight
   const canIncrease = adjustment < 0.75;
 
+  // Compact mode: adjustment made and not actively editing — just show the number
+  const isCompact = adjustment !== 0 && !isEditing;
+
+  if (isCompact) {
+    return (
+      <div className="weight-adjuster weight-adjuster-compact" onClick={() => setIsEditing(true)} title="Click to adjust weight">
+        <span className="weight-adjuster-value weight-adjuster-value-compact">
+          {effectiveWeight.toFixed(2)}
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div className="weight-adjuster">
       <button
         className="weight-adjuster-btn"
-        onClick={() => onAdjust(-0.25)}
+        onClick={() => {
+          onAdjust(-0.25);
+          // If this brings adjustment back to 0, exit editing
+          if (adjustment - 0.25 <= 0) setIsEditing(false);
+        }}
         disabled={!canDecrease}
         title="Decrease weight back toward base"
       >
@@ -290,9 +308,14 @@ interface AddEmployeeRowProps {
   jobCategories: JobCategory[];
   categoryNames: Record<CategoryColor, string>;
   onAdd: (name: string, jobCategoryId: string) => void;
+  isDragging: boolean;
+  dragOverTrash: boolean;
+  onTrashDragOver: (e: React.DragEvent) => void;
+  onTrashDragLeave: (e: React.DragEvent) => void;
+  onTrashDrop: (e: React.DragEvent) => void;
 }
 
-function AddEmployeeRow({ jobCategories, categoryNames, onAdd }: AddEmployeeRowProps) {
+function AddEmployeeRow({ jobCategories, categoryNames, onAdd, isDragging, dragOverTrash, onTrashDragOver, onTrashDragLeave, onTrashDrop }: AddEmployeeRowProps) {
   const [name, setName] = useState('');
   const [jobCategoryId, setJobCategoryId] = useState(jobCategories[0]?.id || '');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -334,6 +357,15 @@ function AddEmployeeRow({ jobCategories, categoryNames, onAdd }: AddEmployeeRowP
         <Plus size={14} />
         Add
       </button>
+      <div
+        className={`trash-drop-zone ${isDragging ? 'trash-drop-zone-active' : ''} ${dragOverTrash ? 'trash-drop-zone-hover' : ''}`}
+        onDragOver={onTrashDragOver}
+        onDragLeave={onTrashDragLeave}
+        onDrop={onTrashDrop}
+        title="Drag and drop to delete employee"
+      >
+        <Trash2 size={18} />
+      </div>
     </div>
   );
 }
@@ -374,6 +406,7 @@ export default function DistributionTable() {
   // Drag-and-drop state
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [dragOverTrash, setDragOverTrash] = useState(false);
 
   // Calculate totals from distribution results (active employees only)
   const totalHours = distributionResults.reduce((sum, r) => sum + r.hoursWorked, 0);
@@ -452,6 +485,7 @@ export default function DistributionTable() {
     e.currentTarget.classList.remove('row-dragging');
     setDraggedId(null);
     setDragOverIndex(null);
+    setDragOverTrash(false);
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLTableRowElement>, index: number) => {
@@ -484,6 +518,27 @@ export default function DistributionTable() {
   // Handle job change from the row dropdown
   const handleJobChange = (employeeId: string, newJobCategoryId: string) => {
     updateEmployee(employeeId, { jobCategoryId: newJobCategoryId, weightAdjustment: 0 });
+  };
+
+  // Trash drop zone handlers
+  const handleTrashDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverTrash(true);
+  };
+
+  const handleTrashDragLeave = (e: React.DragEvent) => {
+    setDragOverTrash(false);
+  };
+
+  const handleTrashDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOverTrash(false);
+    if (draggedId) {
+      removeEmployee(draggedId);
+      setDraggedId(null);
+      setDragOverIndex(null);
+    }
   };
 
   // Handle adding a new employee from the add row
@@ -730,6 +785,11 @@ export default function DistributionTable() {
           jobCategories={settings.jobCategories}
           categoryNames={settings.categoryNames}
           onAdd={handleAddEmployee}
+          isDragging={draggedId !== null}
+          dragOverTrash={dragOverTrash}
+          onTrashDragOver={handleTrashDragOver}
+          onTrashDragLeave={handleTrashDragLeave}
+          onTrashDrop={handleTrashDrop}
         />
       </div>
 

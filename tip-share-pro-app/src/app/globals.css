@@ -2899,19 +2899,19 @@ input[type="number"] {
 }
 
 /* Table Column Widths */
-.distribution-table td.col-name { min-width: 180px; text-align: left; }
+.distribution-table td.col-name { min-width: 220px; text-align: left; }
 .distribution-table td.col-wages { width: 100px; text-align: right; }
 .distribution-table td.col-hours { width: 100px; text-align: right; }
-.distribution-table td.col-weight { width: 140px; text-align: center; }
+.distribution-table td.col-weight { width: 110px; text-align: center; }
 .distribution-table td.col-share-percent { width: 100px; text-align: right; }
 .distribution-table td.col-share-dollars { width: 100px; text-align: right; }
 .distribution-table td.col-dollars-per-hour { width: 100px; text-align: right; }
 
 /* Column headings - all centered */
-.distribution-table th.col-name { min-width: 180px; text-align: center; }
+.distribution-table th.col-name { min-width: 220px; text-align: center; }
 .distribution-table th.col-wages { width: 100px; text-align: center; }
 .distribution-table th.col-hours { width: 100px; text-align: center; }
-.distribution-table th.col-weight { width: 140px; text-align: center; }
+.distribution-table th.col-weight { width: 110px; text-align: center; }
 .distribution-table th.col-share-percent { width: 100px; text-align: center; }
 .distribution-table th.col-share-dollars { width: 100px; text-align: center; }
 .distribution-table th.col-dollars-per-hour { width: 100px; text-align: center; }
@@ -3020,6 +3020,23 @@ input[type="number"] {
 
 .weight-adjustment-indicator.negative {
   color: var(--color-error);
+}
+
+/* Weight Adjuster: Compact mode (adjustment already made) */
+.weight-adjuster-compact {
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-base);
+}
+
+.weight-adjuster-compact:hover {
+  background: var(--bg-surface);
+}
+
+.weight-adjuster-value-compact {
+  color: var(--color-success);
+  min-width: auto;
 }
 
 /* Hide on Print */
@@ -4573,6 +4590,43 @@ html {
 
 .add-employee-btn {
   white-space: nowrap;
+}
+
+/* Trash Drop Zone */
+.trash-drop-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+  border: 2px dashed var(--bg-border);
+  border-radius: var(--radius-md);
+  color: var(--text-tertiary);
+  opacity: 0.5;
+  transition: all var(--transition-base);
+  flex-shrink: 0;
+}
+
+.trash-drop-zone-active {
+  opacity: 1;
+  border-color: var(--color-danger, #dc3545);
+  color: var(--color-danger, #dc3545);
+  animation: trash-pulse 1s ease-in-out infinite;
+}
+
+.trash-drop-zone-hover {
+  opacity: 1;
+  background: rgba(220, 53, 69, 0.15);
+  border-color: var(--color-danger, #dc3545);
+  color: var(--color-danger, #dc3545);
+  transform: scale(1.15);
+  border-style: solid;
+}
+
+@keyframes trash-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
 }
 
 /* (Print overrides for distribution features consolidated into main @media print block) */
