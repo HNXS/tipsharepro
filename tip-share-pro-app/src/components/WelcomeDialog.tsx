@@ -38,19 +38,22 @@ export default function WelcomeDialog({ onClose }: WelcomeDialogProps) {
             <h3>Quick Tips:</h3>
             <ul>
               <li>
-                <strong>Settings above</strong> - Configure your contribution method, % and job category weights
+                <strong>Settings</strong> — Configure your contribution method, estimate the $ amount of that method, then choose a % of that $ amount you would like to start out with as a contribution amount. Finally set job category weights.{' '}
+                <a href="/help/job-categories-and-weights.pdf" target="_blank" rel="noopener noreferrer" className="welcome-pdf-link">
+                  Click here for more detail on Category Weights.
+                </a>
               </li>
               <li>
-                <strong>Distribution Table below</strong> - View and adjust the tip pool totals
+                <strong>Distribution Table</strong> — Click on hours or wages to modify values
               </li>
               <li>
-                <strong>Edit inline</strong> - Click on hours or wages to modify values
+                <strong>Edit inline</strong> — Add or Subtract Employees for a fair representation of your restaurant whenever you&apos;re ready.
               </li>
               <li>
-                <strong>Weight adjustment</strong> - Use +/- buttons to fine-tune individual weights
+                <strong>Weight adjustment</strong> — Use +/- buttons to fine-tune individual weights
               </li>
               <li>
-                <strong>Print ready</strong> - Print the distribution table (wages are hidden on print)
+                <strong>Print ready</strong> — Print the distribution table (wages are hidden on print). Check the box to add a $/Hr. column so workers know how much the pool is netting them in terms they understand.
               </li>
             </ul>
           </div>

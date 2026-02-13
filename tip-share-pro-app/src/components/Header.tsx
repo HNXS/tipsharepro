@@ -1,11 +1,11 @@
 'use client';
 
 import { useDemo } from '@/lib/DemoContext';
-import { LogOut, User, HelpCircle } from 'lucide-react';
+import { LogOut, User, HelpCircle, BookOpen } from 'lucide-react';
 import Image from 'next/image';
 
 export default function Header() {
-  const { state, handleLogout, setShowWelcomeDialog } = useDemo();
+  const { state, handleLogout, setShowWelcomeDialog, setShowHelpLibrary } = useDemo();
 
   return (
     <header className="header no-print">
@@ -49,6 +49,15 @@ export default function Header() {
             >
               <HelpCircle size={16} />
               <span className="hide-mobile">Help</span>
+            </button>
+
+            <button
+              onClick={() => setShowHelpLibrary(true)}
+              className="btn btn-outline btn-sm"
+              title="Help library"
+            >
+              <BookOpen size={16} />
+              <span className="hide-mobile">Library</span>
             </button>
 
             <button

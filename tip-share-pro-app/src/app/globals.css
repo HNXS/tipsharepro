@@ -4670,3 +4670,93 @@ html {
     background: transparent !important;
   }
 }
+
+/* ========================================
+   Tooltip PDF Link
+   ======================================== */
+.tooltip-pdf-link {
+  display: block;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--bg-border);
+  color: var(--color-primary);
+  font-size: var(--text-body-sm);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--transition-base);
+}
+
+.tooltip-pdf-link:hover {
+  color: var(--color-primary-hover, #e5a849);
+  text-decoration: underline;
+}
+
+/* ========================================
+   Welcome Dialog PDF Link
+   ======================================== */
+.welcome-pdf-link {
+  color: var(--color-primary);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.welcome-pdf-link:hover {
+  color: var(--color-primary-hover, #e5a849);
+}
+
+/* ========================================
+   Help Library Dialog
+   ======================================== */
+.help-library-dialog {
+  max-width: 520px;
+}
+
+.help-library-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.help-library-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--bg-border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: all var(--transition-base);
+  cursor: pointer;
+}
+
+.help-library-card:hover {
+  border-color: var(--color-primary);
+  background: var(--bg-surface);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.help-library-card-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.help-library-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.help-library-card-title {
+  font-weight: 600;
+  font-size: var(--text-body);
+  line-height: 1.3;
+}
+
+.help-library-card-desc {
+  font-size: var(--text-body-sm);
+  color: var(--text-secondary);
+  line-height: 1.3;
+}

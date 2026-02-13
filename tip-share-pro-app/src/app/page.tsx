@@ -6,10 +6,11 @@ import LoginPage from '@/components/LoginPage';
 import SettingsPage from '@/components/SettingsPage';
 import DistributionTable from '@/components/DistributionTable';
 import WelcomeDialog from '@/components/WelcomeDialog';
+import HelpLibraryDialog from '@/components/HelpLibraryDialog';
 import { Loader2 } from 'lucide-react';
 
 export default function Home() {
-  const { state, handleLoginSuccess, setShowWelcomeDialog } = useDemo();
+  const { state, handleLoginSuccess, setShowWelcomeDialog, setShowHelpLibrary } = useDemo();
 
   // Show loading spinner while checking auth
   if (state.isLoading) {
@@ -56,6 +57,9 @@ export default function Home() {
       </footer>
       {state.showWelcomeDialog && (
         <WelcomeDialog onClose={() => setShowWelcomeDialog(false)} />
+      )}
+      {state.showHelpLibrary && (
+        <HelpLibraryDialog onClose={() => setShowHelpLibrary(false)} />
       )}
     </div>
   );

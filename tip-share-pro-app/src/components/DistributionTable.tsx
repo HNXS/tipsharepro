@@ -146,13 +146,15 @@ interface StatCardProps {
   value: string | number;
   isDemo?: boolean;
   helpText?: string;
+  helpPdfLink?: string;
+  helpPdfTitle?: string;
   editable?: boolean;
   onChange?: (value: number) => void;
   prefix?: string;
   className?: string;
 }
 
-function StatCard({ label, value, isDemo, helpText, editable, onChange, prefix, className }: StatCardProps) {
+function StatCard({ label, value, isDemo, helpText, helpPdfLink, helpPdfTitle, editable, onChange, prefix, className }: StatCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(typeof value === 'number' ? value : 0);
 
@@ -167,7 +169,7 @@ function StatCard({ label, value, isDemo, helpText, editable, onChange, prefix, 
     <div className={`stat-card ${className || ''}`}>
       <div className="stat-card-label">
         {label}
-        {helpText && <HelpTooltip text={helpText} />}
+        {helpText && <HelpTooltip text={helpText} pdfLink={helpPdfLink} pdfTitle={helpPdfTitle} />}
       </div>
       {editable && isEditing ? (
         <div className="stat-card-input-wrapper">
@@ -588,7 +590,7 @@ export default function DistributionTable() {
       <div className="distribution-header no-print">
         <h2 className="section-title">
           Distribution Table
-          <HelpTooltip text={DISTRIBUTION_HELP} />
+          <HelpTooltip text={DISTRIBUTION_HELP} pdfLink="/help/why-tip-share-pro.pdf" pdfTitle="Why Tip Share Pro" />
         </h2>
         <div className="distribution-actions">
           <button
@@ -645,6 +647,8 @@ export default function DistributionTable() {
             editable
             onChange={setPrePaidAmount}
             helpText={HELP_TEXT.prePaid}
+            helpPdfLink="/help/what-does-pre-paid-mean.pdf"
+            helpPdfTitle="What Does Pre-Paid Mean"
           />
           <StatCard
             label="Net Pool"

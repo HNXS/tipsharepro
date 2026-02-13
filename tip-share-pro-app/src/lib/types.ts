@@ -116,6 +116,7 @@ export interface DemoState {
   prePaidAmount: number;
   netPool: number;
   showWelcomeDialog: boolean;
+  showHelpLibrary: boolean;
   printIncludeSharePerHour: boolean;
 }
 
@@ -340,12 +341,21 @@ export const CONTRIBUTION_METHOD_LABELS: Record<ContributionMethod, string> = {
   ALL_SALES: 'All Sales',
 };
 
-// Demo welcome dialog text (from Opening Statement 1-23-26)
-export const DEMO_WELCOME_TEXT = `You can change any data you wish in this demo but at first make changes slowly so you can see the real time effect. The table displayed assumes your distribution employees' data is up to date and all that is needed is the hours entered. This is a good representation of the finalizing of Distributions. All updating of any employee data (new employee, wage increase, category change etc) can be accomplished before PPE so as not to hold up Pay Day.
+// Help PDFs available in the help library
+export const HELP_PDFS = [
+  { id: 'why-tsp', title: 'Why Tip Share Pro', description: 'Compare tip pooling methods', file: '/help/why-tip-share-pro.pdf' },
+  { id: 'admin-role', title: 'The Admin Role', description: 'Admin responsibilities & setup', file: '/help/the-admin-role.pdf' },
+  { id: 'sales-factor', title: 'Why Use Sales as the Contribution Factor', description: 'IRS alignment & accuracy', file: '/help/why-sales-contribution-factor.pdf' },
+  { id: 'job-weights', title: 'Job Categories & Weights', description: 'Setting up categories & weights', file: '/help/job-categories-and-weights.pdf' },
+  { id: 'pre-paid', title: 'What Does Pre-Paid Mean', description: 'Handling terminated employees', file: '/help/what-does-pre-paid-mean.pdf' },
+];
 
-Enter Hours, Double Check for Errors, Print for Transparency posting and Email to Payroll.
+// Demo welcome dialog text (from Demo Welcome Pop Up.pdf)
+export const DEMO_WELCOME_TEXT = `You can change any data you wish in this demo but at first make changes slowly so you can see the real time effect. The table displayed assumes your distribution employees' data is up to date and all that is needed is the hours entered. This is a good representation of the finalizing of Distributions when Pay period ends. All updating of any employee data (new employee, wage increase, category change etc) can be accomplished before PPE so as not to hold up Pay Day.
 
-At this point just enter hours and see how your settings affected the pool. You can change Names, Category weights, wages, hours and if you click on the name cell, change category weights by .25 increments up to .75 in case for instance, a lead cook needs more differentiation from a cook who just started yesterday. Whole number Category weights are changeable in the Demo settings above. Return to the original Distribution table settings by pressing the 'default settings' button.`;
+Enter Hours, Double Check for Errors, Print for Transparency and Email to Payroll.
+
+At this point just enter hours and see how your settings affected the pool. You can change Names, Category weights, wages, hours and if you click on the name cell, change category weights by .25 increments up to .75 in case for instance, a lead cook needs more differentiation from a cook who just started yesterday. Whole number Category weights are changeable in the Demo settings. Return to the original Distribution table settings by pressing the 'default settings' button.`;
 
 // Demo dialog for reducing employees
 export const DEMO_EMPLOYEE_DIALOG = 'You can set hours to zero on any employee you want to eliminate from the pool if it holds too many recipients.';

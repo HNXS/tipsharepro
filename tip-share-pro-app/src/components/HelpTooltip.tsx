@@ -6,9 +6,11 @@ import { HelpCircle } from 'lucide-react';
 interface HelpTooltipProps {
   text: string;
   position?: 'top' | 'bottom' | 'left' | 'right';
+  pdfLink?: string;
+  pdfTitle?: string;
 }
 
-export default function HelpTooltip({ text, position = 'top' }: HelpTooltipProps) {
+export default function HelpTooltip({ text, position = 'top', pdfLink, pdfTitle }: HelpTooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -51,6 +53,11 @@ export default function HelpTooltip({ text, position = 'top' }: HelpTooltipProps
           onMouseLeave={hideTooltip}
         >
           {text}
+          {pdfLink && (
+            <a href={pdfLink} target="_blank" rel="noopener noreferrer" className="tooltip-pdf-link">
+              {pdfTitle || 'Read more'}
+            </a>
+          )}
         </div>
       )}
     </div>

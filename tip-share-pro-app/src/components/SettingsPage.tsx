@@ -192,7 +192,7 @@ export default function SettingsPage() {
             <span className="step-number">1</span>
             Method for Contribution %
           </h2>
-          <HelpTooltip text={HELP_TEXT.contributionMethod} />
+          <HelpTooltip text={HELP_TEXT.contributionMethod} pdfLink="/help/why-sales-contribution-factor.pdf" pdfTitle="Why Sales as Contribution Factor" />
         </div>
 
         <div className="method-selector">
@@ -434,7 +434,7 @@ export default function SettingsPage() {
             <span className="step-number">6</span>
             Job Category Weights
           </h2>
-          <HelpTooltip text={HELP_TEXT.variableWeight} />
+          <HelpTooltip text={HELP_TEXT.variableWeight} pdfLink="/help/job-categories-and-weights.pdf" pdfTitle="Job Categories & Weights" />
         </div>
 
         <div className="weight-list">

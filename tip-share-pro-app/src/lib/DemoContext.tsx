@@ -70,6 +70,7 @@ interface DemoContextType {
   resetSettingsToDefaults: () => void;
   resetDistributionToDefaults: () => void;
   setShowWelcomeDialog: (show: boolean) => void;
+  setShowHelpLibrary: (show: boolean) => void;
   setPrintIncludeSharePerHour: (include: boolean) => void;
   // Loading state
   setLoading: (loading: boolean) => void;
@@ -105,6 +106,7 @@ const initialState: ExtendedDemoState = {
   prePaidAmount: 0,
   netPool: initialProjectedPool,
   showWelcomeDialog: true,
+  showHelpLibrary: false,
   printIncludeSharePerHour: false,
 };
 
@@ -505,6 +507,11 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setState(prev => ({ ...prev, showWelcomeDialog: show }));
   }, []);
 
+  // Show/hide help library dialog
+  const setShowHelpLibrary = useCallback((show: boolean) => {
+    setState(prev => ({ ...prev, showHelpLibrary: show }));
+  }, []);
+
   // Toggle print option for $/Hr column
   const setPrintIncludeSharePerHour = useCallback((include: boolean) => {
     setState(prev => ({ ...prev, printIncludeSharePerHour: include }));
@@ -619,6 +626,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         resetSettingsToDefaults,
         resetDistributionToDefaults,
         setShowWelcomeDialog,
+        setShowHelpLibrary,
         setPrintIncludeSharePerHour,
         // Loading/Error
         setLoading,
