@@ -2899,7 +2899,7 @@ input[type="number"] {
 }
 
 /* Table Column Widths */
-.distribution-table td.col-name { min-width: 220px; text-align: left; }
+.distribution-table td.col-name { min-width: 280px; text-align: left; }
 .distribution-table td.col-wages { width: 100px; text-align: right; }
 .distribution-table td.col-hours { width: 100px; text-align: right; }
 .distribution-table td.col-weight { width: 110px; text-align: center; }
@@ -2908,7 +2908,7 @@ input[type="number"] {
 .distribution-table td.col-dollars-per-hour { width: 100px; text-align: right; }
 
 /* Column headings - all centered */
-.distribution-table th.col-name { min-width: 220px; text-align: center; }
+.distribution-table th.col-name { min-width: 280px; text-align: center; }
 .distribution-table th.col-wages { width: 100px; text-align: center; }
 .distribution-table th.col-hours { width: 100px; text-align: center; }
 .distribution-table th.col-weight { width: 110px; text-align: center; }
@@ -2927,6 +2927,15 @@ input[type="number"] {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+}
+
+.employee-name-cell .table-input-name {
+  flex: 1;
+  min-width: 100px;
+}
+
+.employee-name-cell .table-select-job {
+  flex-shrink: 0;
 }
 
 /* Category-colored name cells */
@@ -4461,7 +4470,7 @@ html {
   border-radius: var(--radius-sm);
   padding: 1px 4px;
   cursor: pointer;
-  max-width: 120px;
+  max-width: 105px;
   appearance: auto;
   transition: border-color var(--transition-base);
 }

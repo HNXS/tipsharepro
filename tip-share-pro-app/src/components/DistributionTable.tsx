@@ -235,8 +235,7 @@ function WeightAdjuster({ baseWeight, adjustment, effectiveWeight, onAdjust }: W
         className="weight-adjuster-btn"
         onClick={() => {
           onAdjust(-0.25);
-          // If this brings adjustment back to 0, exit editing
-          if (adjustment - 0.25 <= 0) setIsEditing(false);
+          setIsEditing(false);
         }}
         disabled={!canDecrease}
         title="Decrease weight back toward base"
@@ -253,7 +252,10 @@ function WeightAdjuster({ baseWeight, adjustment, effectiveWeight, onAdjust }: W
       </span>
       <button
         className="weight-adjuster-btn"
-        onClick={() => onAdjust(0.25)}
+        onClick={() => {
+          onAdjust(0.25);
+          setIsEditing(false);
+        }}
         disabled={!canIncrease}
         title="Increase weight by 0.25"
       >
