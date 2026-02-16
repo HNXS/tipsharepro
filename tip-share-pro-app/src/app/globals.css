@@ -2927,11 +2927,15 @@ input[type="number"] {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
 .employee-name-cell .table-input-name {
   flex: 1;
   min-width: 100px;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .employee-name-cell .table-select-job {
@@ -3031,12 +3035,26 @@ input[type="number"] {
   color: var(--color-error);
 }
 
-/* Weight Adjuster: Compact mode (adjustment already made) */
+/* Weight Adjuster: Compact mode (adjustment already made) — hide +/- at rest, show on hover */
 .weight-adjuster-compact {
-  cursor: pointer;
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
   transition: background var(--transition-base);
+}
+
+.weight-adjuster-compact .weight-adjuster-btn {
+  opacity: 0;
+  width: 0;
+  padding: 0;
+  border: none;
+  overflow: hidden;
+  transition: opacity 0.15s ease, width 0.15s ease;
+}
+
+.weight-adjuster-compact:hover .weight-adjuster-btn {
+  opacity: 1;
+  width: 24px;
+  border: 1px solid var(--bg-border);
 }
 
 .weight-adjuster-compact:hover {
@@ -3159,6 +3177,25 @@ input[type="number"] {
   .print-logo {
     height: 100px;
     width: auto;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Big centered logo for distribution print */
+  .print-dist-header {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid #ccc;
+  }
+
+  .print-dist-logo {
+    height: 200px;
+    width: auto;
+    margin-bottom: 0.25rem;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }

@@ -38,22 +38,19 @@ export default function WelcomeDialog({ onClose }: WelcomeDialogProps) {
             <h3>Quick Tips:</h3>
             <ul>
               <li>
-                <strong>Settings</strong> — Configure your contribution method, estimate the $ amount of that method, then choose a % of that $ amount you would like to start out with as a contribution amount. Finally set job category weights.{' '}
-                <a href="/help/job-categories-and-weights.pdf" target="_blank" rel="noopener noreferrer" className="welcome-pdf-link">
-                  Click here for more detail on Category Weights.
-                </a>
+                <strong>Settings</strong> - Use the ? for tips in each box.
               </li>
               <li>
-                <strong>Distribution Table</strong> — Click on hours or wages to modify values
+                <strong>Distribution Table</strong> &ndash; Click on hours or wages to modify values to any 2 decimal places.
               </li>
               <li>
-                <strong>Edit inline</strong> — Add or Subtract Employees for a fair representation of your restaurant whenever you&apos;re ready.
+                <strong>Edit inline</strong> - Add or Subtract Employees for a fair representation of your restaurant whenever you&apos;re ready.
               </li>
               <li>
-                <strong>Weight adjustment</strong> — Use +/- buttons to fine-tune individual weights
+                <strong>Weight adjustment</strong> - Use +/- buttons to fine-tune individual weights. We call this the experience bump.
               </li>
               <li>
-                <strong>Print ready</strong> — Print the distribution table (wages are hidden on print). Check the box to add a $/Hr. column so workers know how much the pool is netting them in terms they understand.
+                <strong>Print ready</strong> - Print the distribution table (wages are hidden on print). Check the box to add a $/Hr. column so workers know how much the pool is netting them in terms they understand.
               </li>
             </ul>
           </div>

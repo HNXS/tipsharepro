@@ -212,41 +212,26 @@ interface WeightAdjusterProps {
 }
 
 function WeightAdjuster({ baseWeight, adjustment, effectiveWeight, onAdjust }: WeightAdjusterProps) {
-  const [isEditing, setIsEditing] = useState(false);
   // Can only decrease back to base weight (adjustment >= 0), not below
   const canDecrease = adjustment > 0;
   // Can increase up to +0.75 above base weight
   const canIncrease = adjustment < 0.75;
 
-  // Compact mode: adjustment made and not actively editing — just show the number
-  const isCompact = adjustment !== 0 && !isEditing;
-
-  if (isCompact) {
-    return (
-      <div className="weight-adjuster weight-adjuster-compact" onClick={() => setIsEditing(true)} title="Click to adjust weight">
-        <span className="weight-adjuster-value weight-adjuster-value-compact">
-          {effectiveWeight.toFixed(2)}
-        </span>
-      </div>
-    );
-  }
+  const hasAdjustment = adjustment !== 0;
 
   return (
-    <div className="weight-adjuster">
+    <div className={`weight-adjuster ${hasAdjustment ? 'weight-adjuster-compact' : ''}`}>
       <button
         className="weight-adjuster-btn"
-        onClick={() => {
-          onAdjust(-0.25);
-          setIsEditing(false);
-        }}
+        onClick={() => onAdjust(-0.25)}
         disabled={!canDecrease}
         title="Decrease weight back toward base"
       >
         <Minus size={12} />
       </button>
-      <span className="weight-adjuster-value">
+      <span className={`weight-adjuster-value ${hasAdjustment ? 'weight-adjuster-value-compact' : ''}`}>
         {effectiveWeight.toFixed(2)}
-        {adjustment !== 0 && (
+        {hasAdjustment && (
           <span className={`weight-adjustment-indicator ${adjustment > 0 ? 'positive' : 'negative'}`}>
             ({adjustment > 0 ? '+' : ''}{adjustment.toFixed(2)})
           </span>
@@ -254,10 +239,7 @@ function WeightAdjuster({ baseWeight, adjustment, effectiveWeight, onAdjust }: W
       </span>
       <button
         className="weight-adjuster-btn"
-        onClick={() => {
-          onAdjust(0.25);
-          setIsEditing(false);
-        }}
+        onClick={() => onAdjust(0.25)}
         disabled={!canIncrease}
         title="Increase weight by 0.25"
       >
@@ -590,7 +572,7 @@ export default function DistributionTable() {
       <div className="distribution-header no-print">
         <h2 className="section-title">
           Distribution Table
-          <HelpTooltip text={DISTRIBUTION_HELP} pdfLink="/help/why-tip-share-pro.pdf" pdfTitle="Why Tip Share Pro" />
+          <HelpTooltip text={DISTRIBUTION_HELP} />
         </h2>
         <div className="distribution-actions">
           <button
@@ -620,11 +602,13 @@ export default function DistributionTable() {
         </div>
       </div>
 
-      {/* Stat Cards Row with Logo for Print */}
+      {/* Print-only Distribution Header with Big Logo */}
+      <div className="print-dist-header print-only">
+        <img src="/logo-full.png" alt="TipSharePro" className="print-dist-logo" />
+      </div>
+
+      {/* Stat Cards Row */}
       <div className="stat-cards-container">
-        <div className="print-logo-container print-only">
-          <img src="/logo-full.png" alt="TipSharePro" className="print-logo" />
-        </div>
         <div className="stat-cards-row print-stat-cards">
           <StatCard label="Day/Date" value="" isDemo className="hide-print" />
           <StatCard label="Location" value="" isDemo className="hide-print" />
@@ -638,7 +622,7 @@ export default function DistributionTable() {
             label="Gross Pool"
             value={Math.round(projectedPool)}
             prefix="$"
-            helpText={HELP_TEXT.projectedPool}
+            helpText={HELP_TEXT.grossPool}
           />
           <StatCard
             label="Pre-Paid"
@@ -648,7 +632,7 @@ export default function DistributionTable() {
             onChange={setPrePaidAmount}
             helpText={HELP_TEXT.prePaid}
             helpPdfLink="/help/what-does-pre-paid-mean.pdf"
-            helpPdfTitle="What Does Pre-Paid Mean"
+            helpPdfTitle="What Does Pre-Paid Mean (PDF)"
           />
           <StatCard
             label="Net Pool"

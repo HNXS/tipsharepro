@@ -195,7 +195,7 @@ export const DEFAULT_JOB_CATEGORIES: JobCategory[] = [
   { id: 'prep-cook', name: 'Prep Cook', variableWeight: 1, categoryColor: 'support', group: 'support' },
 ];
 
-// Demo employees (10 pre-set + 5 empty slots for user customization)
+// Demo employees (10 pre-set, use Add Employee row to add more)
 export const DEFAULT_EMPLOYEES: Employee[] = [
   { id: '1', name: 'Maria Santos', jobCategoryId: 'line-cook', hourlyRate: 22.00, hoursWorked: 80, status: 'active' },
   { id: '2', name: 'James Wilson', jobCategoryId: 'bartender', hourlyRate: 24.00, hoursWorked: 64, status: 'active' },
@@ -207,12 +207,6 @@ export const DEFAULT_EMPLOYEES: Employee[] = [
   { id: '8', name: 'Dan Torres', jobCategoryId: 'busser', hourlyRate: 15.00, hoursWorked: 52, status: 'active' },
   { id: '9', name: 'Katie Middleton', jobCategoryId: 'bartender', hourlyRate: 22.00, hoursWorked: 56, status: 'active' },
   { id: '10', name: 'Chris Lee', jobCategoryId: 'dishwasher', hourlyRate: 15.50, hoursWorked: 64, status: 'active' },
-  // 5 empty slots for user customization (set hours to 0 to exclude from calculation)
-  { id: '11', name: 'Your Name 1', jobCategoryId: 'line-cook', hourlyRate: 18.00, hoursWorked: 0, status: 'active' },
-  { id: '12', name: 'Your Name 2', jobCategoryId: 'bartender', hourlyRate: 18.00, hoursWorked: 0, status: 'active' },
-  { id: '13', name: 'Your Name 3', jobCategoryId: 'host-hostess', hourlyRate: 16.00, hoursWorked: 0, status: 'active' },
-  { id: '14', name: 'Your Name 4', jobCategoryId: 'busser', hourlyRate: 15.00, hoursWorked: 0, status: 'active' },
-  { id: '15', name: 'Your Name 5', jobCategoryId: 'dishwasher', hourlyRate: 15.00, hoursWorked: 0, status: 'active' },
 ];
 
 // Default settings
@@ -320,12 +314,13 @@ export const HELP_TEXT = {
   // Legacy aliases for backwards compatibility
   contributionRateSales: 'For sales-based calculations, choose a rate between 1% and 5% in 0.25% increments.',
   // Step 4: Job Categories
-  jobCategories: 'Check the job categories you intend to use. Keep it simple and use as few positions as possible at first.',
+  jobCategories: 'Enter your own Categories or use the ones provided.',
   // Step 6: Category Weights
   variableWeight: 'Any whole number will be fine at this point. You will see the effect on individual distributions and be able to change them. The weights can all be the same for that matter and their wages and hours will determine shares.',
   // Other help text
   payPeriodType: 'How often your pay periods occur. This affects when tip pool distributions are calculated.',
-  projectedPool: 'Calculated as: (Monthly Amount / 2) x Contribution Rate. This is the approximate amount available for distribution each pay period.\n\nWhy divide by 2? The default pay period is bi-weekly, meaning there are 2 pay periods per month. Dividing the monthly amount by 2 gives the approximate amount for each pay period.\n\nNote: The monthly amount should be sales for sales-based methods (All Sales, CC Sales) or tips for tips-based methods (All Tips, CC Tips).',
+  projectedPool: 'The projected pool auto fills after the entries in boxes 1, 2 & 3 below. The program assumes 2 pay periods per month calculated as follows: (Monthly Amount / 2) x Contribution Rate. This is the approximate amount available for distribution each pay period.',
+  grossPool: 'The Gross pool auto fills after the entries in settings. The program assumes 2 pay periods per month calculated as follows: (Monthly Amount / 2) x Contribution Rate. This is the approximate amount available for distribution each pay period.',
   hoursWorked: 'Total hours worked during the pay period.',
   hourlyRate: 'The employee\'s regular hourly pay rate.',
   prePaid: 'Amount paid early to terminated employees or corrections from previous periods. Link to PDF for details.',
@@ -343,19 +338,20 @@ export const CONTRIBUTION_METHOD_LABELS: Record<ContributionMethod, string> = {
 
 // Help PDFs available in the help library
 export const HELP_PDFS = [
-  { id: 'why-tsp', title: 'Why Tip Share Pro', description: 'Compare tip pooling methods', file: '/help/why-tip-share-pro.pdf' },
-  { id: 'admin-role', title: 'The Admin Role', description: 'Admin responsibilities & setup', file: '/help/the-admin-role.pdf' },
   { id: 'sales-factor', title: 'Why Use Sales as the Contribution Factor', description: 'IRS alignment & accuracy', file: '/help/why-sales-contribution-factor.pdf' },
-  { id: 'job-weights', title: 'Job Categories & Weights', description: 'Setting up categories & weights', file: '/help/job-categories-and-weights.pdf' },
+  { id: 'category-weights', title: 'Category Weights', description: 'Setting up categories & weights', file: '/help/category-weights.pdf' },
   { id: 'pre-paid', title: 'What Does Pre-Paid Mean', description: 'Handling terminated employees', file: '/help/what-does-pre-paid-mean.pdf' },
+  { id: 'full-version', title: 'What to Expect in Full Version', description: 'Features beyond the demo', file: '/help/what-to-expect-full-version.pdf' },
 ];
 
-// Demo welcome dialog text (from Demo Welcome Pop Up.pdf)
-export const DEMO_WELCOME_TEXT = `You can change any data you wish in this demo but at first make changes slowly so you can see the real time effect. The table displayed assumes your distribution employees' data is up to date and all that is needed is the hours entered. This is a good representation of the finalizing of Distributions when Pay period ends. All updating of any employee data (new employee, wage increase, category change etc) can be accomplished before PPE so as not to hold up Pay Day.
+// Demo welcome dialog text (from Demo Welcome Pop Up 2-16-26)
+export const DEMO_WELCOME_TEXT = `What you see here in the demo is the Distribution side of TipSharePro with a few Admin settings. Here\u2019s what the Demo shows: Given an estimated pool amount this is what you can expect your recipients in a pool to receive. With TipSharePro you can test out any number of scenarios before deciding on a strategy.
+
+The example table displayed assumes your distribution of employees' data is up to date and all that is needed is the hours entered. This is a good representation of the finalizing of Distributions when Pay Period Ends.
 
 Enter Hours, Double Check for Errors, Print for Transparency and Email to Payroll.
 
-At this point just enter hours and see how your settings affected the pool. You can change Names, Category weights, wages, hours and if you click on the name cell, change category weights by .25 increments up to .75 in case for instance, a lead cook needs more differentiation from a cook who just started yesterday. Whole number Category weights are changeable in the Demo settings. Return to the original Distribution table settings by pressing the 'default settings' button.`;
+That being said, you can change any data you wish in this demo and return to original settings by pressing Reset Settings, Reset Dist. Table or Reset All.`;
 
 // Demo dialog for reducing employees
 export const DEMO_EMPLOYEE_DIALOG = 'You can set hours to zero on any employee you want to eliminate from the pool if it holds too many recipients.';
