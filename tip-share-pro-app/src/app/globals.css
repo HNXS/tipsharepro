@@ -3187,15 +3187,14 @@ input[type="number"] {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 2px solid #ccc;
+    margin-bottom: 0.3rem;
+    padding-bottom: 0.2rem;
   }
 
   .print-dist-logo {
-    height: 200px;
+    height: 160px;
     width: auto;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.15rem;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -3212,8 +3211,11 @@ input[type="number"] {
     padding: 0.25rem 0.5rem;
     min-width: auto;
     flex: 0 0 auto;
-    border: 1px solid #bbb;
+    border: 1px solid #2563eb;
     border-radius: 3px;
+    background: linear-gradient(to bottom, #eff6ff, #dbeafe) !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .print-stat-cards .stat-card-label {
@@ -3331,15 +3333,15 @@ input[type="number"] {
     border: 1px solid #999 !important;
   }
 
-  /* Table header styling */
+  /* Table header styling - colorful */
   .distribution-table th {
     font-size: 0.55rem !important;
     font-weight: 600 !important;
     padding: 0.25rem 0.35rem !important;
-    border-bottom: 2px solid #333 !important;
+    border-bottom: 2px solid #1e40af !important;
     text-align: center !important;
-    color: #000 !important;
-    background: #f0f0f0 !important;
+    color: #1e3a5f !important;
+    background: linear-gradient(to bottom, #dbeafe, #bfdbfe) !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -3440,10 +3442,10 @@ input[type="number"] {
   .name-cell-support { border-left-color: #82B536 !important; }
   .name-cell-custom { border-left-color: #F1C40F !important; }
 
-  /* ── Totals row ── */
+  /* ── Totals row — colorful ── */
   .totals-row {
-    border-top: 2px solid #000;
-    background: #f0f0f0 !important;
+    border-top: 2px solid #1e40af;
+    background: linear-gradient(to bottom, #dbeafe, #bfdbfe) !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -3514,6 +3516,27 @@ input[type="number"] {
   }
 
   /* ── Landscape variant: distribution ── */
+  body.print-landscape .distribution-section,
+  body.print-landscape .content-container {
+    padding: 0.25in !important;
+  }
+
+  body.print-landscape .print-dist-header {
+    margin-bottom: 0.15rem;
+  }
+
+  body.print-landscape .print-dist-logo {
+    height: 120px;
+  }
+
+  body.print-landscape .category-color-key {
+    margin-top: 0.25rem !important;
+  }
+
+  body.print-landscape .print-footer {
+    margin-top: 0.15rem !important;
+  }
+
   body.print-landscape .distribution-table {
     font-size: 0.75rem;
   }

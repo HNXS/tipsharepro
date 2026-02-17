@@ -5,7 +5,7 @@ import { useDemo } from '@/lib/DemoContext';
 import { CONTRIBUTION_METHOD_LABELS, HELP_TEXT, CategoryColor, CATEGORY_COLOR_MAP, JobCategory } from '@/lib/types';
 import { InlineCategoryDot } from './CategoryBadge';
 import HelpTooltip from './HelpTooltip';
-import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock, GripVertical, Trash2 } from 'lucide-react';
+import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock, GripVertical, Trash2, LogOut } from 'lucide-react';
 import PrintDialog from './PrintDialog';
 
 // Editable text input for names
@@ -382,6 +382,7 @@ export default function DistributionTable() {
     setCurrentStep,
     resetDistributionToDefaults,
     resetToDefaults,
+    handleLogout,
   } = useDemo();
 
   const { settings, employees, distributionResults, projectedPool, prePaidAmount, netPool, printIncludeSharePerHour } = state;
@@ -625,13 +626,13 @@ export default function DistributionTable() {
             helpText={HELP_TEXT.grossPool}
           />
           <StatCard
-            label="Pre-Paid"
+            label="Pre-Paid Demo"
             value={prePaidAmount}
             prefix="$"
             editable
             onChange={setPrePaidAmount}
             helpText={HELP_TEXT.prePaid}
-            helpPdfLink="/help/what-does-pre-paid-mean.pdf"
+            helpPdfLink="/help/what-does-pre-paid-demo.pdf"
             helpPdfTitle="What Does Pre-Paid Mean (PDF)"
           />
           <StatCard
@@ -796,11 +797,15 @@ export default function DistributionTable() {
         ))}
       </div>
 
-      {/* Back to Settings Button */}
+      {/* Back to Settings & Log Out Buttons */}
       <div className="distribution-footer">
         <button onClick={goToSettings} className="btn btn-outline">
           <ChevronLeft size={16} />
           Back to Settings
+        </button>
+        <button onClick={handleLogout} className="btn btn-outline">
+          <LogOut size={16} />
+          Log Out
         </button>
       </div>
 

@@ -323,7 +323,7 @@ export const HELP_TEXT = {
   grossPool: 'The Gross pool auto fills after the entries in settings. The program assumes 2 pay periods per month calculated as follows: (Monthly Amount / 2) x Contribution Rate. This is the approximate amount available for distribution each pay period.',
   hoursWorked: 'Total hours worked during the pay period.',
   hourlyRate: 'The employee\'s regular hourly pay rate.',
-  prePaid: 'Amount paid early to terminated employees or corrections from previous periods. Link to PDF for details.',
+  prePaid: 'Amount paid early to terminated employees or corrections from previous periods.',
   // Backwards compatibility
   contributionRate: 'The percentage used to calculate the contribution to the tip pool.',
 };
