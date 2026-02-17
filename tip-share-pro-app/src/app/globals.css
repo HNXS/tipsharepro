@@ -4820,3 +4820,57 @@ html {
   color: var(--text-secondary);
   line-height: 1.3;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE: Distribution Table
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  /* Name column: allow wrapping for long names */
+  .distribution-table td.col-name {
+    min-width: 180px;
+  }
+  
+  .employee-name-cell {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .employee-name-cell .table-input-name {
+    width: 100%;
+    font-size: 0.9rem;
+  }
+  
+  .employee-name-cell .table-select-job {
+    width: 100%;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Even smaller screens */
+  .distribution-table td.col-name {
+    min-width: 140px;
+  }
+  
+  .employee-name-cell .table-input-name {
+    font-size: 0.85rem;
+  }
+  
+  .employee-name-cell .table-select-job {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.3rem;
+  }
+  
+  /* Hide wages column on very small screens */
+  .distribution-table .col-wages {
+    display: none;
+  }
+  
+  /* Smaller font for other columns */
+  .distribution-table td {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.3rem;
+  }
+}
