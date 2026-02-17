@@ -1,0 +1,33 @@
+// Prisma Schema for TipSharePro Demo Sessions
+// Database: PostgreSQL on Coolify
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Demo session - identified by a unique code
+model DemoSession {
+  id        String   @id @default(cuid())
+  code      String   @unique // e.g., "TOM123", "DEMO456"
+  
+  // User info (optional, from login form)
+  userName    String?
+  companyName String?
+  
+  // Saved state (JSON blob)
+  settings    Json?   // Settings page data
+  employees   Json?   // Employee list with hours, wages, etc.
+  
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastAccessedAt DateTime @default(now())
+  
+  @@index([code])
+  @@index([lastAccessedAt])
+}
