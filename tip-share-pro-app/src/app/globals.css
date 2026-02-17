@@ -2922,24 +2922,24 @@ input[type="number"] {
 .totals-row td.col-share-percent { text-align: right; }
 .totals-row td.col-share-dollars { text-align: right; }
 
-/* Employee Name Cell */
+/* Employee Name Cell - Name + Job stacked vertically */
 .employee-name-cell {
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
 }
 
 .employee-name-cell .table-input-name {
-  flex: 1;
-  min-width: 100px;
+  width: 100%;
   white-space: normal;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
 
 .employee-name-cell .table-select-job {
-  flex-shrink: 0;
+  width: 100%;
+  font-size: 0.8rem;
 }
 
 /* Category-colored name cells */
@@ -4826,24 +4826,16 @@ html {
    ══════════════════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
-  /* Name column: allow wrapping for long names */
+  /* Name column: slightly smaller on mobile */
   .distribution-table td.col-name {
     min-width: 180px;
   }
   
-  .employee-name-cell {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
-  }
-  
   .employee-name-cell .table-input-name {
-    width: 100%;
     font-size: 0.9rem;
   }
   
   .employee-name-cell .table-select-job {
-    width: 100%;
     font-size: 0.75rem;
   }
 }
