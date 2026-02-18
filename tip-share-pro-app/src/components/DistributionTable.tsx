@@ -556,17 +556,24 @@ export default function DistributionTable() {
 
   return (
     <div id="distribution-table" className="distribution-section">
-      {/* Print-only Header */}
-      <div className="print-header">
-        <div className="print-header-left">
-          <span className="print-url">demo.tipsharepro.com</span>
+      {/* Print-only Letterhead */}
+      <div className="print-letterhead print-only">
+        <div className="print-letterhead-left">
+          <img src="/letterhead/contact-text.png" alt="Questions or Comments? contact@tipsharepro.com" className="print-letterhead-contact" />
+          <img src="/letterhead/qr-code.png" alt="QR Code" className="print-letterhead-qr" />
         </div>
-        <div className="print-header-center">
-          <span className="print-date">{new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} &mdash; {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+        <div className="print-letterhead-center">
+          <img src="/logo-full.png" alt="TipSharePro" className="print-letterhead-logo" />
         </div>
-        <div className="print-header-right">
-          <span className="print-fine-print">Tip Distribution Report</span>
+        <div className="print-letterhead-right">
+          <img src="/letterhead/right-border.png" alt="" className="print-letterhead-border" />
         </div>
+      </div>
+
+      {/* Print-only sub-line: report type + date */}
+      <div className="print-report-line print-only">
+        <span className="print-report-type">Tip Distribution Report</span>
+        <span className="print-report-date">{new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} &mdash; {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
       </div>
 
       {/* Section Header - hidden on print */}
@@ -601,11 +608,6 @@ export default function DistributionTable() {
             <Lock size={12} className="lock-icon" />
           </button>
         </div>
-      </div>
-
-      {/* Print-only Distribution Header with Big Logo */}
-      <div className="print-dist-header print-only">
-        <img src="/logo-full.png" alt="TipSharePro" className="print-dist-logo" />
       </div>
 
       {/* Stat Cards Row */}

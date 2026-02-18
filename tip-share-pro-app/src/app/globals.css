@@ -3116,51 +3116,93 @@ input[type="number"] {
     padding: 0.4in !important;
   }
 
-  /* ── Print Header ── */
-  .print-header {
+  /* ── Print Letterhead (3-column) ── */
+  .print-letterhead {
     display: flex !important;
-    align-items: center;
+    align-items: stretch;
     justify-content: space-between;
+    margin-bottom: 0.15rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .print-letterhead-left {
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 0.1rem;
+    flex-shrink: 0;
+    width: 150px;
+    padding-bottom: 0.15rem;
+  }
+
+  .print-letterhead-contact {
+    width: 140px;
+    height: auto;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-letterhead-qr {
+    width: 60px;
+    height: auto;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-letterhead-center {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+  }
+
+  .print-letterhead-logo {
+    height: 140px;
+    width: auto;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-letterhead-right {
+    position: absolute;
+    top: -0.4in;
+    right: -0.4in;
+    width: 150px;
+    height: 180px;
+    overflow: hidden;
+  }
+
+  .print-letterhead-border {
+    width: 100%;
+    height: 100%;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    object-fit: cover;
+    object-position: right top;
+  }
+
+  /* Report sub-line below letterhead */
+  .print-report-line {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 0.35rem;
-    padding-bottom: 0.25rem;
-    border-bottom: 1px solid #999;
-  }
-
-  .print-header-left {
-    display: flex !important;
-    align-items: center;
-  }
-
-  .print-header-center {
-    display: flex !important;
-    align-items: center;
-  }
-
-  .print-header-right {
-    display: flex !important;
-    align-items: center;
-  }
-
-  .print-url {
     font-size: 0.6rem;
+  }
+
+  .print-report-type {
     color: #666 !important;
+    font-weight: 500;
   }
 
-  .print-date {
-    font-size: 0.6rem;
+  .print-report-date {
     color: #333 !important;
   }
 
-  .print-fine-print {
-    font-size: 0.6rem;
-    color: #666 !important;
-  }
-
-  .print-sub-header {
-    display: none !important;
-  }
-
-  /* Logo container next to stat cards */
+  /* Logo container next to stat cards (settings print) */
   .stat-cards-container {
     display: flex !important;
     align-items: flex-start;
@@ -3177,24 +3219,6 @@ input[type="number"] {
   .print-logo {
     height: 100px;
     width: auto;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  /* Big centered logo for distribution print */
-  .print-dist-header {
-    display: flex !important;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    margin-bottom: 0.3rem;
-    padding-bottom: 0.2rem;
-  }
-
-  .print-dist-logo {
-    height: 160px;
-    width: auto;
-    margin-bottom: 0.15rem;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -3521,12 +3545,37 @@ input[type="number"] {
     padding: 0.25in !important;
   }
 
-  body.print-landscape .print-dist-header {
-    margin-bottom: 0.15rem;
+  body.print-landscape .print-letterhead {
+    min-height: 80px;
+    margin-bottom: 0.1rem;
   }
 
-  body.print-landscape .print-dist-logo {
-    height: 120px;
+  body.print-landscape .print-letterhead-logo {
+    height: 100px;
+  }
+
+  body.print-landscape .print-letterhead-left {
+    width: 120px;
+  }
+
+  body.print-landscape .print-letterhead-contact {
+    width: 110px;
+  }
+
+  body.print-landscape .print-letterhead-qr {
+    width: 45px;
+  }
+
+  body.print-landscape .print-letterhead-right {
+    width: 100px;
+  }
+
+  body.print-landscape .print-letterhead-border {
+    width: 100px;
+  }
+
+  body.print-landscape .print-report-line {
+    margin-bottom: 0.2rem;
   }
 
   body.print-landscape .category-color-key {
