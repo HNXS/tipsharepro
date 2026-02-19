@@ -9,6 +9,10 @@ WORKDIR /app
 
 # Install dependencies only when package files change
 COPY package.json package-lock.json* ./
+
+# Copy Prisma schema (needed for postinstall: prisma generate)
+COPY prisma ./prisma/
+
 RUN npm ci --legacy-peer-deps
 
 # ============================================================================
