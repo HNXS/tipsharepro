@@ -42,7 +42,6 @@ export interface CreateEmployeeInput {
 }
 
 export interface UpdateEmployeeInput {
-  name?: string;
   jobCategoryId?: string;
   hourlyRateCents?: number;
   status?: EmployeeStatus;
@@ -219,7 +218,6 @@ export class EmployeeService {
     }
 
     const updateData: Record<string, unknown> = {};
-    if (input.name !== undefined) updateData.name = input.name;
     if (input.jobCategoryId !== undefined) updateData.jobCategoryId = input.jobCategoryId;
     if (input.hourlyRateCents !== undefined) updateData.hourlyRateCents = input.hourlyRateCents;
     if (input.status !== undefined) {
@@ -236,6 +234,51 @@ export class EmployeeService {
         location: true,
         jobCategory: true,
       },
+    });
+
+    return this.formatEmployee(employee);
+  }
+
+  /**
+   * Legal name correction (e.g. marriage) with audit trail
+   */
+  async correctName(
+    organizationId: string,
+    userId: string,
+    employeeId: string,
+    newName: string,
+    reason: string
+  ): Promise<EmployeeResponse> {
+    const existing = await prisma.employee.findFirst({
+      where: { id: employeeId, organizationId },
+    });
+
+    if (!existing) {
+      throw new NotFoundError('Employee', employeeId);
+    }
+
+    const oldName = existing.name;
+
+    const employee = await prisma.$transaction(async (tx) => {
+      const updated = await tx.employee.update({
+        where: { id: employeeId },
+        data: { name: newName },
+        include: { location: true, jobCategory: true },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          organizationId,
+          userId,
+          action: 'NAME_CORRECTION',
+          entityType: 'Employee',
+          entityId: employeeId,
+          beforeValues: { name: oldName },
+          afterValues: { name: newName, reason },
+        },
+      });
+
+      return updated;
     });
 
     return this.formatEmployee(employee);

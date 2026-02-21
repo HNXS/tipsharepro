@@ -25,6 +25,7 @@ import {
   Users,
   MapPin,
   Activity,
+  Zap,
   Plus,
   Trash2,
   Edit,
@@ -316,6 +317,15 @@ export default function AdminPage() {
       <header className="admin-header">
         <div className="admin-header-left">
           <h1>TipSharePro Command Center</h1>
+          <div className="admin-autopilot">
+            <span className="admin-autopilot-badge">
+              <Zap size={14} />
+              Autopilot: ON
+            </span>
+            <span className="admin-autopilot-subtitle">
+              Self-service sign-ups active. Monitor via email/phone.
+            </span>
+          </div>
         </div>
         <div className="admin-header-right">
           <button onClick={handleLogout} className="btn btn-ghost">

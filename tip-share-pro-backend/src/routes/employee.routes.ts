@@ -37,10 +37,14 @@ const createEmployeeSchema = z.object({
 });
 
 const updateEmployeeSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
   jobCategoryId: z.string().uuid().optional(),
   hourlyRateCents: z.number().int().min(100).max(20000).optional(),
   status: z.enum(['ACTIVE', 'TERMINATED']).optional(),
+});
+
+const correctNameSchema = z.object({
+  name: z.string().min(1).max(100),
+  reason: z.string().min(1).max(500),
 });
 
 // ============================================================================
@@ -144,6 +148,39 @@ router.put(
         user.organizationId,
         employeeId,
         req.body
+      );
+
+      res.status(200).json({
+        status: 'success',
+        data: employee,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * PUT /employees/:employeeId/name
+ * Legal name correction (e.g. marriage) — creates audit log entry
+ */
+router.put(
+  '/:employeeId/name',
+  authenticate,
+  authorize(UserRole.ADMIN),
+  validateParams(employeeIdParamsSchema),
+  validate(correctNameSchema),
+  async (req: Request, res: Response<ApiResponse>, next: NextFunction) => {
+    try {
+      const user = (req as AuthenticatedRequest).user;
+      const { employeeId } = req.params;
+
+      const employee = await employeeService.correctName(
+        user.organizationId,
+        user.id,
+        employeeId,
+        req.body.name,
+        req.body.reason
       );
 
       res.status(200).json({

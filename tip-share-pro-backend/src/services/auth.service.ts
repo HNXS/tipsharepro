@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../utils/prisma';
 import { config } from '../config/index';
-import { UnauthorizedError } from '../utils/errors';
+import { UnauthorizedError, ConflictError } from '../utils/errors';
 import { JwtPayload } from '../types/index';
 import { User, Organization } from '@prisma/client';
 
@@ -76,6 +76,75 @@ export class AuthService {
     });
 
     // Generate JWT token
+    const token = this.generateToken(user);
+
+    return {
+      token,
+      expiresIn: config.jwt.accessExpiry,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: this.extractNameFromEmail(user.email),
+        role: user.role,
+        companyName: user.organization.name,
+        locationName: user.location?.name || null,
+      },
+    };
+  }
+
+  /**
+   * Register a new user with organization and default location
+   */
+  async register(email: string, password: string, companyName?: string): Promise<LoginResult> {
+    const normalizedEmail = email.toLowerCase();
+
+    // Check for duplicate email (globally)
+    const existing = await prisma.user.findFirst({
+      where: { email: normalizedEmail },
+    });
+
+    if (existing) {
+      throw new ConflictError('An account with this email already exists');
+    }
+
+    // Derive org name from companyName or email domain
+    const orgName = companyName?.trim() || normalizedEmail.split('@')[1];
+
+    const passwordHash = await this.hashPassword(password);
+
+    // Create Organization + Location + User in a transaction
+    const user = await prisma.$transaction(async (tx) => {
+      const organization = await tx.organization.create({
+        data: {
+          name: orgName,
+          subscriptionStatus: 'DEMO',
+        },
+      });
+
+      const location = await tx.location.create({
+        data: {
+          organizationId: organization.id,
+          name: 'Main Location',
+          number: '001',
+        },
+      });
+
+      return tx.user.create({
+        data: {
+          organizationId: organization.id,
+          locationId: location.id,
+          email: normalizedEmail,
+          passwordHash,
+          role: 'ADMIN',
+          lastLoginAt: new Date(),
+        },
+        include: {
+          organization: true,
+          location: true,
+        },
+      });
+    });
+
     const token = this.generateToken(user);
 
     return {

@@ -5,66 +5,8 @@ import { useDemo } from '@/lib/DemoContext';
 import { CONTRIBUTION_METHOD_LABELS, HELP_TEXT, CategoryColor, CATEGORY_COLOR_MAP, JobCategory } from '@/lib/types';
 import { InlineCategoryDot } from './CategoryBadge';
 import HelpTooltip from './HelpTooltip';
-import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock, GripVertical, Trash2, LogOut } from 'lucide-react';
 import PrintDialog from './PrintDialog';
-
-// Editable text input for names
-interface EditableTextInputProps {
-  value: string;
-  onChange: (value: string) => void;
-  className?: string;
-  placeholder?: string;
-}
-
-function EditableTextInput({ value, onChange, className, placeholder }: EditableTextInputProps) {
-  const [localValue, setLocalValue] = useState(value);
-  const [isFocused, setIsFocused] = useState(false);
-  const selectOnFocus = useRef(true);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (!isFocused) {
-      setLocalValue(value);
-    }
-  }, [value, isFocused]);
-
-  const handleFocus = () => {
-    setIsFocused(true);
-    selectOnFocus.current = true;
-  };
-
-  const handleMouseUp = (e: React.MouseEvent) => {
-    if (selectOnFocus.current) {
-      selectOnFocus.current = false;
-      e.preventDefault();
-      inputRef.current?.select();
-    }
-  };
-
-  const handleBlur = () => {
-    setIsFocused(false);
-    if (localValue.trim()) {
-      onChange(localValue.trim());
-    } else {
-      setLocalValue(value);
-    }
-  };
-
-  return (
-    <input
-      ref={inputRef}
-      type="text"
-      value={localValue}
-      onChange={(e) => setLocalValue(e.target.value)}
-      onFocus={handleFocus}
-      onMouseUp={handleMouseUp}
-      onBlur={handleBlur}
-      onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.blur()}
-      className={className}
-      placeholder={placeholder}
-    />
-  );
-}
+import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock, GripVertical, Trash2, LogOut } from 'lucide-react';
 
 // Editable number input that properly handles backspace and typing
 interface EditableNumberInputProps {
@@ -684,13 +626,12 @@ export default function DistributionTable() {
                 </td>
                 <td className={`col-name name-cell-${result.categoryColor}`}>
                   <div className="employee-name-cell">
-                    <InlineCategoryDot categoryColor={result.categoryColor} size={10} />
-                    <EditableTextInput
-                      value={result.employeeName}
-                      onChange={(name) => updateEmployee(result.employeeId, { name })}
-                      className="table-input table-input-name"
-                      placeholder="Enter name"
-                    />
+                    <div className="employee-name-row">
+                      <InlineCategoryDot categoryColor={result.categoryColor} size={10} />
+                      <span className="table-input table-input-name employee-name-static">
+                        {result.employeeName}
+                      </span>
+                    </div>
                     <JobCategorySelector
                       value={result.jobCategoryId}
                       jobCategories={settings.jobCategories}

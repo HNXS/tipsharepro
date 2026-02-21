@@ -39,7 +39,6 @@ export interface CreateEmployeeRequest {
 }
 
 export interface UpdateEmployeeRequest {
-  name?: string;
   jobCategoryId?: string;
   hourlyRateCents?: number;
   status?: 'ACTIVE' | 'TERMINATED';

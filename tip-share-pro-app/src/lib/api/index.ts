@@ -22,11 +22,12 @@ export type { ApiResponse } from './client';
 // Auth
 export {
   login,
+  register,
   logout,
   getSession,
   validateSession,
 } from './auth';
-export type { LoginRequest, LoginResponse, SessionResponse } from './auth';
+export type { LoginRequest, RegisterRequest, LoginResponse, SessionResponse } from './auth';
 
 // Settings
 export {

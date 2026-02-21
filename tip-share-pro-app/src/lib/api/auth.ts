@@ -15,6 +15,12 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  companyName?: string;
+}
+
 export interface LoginResponse {
   token: string;
   expiresIn: string;
@@ -53,6 +59,18 @@ export interface SessionResponse {
  */
 export async function login(credentials: LoginRequest): Promise<LoginResponse> {
   const response = await post<LoginResponse>('/auth/login', credentials);
+
+  // Store the token
+  setToken(response.token);
+
+  return response;
+}
+
+/**
+ * Register a new account
+ */
+export async function register(data: RegisterRequest): Promise<LoginResponse> {
+  const response = await post<LoginResponse>('/auth/register', data);
 
   // Store the token
   setToken(response.token);

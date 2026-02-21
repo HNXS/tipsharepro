@@ -121,13 +121,9 @@ export default function DataEntryPage() {
                 return (
                   <tr key={employee.id}>
                     <td>
-                      <input
-                        type="text"
-                        value={employee.name}
-                        onChange={(e) => updateEmployee(employee.id, { name: e.target.value })}
-                        className="table-input"
-                        placeholder="Employee name"
-                      />
+                      <span className="table-input employee-name-static">
+                        {employee.name}
+                      </span>
                     </td>
                     <td>
                       <select
