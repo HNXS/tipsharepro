@@ -6,7 +6,7 @@ modules = ["nodejs-20"]
 channel = "stable-24_05"
 
 [[ports]]
-localPort = 5000
+localPort = 3000
 externalPort = 80
 
 [[ports]]
