@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "concurrently --names backend,frontend --prefix-colors blue,green \"npm run dev --prefix tip-share-pro-backend\" \"npm run dev --prefix tip-share-pro-app\"",
-    "build": "cd tip-share-pro-backend && npx tsc",
+    "build": "cd tip-share-pro-backend && npx tsc && cd ../tip-share-pro-app && npx next build",
     "start": "npm run build && concurrently --names backend,frontend \"npm start --prefix tip-share-pro-backend\" \"npm start --prefix tip-share-pro-app\"",
     "install:all": "cd tip-share-pro-backend && NODE_ENV=development npm ci && cd ../tip-share-pro-app && NODE_ENV=development npm ci",
     "db:push": "cd tip-share-pro-backend && npx prisma db push",
