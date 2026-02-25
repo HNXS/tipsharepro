@@ -2552,6 +2552,33 @@ input[type="number"] {
   font-size: var(--text-caption);
 }
 
+.password-strength {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: calc(var(--space-1) * -1);
+  margin-bottom: var(--space-1);
+}
+
+.password-strength-bar {
+  display: flex;
+  gap: 3px;
+  flex: 1;
+}
+
+.password-strength-segment {
+  height: 4px;
+  flex: 1;
+  border-radius: 2px;
+  transition: background-color 0.2s ease;
+}
+
+.password-strength-label {
+  font-size: var(--text-caption);
+  font-weight: 600;
+  min-width: 3rem;
+}
+
 .login-footer {
   font-size: var(--text-caption);
   color: var(--text-tertiary);

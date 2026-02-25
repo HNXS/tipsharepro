@@ -16,10 +16,14 @@ const router = Router();
 const adminAuth = (req: Request, res: Response, next: NextFunction) => {
   const adminKey = req.headers['x-admin-key'];
 
-  // Use environment variable or fallback for development
-  const validKey = process.env.ADMIN_SECRET_KEY || 'tipsharepro-admin-2026';
+  // Require environment variable - no hardcoded fallback
+  const validKey = process.env.ADMIN_SECRET_KEY;
 
-  if (adminKey !== validKey) {
+  if (!validKey) {
+    console.error('ADMIN_SECRET_KEY environment variable is not set');
+  }
+
+  if (!validKey || adminKey !== validKey) {
     return res.status(401).json({
       status: 'error',
       error: { code: 'UNAUTHORIZED', message: 'Invalid admin credentials' }

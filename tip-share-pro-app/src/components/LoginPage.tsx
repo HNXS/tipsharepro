@@ -5,6 +5,21 @@ import { LogIn, UserPlus, AlertCircle, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { login, register, ApiError } from '@/lib/api';
 
+function getPasswordStrength(password: string): { level: number; label: string; color: string } {
+  if (!password) return { level: 0, label: '', color: '' };
+  let score = 0;
+  if (password.length >= 6) score++;
+  if (password.length >= 10) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+
+  if (score <= 1) return { level: 1, label: 'Weak', color: 'var(--color-error, #e74c3c)' };
+  if (score <= 2) return { level: 2, label: 'Fair', color: 'var(--color-warning, #f39c12)' };
+  if (score <= 3) return { level: 3, label: 'Good', color: 'var(--color-info, #3498db)' };
+  return { level: 4, label: 'Strong', color: 'var(--color-success, #27ae60)' };
+}
+
 interface LoginPageProps {
   onLoginSuccess: (user: {
     name: string;
@@ -87,20 +102,6 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
     }
 
     // Sign-in mode
-    // Demo mode: bypass API for demo credentials
-    const isDemoMode = email === 'demo@tipsharepro.com' && password === 'demo123';
-
-    if (isDemoMode) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      onLoginSuccess({
-        name: 'Sarah Chen',
-        companyName: 'The Golden Fork',
-        role: 'manager',
-      });
-      setIsLoading(false);
-      return;
-    }
-
     try {
       const response = await login({ email, password });
 
@@ -188,6 +189,28 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 disabled={isLoading}
               />
             </div>
+
+            {/* Password Strength Indicator */}
+            {mode === 'signup' && password && (
+              <div className="password-strength">
+                <div className="password-strength-bar">
+                  {[1, 2, 3, 4].map((segment) => (
+                    <div
+                      key={segment}
+                      className="password-strength-segment"
+                      style={{
+                        backgroundColor: segment <= getPasswordStrength(password).level
+                          ? getPasswordStrength(password).color
+                          : 'var(--bg-border)',
+                      }}
+                    />
+                  ))}
+                </div>
+                <span className="password-strength-label" style={{ color: getPasswordStrength(password).color }}>
+                  {getPasswordStrength(password).label}
+                </span>
+              </div>
+            )}
 
             {/* Sign-up only fields */}
             {mode === 'signup' && (

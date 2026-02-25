@@ -10,8 +10,23 @@ import { validate } from '../middleware/validate';
 import { authenticate } from '../middleware/auth.middleware';
 import { authService } from '../services/auth.service';
 import { ApiResponse, AuthenticatedRequest } from '../types/index';
+import rateLimit from 'express-rate-limit';
 
 const router = Router();
+
+const authRateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  message: {
+    status: 'error',
+    error: {
+      code: 'RATE_LIMITED',
+      message: 'Too many attempts. Please try again in a minute.',
+    },
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // ============================================================================
 // Validation Schemas
@@ -38,6 +53,7 @@ const registerSchema = z.object({
  */
 router.post(
   '/login',
+  authRateLimiter,
   validate(loginSchema),
   async (req: Request, res: Response<ApiResponse>, next: NextFunction) => {
     try {
@@ -61,6 +77,7 @@ router.post(
  */
 router.post(
   '/register',
+  authRateLimiter,
   validate(registerSchema),
   async (req: Request, res: Response<ApiResponse>, next: NextFunction) => {
     try {
