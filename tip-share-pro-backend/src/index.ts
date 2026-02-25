@@ -22,6 +22,9 @@ validateConfig();
 // Create Express app
 const app: Express = express();
 
+// Trust reverse proxy (Replit, Nginx, etc.) so rate limiter sees real client IPs
+app.set('trust proxy', 1);
+
 // ============================================================================
 // MIDDLEWARE
 // ============================================================================
