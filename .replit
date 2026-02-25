@@ -1,5 +1,6 @@
 run = "npm start"
 entrypoint = "package.json"
+modules = ["nodejs-20"]
 
 [nix]
 channel = "stable-24_05"
@@ -13,4 +14,5 @@ localPort = 3001
 externalPort = 3001
 
 [deployment]
+build = ["sh", "-c", "npm run install:all && npm run build"]
 run = ["sh", "-c", "npm start"]
