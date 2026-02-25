@@ -12,13 +12,33 @@ import {
   VariableWeight,
   ContributionMethod,
   CategoryColor,
+  CATEGORY_COLOR_MAP,
   getDefaultRateForMethod,
   getDefaultAmountForMethod,
   isSalesBasedMethod,
   ALL_PREDEFINED_CATEGORIES,
   DEFAULT_CATEGORY_WEIGHTS,
 } from './types';
-import { isAuthenticated as checkAuth, clearToken } from './api';
+import { isAuthenticated as checkAuth, clearToken, getToken } from './api';
+import {
+  getSettings as apiGetSettings,
+  updateSettings as apiUpdateSettings,
+  toFrontendPayPeriodType,
+  toBackendPayPeriodType,
+} from './api/settings';
+import {
+  getJobCategories as apiGetJobCategories,
+  createJobCategory as apiCreateJobCategory,
+  updateJobCategory as apiUpdateJobCategory,
+  deleteJobCategory as apiDeleteJobCategory,
+} from './api/jobCategories';
+import {
+  getEmployees as apiGetEmployees,
+  createEmployee as apiCreateEmployee,
+  updateEmployee as apiUpdateEmployee,
+  deleteEmployee as apiDeleteEmployee,
+  dollarsToCents,
+} from './api/employees';
 
 // Auth user type
 export interface AuthUser {
@@ -79,6 +99,32 @@ interface DemoContextType {
 
 const DemoContext = createContext<DemoContextType | undefined>(undefined);
 
+// --- JWT helper: extract locationId from token ---
+function getLocationIdFromToken(): string | null {
+  const token = getToken();
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.loc || null;
+  } catch {
+    return null;
+  }
+}
+
+// --- Color mapping helpers (frontend categoryColor <-> backend badgeColor hex) ---
+function categoryColorToHex(color: string): string {
+  const entry = CATEGORY_COLOR_MAP[color as CategoryColor];
+  return entry ? entry.hex : '#F1C40F'; // default to custom yellow
+}
+
+function hexToCategoryColor(hex: string): CategoryColor {
+  const upper = hex.toUpperCase();
+  for (const [key, value] of Object.entries(CATEGORY_COLOR_MAP)) {
+    if (value.hex.toUpperCase() === upper) return key as CategoryColor;
+  }
+  return 'custom';
+}
+
 // Calculate initial projected pool
 const calculateProjectedPool = (monthlySales: number, rate: number): number => {
   return (monthlySales / 2) * (rate / 100);
@@ -120,8 +166,129 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       ...prev,
       isLoading: false,
       currentStep: hasToken ? 1 : 0,
+      isAuthenticated: hasToken,
+      showWelcomeDialog: !hasToken, // Skip welcome when restoring session
     }));
   }, []);
+
+  // Fetch settings from backend API after authentication
+  useEffect(() => {
+    if (!state.isAuthenticated) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await apiGetSettings();
+        if (cancelled) return;
+        const srv = response.settings;
+        setState(prev => {
+          const mergedSettings = {
+            ...prev.settings,
+            contributionMethod: (srv.contributionMethod as Settings['contributionMethod']) || prev.settings.contributionMethod,
+            contributionRate: srv.contributionRate ?? prev.settings.contributionRate,
+            payPeriodType: toFrontendPayPeriodType(srv.payPeriodType) || prev.settings.payPeriodType,
+            estimatedMonthlySales: srv.estimatedMonthlySales ?? prev.settings.estimatedMonthlySales,
+          };
+          const projectedPool = calculateProjectedPool(
+            mergedSettings.estimatedMonthlySales,
+            mergedSettings.contributionRate
+          );
+          const netPool = projectedPool - prev.prePaidAmount;
+          return {
+            ...prev,
+            settings: mergedSettings,
+            estimatedMonthlySales: mergedSettings.estimatedMonthlySales,
+            projectedPool,
+            netPool,
+          };
+        });
+      } catch (err) {
+        // New account or API unreachable — keep defaults, don't block UI
+        console.warn('Could not fetch settings from API, using local defaults:', err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [state.isAuthenticated]);
+
+  // Fetch job categories from backend API after authentication
+  useEffect(() => {
+    if (!state.isAuthenticated) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await apiGetJobCategories();
+        if (cancelled) return;
+        const backendCategories = response.categories;
+        // Only override local state if the backend actually has categories
+        if (backendCategories && backendCategories.length > 0) {
+          const groupMap: Record<string, JobCategory['group']> = {
+            boh: 'kitchen', foh: 'frontOfHouse', bar: 'bar', support: 'support', custom: 'custom',
+          };
+          const mapped: JobCategory[] = backendCategories.map(bc => {
+            const color = hexToCategoryColor(bc.badgeColor);
+            return {
+              id: bc.id,
+              name: bc.name,
+              variableWeight: bc.weight as VariableWeight,
+              categoryColor: color,
+              group: groupMap[color],
+            };
+          });
+          setState(prev => ({
+            ...prev,
+            settings: {
+              ...prev.settings,
+              jobCategories: mapped,
+              selectedCategories: mapped.map(j => j.id),
+            },
+          }));
+        }
+      } catch (err) {
+        // New account or API unreachable — keep defaults, don't block UI
+        console.warn('Could not fetch job categories from API, using local defaults:', err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [state.isAuthenticated]);
+
+  // Fetch employees from backend API after authentication
+  useEffect(() => {
+    if (!state.isAuthenticated) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await apiGetEmployees({ status: 'ACTIVE' });
+        if (cancelled) return;
+        const backendEmployees = response.employees;
+        // Only override local state if the backend actually has employees
+        if (backendEmployees && backendEmployees.length > 0) {
+          // Map default hours from the seed data so the demo looks populated
+          const defaultHoursMap: Record<string, number> = {
+            'Maria Santos': 80, 'James Wilson': 64, 'Sarah Johnson': 48,
+            'Mike Chen': 56, 'Lisa Park': 72, 'Tom Rodriguez': 68,
+            'Amy Martinez': 40, 'Dan Torres': 52, 'Katie Middleton': 56,
+            'Chris Lee': 64,
+          };
+          const mapped: Employee[] = backendEmployees.map(be => ({
+            id: be.id,
+            name: be.name,
+            jobCategoryId: be.jobCategory.id,
+            hourlyRate: be.hourlyRate, // already in dollars
+            hoursWorked: defaultHoursMap[be.name] ?? 0, // seed hours for demo employees
+            weightAdjustment: 0,
+            status: 'active' as const,
+          }));
+          setState(prev => ({
+            ...prev,
+            employees: mapped,
+          }));
+        }
+      } catch (err) {
+        // New account or API unreachable — keep defaults, don't block UI
+        console.warn('Could not fetch employees from API, using local defaults:', err);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [state.isAuthenticated]);
 
   // Recalculate distribution when relevant state changes
   useEffect(() => {
@@ -143,7 +310,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       currentStep: 1,
       isLoading: false,
       error: null,
-      showWelcomeDialog: true, // Show welcome dialog on login
+      showWelcomeDialog: true,
     }));
   }, []);
 
@@ -173,6 +340,15 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       const monthlySales = newSettings.estimatedMonthlySales || prev.settings.estimatedMonthlySales;
       const projectedPool = calculateProjectedPool(monthlySales, newSettings.contributionRate);
       const netPool = projectedPool - prev.prePaidAmount;
+
+      // Fire-and-forget: persist backend-relevant fields to the API
+      apiUpdateSettings({
+        contributionMethod: newSettings.contributionMethod,
+        contributionRate: newSettings.contributionRate,
+        payPeriodType: toBackendPayPeriodType(newSettings.payPeriodType),
+        estimatedMonthlySales: monthlySales,
+      }).catch(err => console.error('Failed to save settings:', err));
+
       return {
         ...prev,
         settings: newSettings,
@@ -205,6 +381,15 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       };
       const projectedPool = calculateProjectedPool(newAmount, defaultRate);
       const netPool = projectedPool - prev.prePaidAmount;
+
+      // Fire-and-forget: persist to backend API
+      apiUpdateSettings({
+        contributionMethod: method,
+        contributionRate: defaultRate,
+        payPeriodType: toBackendPayPeriodType(newSettings.payPeriodType),
+        estimatedMonthlySales: newAmount,
+      }).catch(err => console.error('Failed to save settings:', err));
+
       return {
         ...prev,
         settings: newSettings,
@@ -224,12 +409,42 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       if (isSelected) {
         newSelectedCategories = prev.settings.selectedCategories.filter(id => id !== categoryId);
         newJobCategories = newJobCategories.filter(cat => cat.id !== categoryId);
+        // Fire-and-forget: delete from backend
+        apiDeleteJobCategory(categoryId).catch(err =>
+          console.error('Failed to delete job category:', err)
+        );
       } else {
         newSelectedCategories = [...prev.settings.selectedCategories, categoryId];
         if (!newJobCategories.find(cat => cat.id === categoryId)) {
           const predefined = ALL_PREDEFINED_CATEGORIES.find(cat => cat.id === categoryId);
           if (predefined) {
             newJobCategories.push(predefined);
+            // Fire-and-forget: create on backend
+            apiCreateJobCategory({
+              name: predefined.name,
+              weight: predefined.variableWeight,
+              badgeColor: categoryColorToHex(predefined.categoryColor),
+            }).then(created => {
+              // Update local state with server-assigned ID
+              setState(s => ({
+                ...s,
+                settings: {
+                  ...s.settings,
+                  jobCategories: s.settings.jobCategories.map(j =>
+                    j.id === predefined.id ? { ...j, id: created.id } : j
+                  ),
+                  selectedCategories: s.settings.selectedCategories.map(id =>
+                    id === predefined.id ? created.id : id
+                  ),
+                },
+                // Also update employee references to old category ID
+                employees: s.employees.map(emp =>
+                  emp.jobCategoryId === predefined.id ? { ...emp, jobCategoryId: created.id } : emp
+                ),
+              }));
+            }).catch(err =>
+              console.error('Failed to create job category:', err)
+            );
           }
         }
       }
@@ -248,10 +463,10 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const addCustomCategory = useCallback((name: string) => {
     if (!name.trim()) return;
 
+    const tempId = name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
     setState(prev => {
-      const id = name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
       const newCategory: JobCategory = {
-        id,
+        id: tempId,
         name: name.trim(),
         variableWeight: 3,
         categoryColor: 'custom',
@@ -262,11 +477,34 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         ...prev,
         settings: {
           ...prev.settings,
-          selectedCategories: [...prev.settings.selectedCategories, id],
+          selectedCategories: [...prev.settings.selectedCategories, tempId],
           jobCategories: [...prev.settings.jobCategories, newCategory],
         },
       };
     });
+
+    // Fire-and-forget: create on backend, then swap temp ID with server ID
+    apiCreateJobCategory({
+      name: name.trim(),
+      weight: 3,
+      badgeColor: categoryColorToHex('custom'),
+    }).then(created => {
+      setState(prev => ({
+        ...prev,
+        settings: {
+          ...prev.settings,
+          jobCategories: prev.settings.jobCategories.map(j =>
+            j.id === tempId ? { ...j, id: created.id } : j
+          ),
+          selectedCategories: prev.settings.selectedCategories.map(id =>
+            id === tempId ? created.id : id
+          ),
+        },
+        employees: prev.employees.map(emp =>
+          emp.jobCategoryId === tempId ? { ...emp, jobCategoryId: created.id } : emp
+        ),
+      }));
+    }).catch(err => console.error('Failed to create custom category:', err));
   }, []);
 
   // Update a category's weight and sync all jobs in that category
@@ -279,6 +517,15 @@ export function DemoProvider({ children }: { children: ReactNode }) {
           ? { ...job, variableWeight: weight as VariableWeight }
           : job
       );
+
+      // Fire-and-forget: update each job in this category on the backend
+      const jobsInCategory = prev.settings.jobCategories.filter(j => j.categoryColor === color);
+      for (const job of jobsInCategory) {
+        apiUpdateJobCategory(job.id, { weight }).catch(err =>
+          console.error(`Failed to update weight for job ${job.id}:`, err)
+        );
+      }
+
       return {
         ...prev,
         settings: {
@@ -313,6 +560,13 @@ export function DemoProvider({ children }: { children: ReactNode }) {
           ? { ...job, categoryColor: newCategoryColor, variableWeight: newWeight as VariableWeight, group: groupMap[newCategoryColor] as JobCategory['group'] }
           : job
       );
+
+      // Fire-and-forget: update badgeColor and weight on backend
+      apiUpdateJobCategory(jobId, {
+        badgeColor: categoryColorToHex(newCategoryColor),
+        weight: newWeight,
+      }).catch(err => console.error(`Failed to move job ${jobId}:`, err));
+
       return {
         ...prev,
         settings: { ...prev.settings, jobCategories: newJobCategories },
@@ -323,25 +577,49 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   // Add a new job to a specific category
   const addJobToCategory = useCallback((name: string, categoryColor: CategoryColor) => {
     if (!name.trim()) return;
+    const tempId = name.trim().toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
     setState(prev => {
-      const id = name.trim().toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
       const weight = prev.settings.categoryWeights[categoryColor] || 1;
       const groupMap: Record<CategoryColor, string> = {
         boh: 'kitchen', foh: 'frontOfHouse', bar: 'bar', support: 'support', custom: 'custom',
       };
       const newJob: JobCategory = {
-        id,
+        id: tempId,
         name: name.trim(),
         variableWeight: weight as VariableWeight,
         categoryColor,
         group: groupMap[categoryColor] as JobCategory['group'],
       };
+
+      // Fire-and-forget: create on backend, then swap temp ID with server ID
+      apiCreateJobCategory({
+        name: name.trim(),
+        weight,
+        badgeColor: categoryColorToHex(categoryColor),
+      }).then(created => {
+        setState(s => ({
+          ...s,
+          settings: {
+            ...s.settings,
+            jobCategories: s.settings.jobCategories.map(j =>
+              j.id === tempId ? { ...j, id: created.id } : j
+            ),
+            selectedCategories: s.settings.selectedCategories.map(id =>
+              id === tempId ? created.id : id
+            ),
+          },
+          employees: s.employees.map(emp =>
+            emp.jobCategoryId === tempId ? { ...emp, jobCategoryId: created.id } : emp
+          ),
+        }));
+      }).catch(err => console.error('Failed to create job:', err));
+
       return {
         ...prev,
         settings: {
           ...prev.settings,
           jobCategories: [...prev.settings.jobCategories, newJob],
-          selectedCategories: [...prev.settings.selectedCategories, id],
+          selectedCategories: [...prev.settings.selectedCategories, tempId],
         },
       };
     });
@@ -357,6 +635,10 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         selectedCategories: prev.settings.selectedCategories.filter(id => id !== jobId),
       },
     }));
+    // Fire-and-forget: delete from backend
+    apiDeleteJobCategory(jobId).catch(err =>
+      console.error(`Failed to delete job ${jobId}:`, err)
+    );
   }, []);
 
   const updateJobCategory = useCallback((categoryId: string, updates: Partial<JobCategory>) => {
@@ -398,13 +680,47 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         emp.id === employeeId ? { ...emp, ...updates } : emp
       ),
     }));
+
+    // Fire-and-forget: persist backend-relevant fields only
+    const apiPayload: { jobCategoryId?: string; hourlyRateCents?: number } = {};
+    if (updates.jobCategoryId !== undefined) {
+      apiPayload.jobCategoryId = updates.jobCategoryId;
+    }
+    if (updates.hourlyRate !== undefined) {
+      apiPayload.hourlyRateCents = dollarsToCents(updates.hourlyRate);
+    }
+    if (Object.keys(apiPayload).length > 0) {
+      apiUpdateEmployee(employeeId, apiPayload).catch(err =>
+        console.error('Failed to update employee:', err)
+      );
+    }
   }, []);
 
   const addEmployee = useCallback((employee: Employee) => {
+    const tempId = employee.id;
     setState(prev => ({
       ...prev,
       employees: [...prev.employees, employee],
     }));
+
+    // Fire-and-forget: create on backend, then swap temp ID with server ID
+    const locationId = getLocationIdFromToken();
+    if (locationId) {
+      apiCreateEmployee({
+        name: employee.name,
+        locationId,
+        jobCategoryId: employee.jobCategoryId,
+        hourlyRateCents: dollarsToCents(employee.hourlyRate),
+        hiredAt: new Date().toISOString().split('T')[0],
+      }).then(created => {
+        setState(prev => ({
+          ...prev,
+          employees: prev.employees.map(emp =>
+            emp.id === tempId ? { ...emp, id: created.id } : emp
+          ),
+        }));
+      }).catch(err => console.error('Failed to create employee:', err));
+    }
   }, []);
 
   const removeEmployee = useCallback((employeeId: string) => {
@@ -412,6 +728,10 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       ...prev,
       employees: prev.employees.filter(emp => emp.id !== employeeId),
     }));
+    // Fire-and-forget: soft-delete on backend
+    apiDeleteEmployee(employeeId).catch(err =>
+      console.error('Failed to delete employee:', err)
+    );
   }, []);
 
   // Adjust individual employee weight by delta (±0.25 increments, max +0.75 above base, never below base)

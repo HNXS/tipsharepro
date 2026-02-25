@@ -1,0 +1,15 @@
+{
+  "name": "tipsharepro",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --names backend,frontend --prefix-colors blue,green \"npm run dev --prefix tip-share-pro-backend\" \"npm run dev --prefix tip-share-pro-app\"",
+    "start": "concurrently --names backend,frontend \"npm start --prefix tip-share-pro-backend\" \"npm start --prefix tip-share-pro-app\"",
+    "install:all": "cd tip-share-pro-backend && npm ci && cd ../tip-share-pro-app && npm ci",
+    "db:push": "cd tip-share-pro-backend && npx prisma db push",
+    "db:seed": "cd tip-share-pro-backend && npx tsx prisma/seed.ts",
+    "db:setup": "npm run db:push && npm run db:seed"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
