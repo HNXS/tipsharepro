@@ -4563,23 +4563,53 @@ html {
   margin-bottom: var(--space-4);
 }
 
+.admin-create-form .form-group {
+  margin-bottom: 0;
+}
+
+.admin-create-form label {
+  display: block;
+  font-size: var(--text-body-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.admin-create-form input,
+.admin-create-form select {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-elevated);
+  border: 1px solid var(--bg-border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--text-body);
+}
+
+.admin-create-form input:focus,
+.admin-create-form select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
+}
+
 .admin-create-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .admin-create-form-preview {
   display: flex;
   align-items: flex-end;
-  padding-bottom: var(--space-2);
+  padding-bottom: var(--space-3);
   font-size: var(--text-body-sm);
   color: var(--text-tertiary);
+  gap: var(--space-1);
 }
 
 .admin-create-form-preview svg {
-  vertical-align: middle;
-  margin-right: var(--space-1);
+  flex-shrink: 0;
 }
 
 .admin-create-form-actions {
