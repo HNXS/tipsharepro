@@ -33,6 +33,12 @@ export interface LoginResponse {
     locationId: string | null;
     locationName: string | null;
   };
+  organization: {
+    id: string;
+    name: string;
+    subscriptionStatus: 'DEMO' | 'TRIAL' | 'ACTIVE' | 'SUSPENDED' | 'CANCELLED';
+    trialEndsAt: string | null;
+  };
 }
 
 export interface SessionResponse {
@@ -48,7 +54,8 @@ export interface SessionResponse {
   organization: {
     id: string;
     name: string;
-    subscriptionStatus: string;
+    subscriptionStatus: 'DEMO' | 'TRIAL' | 'ACTIVE' | 'SUSPENDED' | 'CANCELLED';
+    trialEndsAt: string | null;
   };
 }
 

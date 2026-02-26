@@ -43,6 +43,9 @@ import {
   categoryColorToHex,
 } from './api/mappers';
 
+// Subscription status type
+type SubscriptionStatus = 'DEMO' | 'TRIAL' | 'ACTIVE' | 'SUSPENDED' | 'CANCELLED';
+
 // Auth user type
 export interface AuthUser {
   name: string;
@@ -50,6 +53,10 @@ export interface AuthUser {
   role: string;
   email?: string;
   locationId?: string | null;
+  organization?: {
+    subscriptionStatus: string;
+    trialEndsAt: string | null;
+  };
 }
 
 // Extended state type with auth
@@ -58,12 +65,32 @@ interface ExtendedDemoState extends DemoState {
   user: AuthUser | null;
   isLoading: boolean;
   error: string | null;
+  subscriptionStatus: SubscriptionStatus;
+  trialEndsAt: string | null;
+  isExpired: boolean;
+  daysRemaining: number | null;
+  isReadOnly: boolean;
 }
 
 // Internal state that includes demo/real tracking
 interface InternalState extends ExtendedDemoState {
   isDemo: boolean;
   locationId: string | null;
+}
+
+// Subscription helper functions
+function isSubscriptionExpired(status: SubscriptionStatus, trialEndsAt: string | null): boolean {
+  if (status === 'SUSPENDED' || status === 'CANCELLED') return true;
+  if ((status === 'DEMO' || status === 'TRIAL') && trialEndsAt) {
+    return new Date(trialEndsAt).getTime() < Date.now();
+  }
+  return false;
+}
+
+function getDaysRemaining(trialEndsAt: string | null): number | null {
+  if (!trialEndsAt) return null;
+  const diff = new Date(trialEndsAt).getTime() - Date.now();
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
 interface DemoContextType {
@@ -128,6 +155,12 @@ const initialState: InternalState = {
   user: null,
   isLoading: true,
   error: null,
+  // Subscription state
+  subscriptionStatus: 'DEMO',
+  trialEndsAt: null,
+  isExpired: false,
+  daysRemaining: null,
+  isReadOnly: false,
   // Demo/real tracking
   isDemo: true,
   locationId: null,
@@ -218,6 +251,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         const session = await getSession();
         const email = session.user.email;
         const isDemo = email === DEMO_EMAIL;
+        const subStatus = (session.organization.subscriptionStatus || 'DEMO') as SubscriptionStatus;
+        const trialEnd = session.organization.trialEndsAt || null;
 
         setState(prev => ({
           ...prev,
@@ -232,6 +267,11 @@ export function DemoProvider({ children }: { children: ReactNode }) {
           currentStep: 1,
           isDemo,
           locationId: session.user.locationId || null,
+          subscriptionStatus: subStatus,
+          trialEndsAt: trialEnd,
+          isExpired: isSubscriptionExpired(subStatus, trialEnd),
+          daysRemaining: getDaysRemaining(trialEnd),
+          isReadOnly: isSubscriptionExpired(subStatus, trialEnd),
           // For demo, keep defaults; for real, isLoading stays true until loadUserData finishes
           isLoading: !isDemo,
         }));
@@ -271,6 +311,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
 
   const handleLoginSuccess = useCallback((user: AuthUser) => {
     const isDemo = user.email === DEMO_EMAIL;
+    const subStatus = (user.organization?.subscriptionStatus || 'DEMO') as SubscriptionStatus;
+    const trialEnd = user.organization?.trialEndsAt || null;
 
     setState(prev => ({
       ...prev,
@@ -281,6 +323,11 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       error: null,
       isDemo,
       locationId: user.locationId || null,
+      subscriptionStatus: subStatus,
+      trialEndsAt: trialEnd,
+      isExpired: isSubscriptionExpired(subStatus, trialEnd),
+      daysRemaining: getDaysRemaining(trialEnd),
+      isReadOnly: isSubscriptionExpired(subStatus, trialEnd),
       showWelcomeDialog: true,
     }));
 
@@ -315,6 +362,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   // ============================================================================
 
   const updateSettings = useCallback((updates: Partial<Settings>) => {
+    if (isSubscriptionExpired(stateRef.current.subscriptionStatus, stateRef.current.trialEndsAt)) return;
     setState(prev => {
       const newSettings = { ...prev.settings, ...updates };
       const monthlySales = newSettings.estimatedMonthlySales || prev.settings.estimatedMonthlySales;
@@ -341,6 +389,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setContributionMethod = useCallback((method: ContributionMethod) => {
+    if (isSubscriptionExpired(stateRef.current.subscriptionStatus, stateRef.current.trialEndsAt)) return;
     setState(prev => {
       const oldMethod = prev.settings.contributionMethod;
       const wasSalesBased = isSalesBasedMethod(oldMethod);
@@ -525,6 +574,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
 
   const addJobToCategory = useCallback((name: string, categoryColor: CategoryColor) => {
     if (!name.trim()) return;
+    if (isSubscriptionExpired(stateRef.current.subscriptionStatus, stateRef.current.trialEndsAt)) return;
 
     const isDemo = stateRef.current.isDemo;
 
@@ -614,6 +664,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const removeJob = useCallback((jobId: string) => {
+    if (isSubscriptionExpired(stateRef.current.subscriptionStatus, stateRef.current.trialEndsAt)) return;
     setState(prev => ({
       ...prev,
       settings: {
@@ -675,6 +726,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   // ============================================================================
 
   const updateEmployee = useCallback((employeeId: string, updates: Partial<Employee>) => {
+    if (isSubscriptionExpired(stateRef.current.subscriptionStatus, stateRef.current.trialEndsAt)) return;
     setState(prev => ({
       ...prev,
       employees: prev.employees.map(emp =>
@@ -700,6 +752,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addEmployee = useCallback((employee: Employee) => {
+    if (isSubscriptionExpired(stateRef.current.subscriptionStatus, stateRef.current.trialEndsAt)) return;
     const isDemo = stateRef.current.isDemo;
 
     if (isDemo) {
@@ -748,6 +801,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const removeEmployee = useCallback((employeeId: string) => {
+    if (isSubscriptionExpired(stateRef.current.subscriptionStatus, stateRef.current.trialEndsAt)) return;
     setState(prev => ({
       ...prev,
       employees: prev.employees.filter(emp => emp.id !== employeeId),
@@ -796,6 +850,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   // ============================================================================
 
   const setPrePaidAmount = useCallback((amount: number) => {
+    if (isSubscriptionExpired(stateRef.current.subscriptionStatus, stateRef.current.trialEndsAt)) return;
     setState(prev => ({
       ...prev,
       prePaidAmount: amount,
@@ -961,6 +1016,11 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     user: state.user,
     isLoading: state.isLoading,
     error: state.error,
+    subscriptionStatus: state.subscriptionStatus,
+    trialEndsAt: state.trialEndsAt,
+    isExpired: isSubscriptionExpired(state.subscriptionStatus, state.trialEndsAt),
+    daysRemaining: getDaysRemaining(state.trialEndsAt),
+    isReadOnly: isSubscriptionExpired(state.subscriptionStatus, state.trialEndsAt),
     currentStep: state.currentStep,
     settings: state.settings,
     employees: state.employees,

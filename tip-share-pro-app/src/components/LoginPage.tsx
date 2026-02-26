@@ -12,6 +12,10 @@ interface LoginPageProps {
     role: string;
     email?: string;
     locationId?: string | null;
+    organization?: {
+      subscriptionStatus: string;
+      trialEndsAt: string | null;
+    };
   }) => void;
 }
 
@@ -77,6 +81,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
           role: response.user.role,
           email: response.user.email,
           locationId: response.user.locationId,
+          organization: response.organization,
         });
       } catch (err) {
         if (err instanceof ApiError) {
@@ -101,6 +106,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
         companyName: 'The Golden Fork',
         role: 'manager',
         email: 'demo@tipsharepro.com',
+        organization: { subscriptionStatus: 'DEMO', trialEndsAt: null },
       });
       setIsLoading(false);
       return;
@@ -115,6 +121,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
         role: response.user.role,
         email: response.user.email,
         locationId: response.user.locationId,
+        organization: response.organization,
       });
     } catch (err) {
       if (err instanceof ApiError) {
