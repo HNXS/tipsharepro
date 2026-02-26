@@ -2,6 +2,7 @@
 
 import { useDemo } from '@/lib/DemoContext';
 import Header from '@/components/Header';
+import SubscriptionBanner from '@/components/SubscriptionBanner';
 import LoginPage from '@/components/LoginPage';
 import SettingsPage from '@/components/SettingsPage';
 import DistributionTable from '@/components/DistributionTable';
@@ -32,6 +33,7 @@ export default function Home() {
   // Main app: Settings + Distribution Table on same page
   return (
     <div className="app-container">
+      <SubscriptionBanner />
       <Header />
       <main className="main-content">
         {/* Settings Section */}

@@ -4971,3 +4971,48 @@ html {
     padding: 0.4rem 0.3rem;
   }
 }
+
+/* Subscription Banner */
+.subscription-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  z-index: 100;
+}
+
+.subscription-banner-info {
+  background: #e8f0fe;
+  color: #1a56db;
+  border-bottom: 1px solid #c4d8f4;
+}
+
+.subscription-banner-warning {
+  background: #fef3cd;
+  color: #856404;
+  border-bottom: 1px solid #ffeeba;
+}
+
+.subscription-banner-expired {
+  background: #f8d7da;
+  color: #721c24;
+  border-bottom: 1px solid #f5c6cb;
+}
+
+.subscription-banner-dismiss {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.subscription-banner-dismiss:hover {
+  opacity: 1;
+}
