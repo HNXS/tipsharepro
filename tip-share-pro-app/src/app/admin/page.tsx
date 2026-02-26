@@ -518,20 +518,11 @@ export default function AdminPage() {
           <div className="admin-organizations">
             {/* Expiring Soon Alert */}
             {expiringOrgs.length > 0 && (
-              <div className="admin-alert admin-alert-warning" style={{
-                background: '#fef3cd',
-                border: '1px solid #ffc107',
-                borderRadius: '8px',
-                padding: '12px 16px',
-                marginBottom: '16px',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '10px',
-              }}>
-                <AlertTriangle size={20} style={{ color: '#856404', flexShrink: 0, marginTop: '2px' }} />
+              <div className="admin-alert-expiring">
+                <AlertTriangle size={20} />
                 <div>
-                  <strong style={{ color: '#856404' }}>Expiring Soon</strong>
-                  <ul style={{ margin: '6px 0 0 0', padding: '0 0 0 16px', color: '#856404' }}>
+                  <strong>Expiring Soon</strong>
+                  <ul>
                     {expiringOrgs.map((org) => {
                       const days = getDaysRemaining(org.trialEndsAt);
                       return (
@@ -547,7 +538,7 @@ export default function AdminPage() {
 
             <div className="admin-section-header">
               <h2>Organizations</h2>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div className="admin-section-header-btns">
                 <button
                   className="btn btn-primary"
                   onClick={() => {
@@ -574,13 +565,13 @@ export default function AdminPage() {
 
             {/* Create Account Inline Form */}
             {showCreateAccount && (
-              <div className="admin-org-card" style={{ marginBottom: '16px', padding: '16px' }}>
-                <h3 style={{ marginBottom: '12px' }}>Create New Account</h3>
-                <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '12px' }}>
+              <div className="admin-create-form">
+                <h3>Create New Account</h3>
+                <p>
                   Creates an organization, a default location, and an admin user in one step.
                 </p>
                 <form onSubmit={handleCreateAccount}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div className="admin-create-form-grid">
                     <div className="form-group">
                       <label htmlFor="acctEmail">Email</label>
                       <input
@@ -635,22 +626,22 @@ export default function AdminPage() {
                         onChange={(e) => setCreateAccountForm({ ...createAccountForm, durationDays: parseInt(e.target.value) || 14 })}
                       />
                     </div>
-                    <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
-                      <span style={{ fontSize: '0.85rem', color: '#666' }}>
-                        <Clock size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                    <div className="admin-create-form-preview">
+                      <span>
+                        <Clock size={14} />
                         Ends: {getEndDatePreview()}
                       </span>
                     </div>
                   </div>
 
                   {createAccountError && (
-                    <div className="admin-error" style={{ marginTop: '8px' }}>
+                    <div className="admin-error admin-action-error">
                       <AlertTriangle size={16} />
                       {createAccountError}
                     </div>
                   )}
 
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '12px', justifyContent: 'flex-end' }}>
+                  <div className="admin-create-form-actions">
                     <button
                       type="button"
                       className="btn btn-ghost"
@@ -674,7 +665,8 @@ export default function AdminPage() {
 
                 return (
                   <div key={org.id} className="admin-org-card">
-                    <div className="admin-org-header" onClick={() => toggleOrgExpanded(org.id)}>
+                    {/* Row 1: Expand + Name + Badge + Expires */}
+                    <div className="admin-org-row-top" onClick={() => toggleOrgExpanded(org.id)}>
                       <div className="admin-org-expand">
                         {expandedOrgs.has(org.id) ? (
                           <ChevronDown size={18} />
@@ -688,73 +680,72 @@ export default function AdminPage() {
                           {org.subscriptionStatus}
                         </span>
                       </div>
-                      <div className="admin-org-counts">
-                        <span>
-                          <Users size={14} /> {org._count?.users || 0}
-                        </span>
-                        <span>
-                          <MapPin size={14} /> {org._count?.locations || 0}
-                        </span>
-                      </div>
-
-                      {/* Expires column */}
-                      <div className="admin-org-expires" style={{ minWidth: '110px', textAlign: 'center' }}>
+                      <div className={`admin-org-expires ${isExpiringSoon ? 'admin-org-expires-urgent' : ''}`}>
                         {org.trialEndsAt ? (
-                          <span style={{
-                            fontSize: '0.8rem',
-                            color: isExpiringSoon ? '#dc3545' : '#666',
-                            fontWeight: isExpiringSoon ? 600 : 400,
-                          }}>
-                            <Clock size={12} style={{ verticalAlign: 'middle', marginRight: '3px' }} />
-                            {new Date(org.trialEndsAt).toLocaleDateString()}
-                            {isExpiringSoon && (
-                              <span style={{ display: 'block', fontSize: '0.7rem' }}>
-                                {daysRemaining === 0 ? 'Expires today' : `${daysRemaining}d left`}
-                              </span>
-                            )}
-                          </span>
+                          <>
+                            <Clock size={12} />
+                            <span>
+                              {new Date(org.trialEndsAt).toLocaleDateString()}
+                              {isExpiringSoon && (
+                                <span className="admin-org-expires-sub">
+                                  {daysRemaining === 0 ? 'Expires today' : `${daysRemaining}d left`}
+                                </span>
+                              )}
+                            </span>
+                          </>
                         ) : (
-                          <span style={{ fontSize: '0.8rem', color: '#999' }}>Never</span>
+                          <span>No expiry</span>
                         )}
                       </div>
+                    </div>
 
-                      {/* Actions dropdown */}
-                      <div className="admin-org-actions" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <select
-                          className="admin-action-select"
-                          style={{
-                            fontSize: '0.8rem',
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            border: '1px solid #ccc',
-                            background: '#fff',
-                            cursor: 'pointer',
-                          }}
-                          value=""
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            if (e.target.value) {
-                              handleOrgAction(org, e.target.value);
-                              e.target.value = '';
-                            }
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                          disabled={actionLoading[org.id]}
-                        >
-                          <option value="">Actions...</option>
-                          {org.subscriptionStatus !== 'TRIAL' && org.subscriptionStatus !== 'ACTIVE' && (
-                            <option value="upgrade-trial">Upgrade to Trial</option>
-                          )}
-                          {org.subscriptionStatus !== 'ACTIVE' && (
-                            <option value="upgrade-active">Upgrade to Active</option>
-                          )}
-                          {org.trialEndsAt && (
-                            <option value="extend-30">Extend 30 days</option>
-                          )}
-                          {org.subscriptionStatus !== 'SUSPENDED' && (
-                            <option value="suspend">Suspend</option>
-                          )}
-                        </select>
+                    {/* Row 2: Counts + Action Buttons + Edit/Delete */}
+                    <div className="admin-org-row-meta">
+                      <div className="admin-org-counts">
+                        <span>
+                          <Users size={14} /> {org._count?.users || 0} users
+                        </span>
+                        <span>
+                          <MapPin size={14} /> {org._count?.locations || 0} locations
+                        </span>
+                      </div>
+                      <div className="admin-org-actions">
+                        {org.subscriptionStatus !== 'TRIAL' && org.subscriptionStatus !== 'ACTIVE' && (
+                          <button
+                            className="admin-action-btn admin-action-btn-trial"
+                            onClick={(e) => { e.stopPropagation(); handleOrgAction(org, 'upgrade-trial'); }}
+                            disabled={actionLoading[org.id]}
+                          >
+                            Trial
+                          </button>
+                        )}
+                        {org.subscriptionStatus !== 'ACTIVE' && (
+                          <button
+                            className="admin-action-btn admin-action-btn-active"
+                            onClick={(e) => { e.stopPropagation(); handleOrgAction(org, 'upgrade-active'); }}
+                            disabled={actionLoading[org.id]}
+                          >
+                            Active
+                          </button>
+                        )}
+                        {org.trialEndsAt && (
+                          <button
+                            className="admin-action-btn admin-action-btn-extend"
+                            onClick={(e) => { e.stopPropagation(); handleOrgAction(org, 'extend-30'); }}
+                            disabled={actionLoading[org.id]}
+                          >
+                            +30d
+                          </button>
+                        )}
+                        {org.subscriptionStatus !== 'SUSPENDED' && (
+                          <button
+                            className="admin-action-btn admin-action-btn-suspend"
+                            onClick={(e) => { e.stopPropagation(); handleOrgAction(org, 'suspend'); }}
+                            disabled={actionLoading[org.id]}
+                          >
+                            Suspend
+                          </button>
+                        )}
                         {actionLoading[org.id] && <Loader2 size={14} className="loading-spinner" />}
                         <button
                           className="btn btn-ghost btn-sm"
@@ -779,7 +770,7 @@ export default function AdminPage() {
 
                     {/* Inline action error */}
                     {actionErrors[org.id] && (
-                      <div className="admin-error" style={{ margin: '0 16px 8px 16px', fontSize: '0.8rem' }}>
+                      <div className="admin-error admin-action-error">
                         <AlertTriangle size={14} />
                         {actionErrors[org.id]}
                       </div>
