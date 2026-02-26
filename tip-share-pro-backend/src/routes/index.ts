@@ -13,6 +13,7 @@ import payPeriodRoutes from './pay-period.routes';
 import calculationRoutes from './calculation.routes';
 import dailyEntryRoutes from './daily-entry.routes';
 import adminRoutes from './admin.routes';
+import { enforceSubscription } from '../middleware/subscription.middleware';
 
 const router = Router();
 
@@ -32,29 +33,37 @@ router.get('/health', (_req, res) => {
 // Mount Route Modules
 // ============================================================================
 
+// --- Exempt routes (no subscription enforcement) ---
+
 // Authentication (public - no auth required for login)
 router.use('/auth', authRoutes);
 
-// Organization settings
-router.use('/settings', settingsRoutes);
-
-// Job categories
-router.use('/job-categories', jobCategoryRoutes);
-
-// Employees
-router.use('/employees', employeeRoutes);
-
-// Pay periods (standalone endpoints)
-router.use('/pay-periods', payPeriodRoutes);
-
-// Pay period sub-resources (calculation and daily entries)
-router.use('/pay-periods', calculationRoutes);    // Calculation endpoints
-router.use('/pay-periods', dailyEntryRoutes);     // Daily entry endpoints
-
-// Preview calculation (standalone)
-router.use('/calculate', calculationRoutes);
-
 // Admin routes (platform owner only)
 router.use('/admin', adminRoutes);
+
+// --- Protected routes (subscription enforced) ---
+const protectedRoutes = Router();
+protectedRoutes.use(enforceSubscription);
+
+// Organization settings
+protectedRoutes.use('/settings', settingsRoutes);
+
+// Job categories
+protectedRoutes.use('/job-categories', jobCategoryRoutes);
+
+// Employees
+protectedRoutes.use('/employees', employeeRoutes);
+
+// Pay periods (standalone endpoints)
+protectedRoutes.use('/pay-periods', payPeriodRoutes);
+
+// Pay period sub-resources (calculation and daily entries)
+protectedRoutes.use('/pay-periods', calculationRoutes);    // Calculation endpoints
+protectedRoutes.use('/pay-periods', dailyEntryRoutes);     // Daily entry endpoints
+
+// Preview calculation (standalone)
+protectedRoutes.use('/calculate', calculationRoutes);
+
+router.use(protectedRoutes);
 
 export default router;
