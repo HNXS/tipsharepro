@@ -22,9 +22,11 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build-time environment variable for API URL
+# Build-time environment variables
 ARG NEXT_PUBLIC_API_URL=/api
+ARG BACKEND_INTERNAL_URL=http://backend:3001
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV BACKEND_INTERNAL_URL=$BACKEND_INTERNAL_URL
 
 # Build the application
 RUN npm run build
