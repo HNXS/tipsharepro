@@ -118,6 +118,10 @@ export default function PrintDialog({
             </div>
           )}
 
+          {/* Tip */}
+          <p className="print-dialog-tip">
+            For best results, uncheck &ldquo;Headers and footers&rdquo; in your browser&apos;s print dialog.
+          </p>
         </div>
 
         {/* Footer */}

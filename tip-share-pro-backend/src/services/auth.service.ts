@@ -93,7 +93,7 @@ export class AuthService {
   }
 
   /**
-   * Register a new user with organization, default location, and seed data
+   * Register a new user with organization and default location
    */
   async register(email: string, password: string, companyName?: string): Promise<LoginResult> {
     const normalizedEmail = email.toLowerCase();
@@ -112,18 +112,12 @@ export class AuthService {
 
     const passwordHash = await this.hashPassword(password);
 
-    // Create Organization + Location + User + seed data in a transaction
+    // Create Organization + Location + User in a transaction
     const user = await prisma.$transaction(async (tx) => {
       const organization = await tx.organization.create({
         data: {
           name: orgName,
           subscriptionStatus: 'DEMO',
-          settings: {
-            contributionMethod: 'ALL_SALES',
-            contributionRate: 3.25,
-            estimatedMonthlySales: 100000,
-            payPeriodType: 'BI_WEEKLY',
-          },
         },
       });
 
@@ -134,64 +128,6 @@ export class AuthService {
           number: '001',
         },
       });
-
-      // Seed default job categories
-      const categoryDefs = [
-        { name: 'Lead Cook',     weight: 3, badgeColor: '#E85D04' },
-        { name: 'Line Cook',     weight: 3, badgeColor: '#E85D04' },
-        { name: 'Pastry Chef',   weight: 3, badgeColor: '#E85D04' },
-        { name: 'Pantry Chef',   weight: 3, badgeColor: '#E85D04' },
-        { name: 'Host/Hostess',  weight: 2, badgeColor: '#8E44AD' },
-        { name: 'Busser',        weight: 2, badgeColor: '#8E44AD' },
-        { name: 'Cashier',       weight: 2, badgeColor: '#8E44AD' },
-        { name: 'Runner',        weight: 2, badgeColor: '#8E44AD' },
-        { name: 'Bartender',     weight: 4, badgeColor: '#35A0D2' },
-        { name: 'Barista',       weight: 4, badgeColor: '#35A0D2' },
-        { name: 'Bar Back',      weight: 4, badgeColor: '#35A0D2' },
-        { name: 'Dishwasher',    weight: 1, badgeColor: '#82B536' },
-        { name: 'Prep Cook',     weight: 1, badgeColor: '#82B536' },
-      ];
-
-      const categories: Record<string, string> = {}; // name -> id
-      for (const cat of categoryDefs) {
-        const created = await tx.jobCategory.create({
-          data: {
-            organizationId: organization.id,
-            name: cat.name,
-            weight: cat.weight,
-            badgeColor: cat.badgeColor,
-          },
-        });
-        categories[cat.name] = created.id;
-      }
-
-      // Seed default sample employees
-      const employeeDefs = [
-        { name: 'Maria Santos',    category: 'Line Cook',     rateCents: 2200 },
-        { name: 'James Wilson',    category: 'Bartender',     rateCents: 2400 },
-        { name: 'Sarah Johnson',   category: 'Host/Hostess',  rateCents: 1600 },
-        { name: 'Mike Chen',       category: 'Busser',        rateCents: 1550 },
-        { name: 'Lisa Park',       category: 'Dishwasher',    rateCents: 1600 },
-        { name: 'Tom Rodriguez',   category: 'Line Cook',     rateCents: 2000 },
-        { name: 'Amy Martinez',    category: 'Host/Hostess',  rateCents: 1500 },
-        { name: 'Dan Torres',      category: 'Busser',        rateCents: 1500 },
-        { name: 'Katie Middleton', category: 'Bartender',     rateCents: 2200 },
-        { name: 'Chris Lee',       category: 'Dishwasher',    rateCents: 1550 },
-      ];
-
-      const now = new Date();
-      for (const emp of employeeDefs) {
-        await tx.employee.create({
-          data: {
-            organizationId: organization.id,
-            locationId: location.id,
-            jobCategoryId: categories[emp.category],
-            name: emp.name,
-            hourlyRateCents: emp.rateCents,
-            hiredAt: now,
-          },
-        });
-      }
 
       return tx.user.create({
         data: {
