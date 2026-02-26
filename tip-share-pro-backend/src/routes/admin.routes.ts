@@ -470,4 +470,167 @@ router.get('/stats', async (req: Request, res: Response) => {
   }
 });
 
+// ============================================================================
+// ACCOUNT MANAGEMENT (one-step provisioning & lifecycle)
+// ============================================================================
+
+/**
+ * POST /admin/accounts - Create a full account (org + location + user) in one transaction
+ */
+router.post('/accounts', async (req: Request, res: Response) => {
+  try {
+    const { email, password, companyName, subscriptionStatus = 'DEMO', durationDays } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        status: 'error',
+        error: { code: 'VALIDATION_ERROR', message: 'email and password are required' },
+      });
+    }
+
+    const normalizedEmail = email.toLowerCase();
+    const orgName = companyName?.trim() || normalizedEmail.split('@')[1];
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const defaultDays = subscriptionStatus === 'TRIAL' ? 45 : 14;
+    const days = durationDays || defaultDays;
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + days);
+
+    const user = await prisma.$transaction(async (tx: any) => {
+      const organization = await tx.organization.create({
+        data: {
+          name: orgName,
+          subscriptionStatus,
+          trialEndsAt: subscriptionStatus === 'ACTIVE' ? null : trialEndsAt,
+        },
+      });
+
+      const location = await tx.location.create({
+        data: {
+          organizationId: organization.id,
+          name: 'Main Location',
+          number: '001',
+        },
+      });
+
+      return tx.user.create({
+        data: {
+          organizationId: organization.id,
+          locationId: location.id,
+          email: normalizedEmail,
+          passwordHash,
+          role: 'ADMIN',
+        },
+        include: { organization: true, location: true },
+      });
+    });
+
+    const { passwordHash: _, ...sanitized } = user;
+
+    res.status(201).json({ status: 'success', data: sanitized });
+  } catch (error) {
+    console.error('Error creating account:', error);
+    res.status(500).json({
+      status: 'error',
+      error: { code: 'SERVER_ERROR', message: 'Failed to create account' },
+    });
+  }
+});
+
+/**
+ * PUT /admin/accounts/:orgId/status - Change subscription status
+ */
+router.put('/accounts/:orgId/status', async (req: Request, res: Response) => {
+  try {
+    const { orgId } = req.params;
+    const { status, durationDays } = req.body;
+
+    const validStatuses = ['DEMO', 'TRIAL', 'ACTIVE', 'SUSPENDED', 'CANCELLED'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        status: 'error',
+        error: { code: 'VALIDATION_ERROR', message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
+      });
+    }
+
+    const updateData: Record<string, unknown> = { subscriptionStatus: status };
+
+    if (status === 'ACTIVE' || status === 'CANCELLED') {
+      updateData.trialEndsAt = null;
+    } else if (status === 'TRIAL' || status === 'DEMO') {
+      const defaultDays = status === 'TRIAL' ? 45 : 14;
+      const days = durationDays || defaultDays;
+      const trialEndsAt = new Date();
+      trialEndsAt.setDate(trialEndsAt.getDate() + days);
+      updateData.trialEndsAt = trialEndsAt;
+    }
+
+    const org = await prisma.organization.update({
+      where: { id: orgId },
+      data: updateData,
+    });
+
+    const { invalidateOrgCache } = await import('../middleware/subscription.middleware');
+    invalidateOrgCache(orgId);
+
+    res.json({ status: 'success', data: org });
+  } catch (error) {
+    console.error('Error updating account status:', error);
+    res.status(500).json({
+      status: 'error',
+      error: { code: 'SERVER_ERROR', message: 'Failed to update account status' },
+    });
+  }
+});
+
+/**
+ * PUT /admin/accounts/:orgId/extend - Extend trial by N days
+ */
+router.put('/accounts/:orgId/extend', async (req: Request, res: Response) => {
+  try {
+    const { orgId } = req.params;
+    const { days } = req.body;
+
+    if (!days || days < 1) {
+      return res.status(400).json({
+        status: 'error',
+        error: { code: 'VALIDATION_ERROR', message: 'days must be a positive number' },
+      });
+    }
+
+    const org = await prisma.organization.findUnique({ where: { id: orgId } });
+    if (!org) {
+      return res.status(404).json({
+        status: 'error',
+        error: { code: 'NOT_FOUND', message: 'Organization not found' },
+      });
+    }
+
+    const baseDate = org.trialEndsAt && org.trialEndsAt > new Date() ? org.trialEndsAt : new Date();
+    const newEndDate = new Date(baseDate);
+    newEndDate.setDate(newEndDate.getDate() + days);
+
+    const newStatus = org.subscriptionStatus === 'SUSPENDED'
+      ? (org.trialEndsAt ? 'TRIAL' : 'DEMO')
+      : org.subscriptionStatus;
+
+    const updated = await prisma.organization.update({
+      where: { id: orgId },
+      data: { trialEndsAt: newEndDate, subscriptionStatus: newStatus },
+    });
+
+    const { invalidateOrgCache } = await import('../middleware/subscription.middleware');
+    invalidateOrgCache(orgId);
+
+    res.json({ status: 'success', data: updated });
+  } catch (error) {
+    console.error('Error extending trial:', error);
+    res.status(500).json({
+      status: 'error',
+      error: { code: 'SERVER_ERROR', message: 'Failed to extend trial' },
+    });
+  }
+});
+
 export default router;
