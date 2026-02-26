@@ -16,6 +16,9 @@ import {
   createUser,
   updateUser,
   deleteUser,
+  createAccount,
+  changeAccountStatus,
+  extendAccount,
   Organization,
   User,
   AdminStats,
@@ -37,6 +40,8 @@ import {
   AlertTriangle,
   Check,
   X,
+  Clock,
+  UserPlus,
 } from 'lucide-react';
 
 // Subscription status badge colors
@@ -79,6 +84,19 @@ export default function AdminPage() {
     role: 'ADMIN',
   });
   const [locationForm, setLocationForm] = useState({ name: '', number: '' });
+
+  // Account management states
+  const [showCreateAccount, setShowCreateAccount] = useState(false);
+  const [createAccountForm, setCreateAccountForm] = useState({
+    email: '',
+    password: '',
+    companyName: '',
+    subscriptionStatus: 'DEMO',
+    durationDays: 14,
+  });
+  const [createAccountError, setCreateAccountError] = useState('');
+  const [actionErrors, setActionErrors] = useState<Record<string, string>>({});
+  const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
 
   // Check auth on mount
   useEffect(() => {
@@ -260,6 +278,87 @@ export default function AdminPage() {
     setShowUserModal(true);
   };
 
+  // Account management handlers
+  const handleCreateAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreateAccountError('');
+    try {
+      await createAccount({
+        email: createAccountForm.email,
+        password: createAccountForm.password,
+        companyName: createAccountForm.companyName || undefined,
+        subscriptionStatus: createAccountForm.subscriptionStatus,
+        durationDays: createAccountForm.durationDays,
+      });
+      setShowCreateAccount(false);
+      setCreateAccountForm({
+        email: '',
+        password: '',
+        companyName: '',
+        subscriptionStatus: 'DEMO',
+        durationDays: 14,
+      });
+      loadData();
+    } catch (error) {
+      setCreateAccountError(
+        error instanceof Error ? error.message : 'Failed to create account'
+      );
+    }
+  };
+
+  const handleOrgAction = async (org: Organization, action: string) => {
+    setActionErrors((prev) => ({ ...prev, [org.id]: '' }));
+    setActionLoading((prev) => ({ ...prev, [org.id]: true }));
+    try {
+      switch (action) {
+        case 'upgrade-trial':
+          await changeAccountStatus(org.id, { status: 'TRIAL', durationDays: 14 });
+          break;
+        case 'upgrade-active':
+          await changeAccountStatus(org.id, { status: 'ACTIVE' });
+          break;
+        case 'suspend':
+          await changeAccountStatus(org.id, { status: 'SUSPENDED' });
+          break;
+        case 'extend-30':
+          await extendAccount(org.id, 30);
+          break;
+        default:
+          return;
+      }
+      loadData();
+    } catch (error) {
+      setActionErrors((prev) => ({
+        ...prev,
+        [org.id]: error instanceof Error ? error.message : 'Action failed',
+      }));
+    } finally {
+      setActionLoading((prev) => ({ ...prev, [org.id]: false }));
+    }
+  };
+
+  // Helper: calculate days remaining until trial end
+  const getDaysRemaining = (trialEndsAt?: string): number | null => {
+    if (!trialEndsAt) return null;
+    const now = new Date();
+    const end = new Date(trialEndsAt);
+    const diff = end.getTime() - now.getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  };
+
+  // Expiring accounts (within 7 days)
+  const expiringOrgs = organizations.filter((org) => {
+    const days = getDaysRemaining(org.trialEndsAt);
+    return days !== null && days >= 0 && days <= 7;
+  });
+
+  // Calculate end date preview for create account form
+  const getEndDatePreview = (): string => {
+    const date = new Date();
+    date.setDate(date.getDate() + createAccountForm.durationDays);
+    return date.toLocaleDateString();
+  };
+
   // Loading screen
   if (isLoading && !isAuthenticated) {
     return (
@@ -417,135 +516,343 @@ export default function AdminPage() {
         {/* Organizations Tab */}
         {activeTab === 'organizations' && (
           <div className="admin-organizations">
+            {/* Expiring Soon Alert */}
+            {expiringOrgs.length > 0 && (
+              <div className="admin-alert admin-alert-warning" style={{
+                background: '#fef3cd',
+                border: '1px solid #ffc107',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '10px',
+              }}>
+                <AlertTriangle size={20} style={{ color: '#856404', flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <strong style={{ color: '#856404' }}>Expiring Soon</strong>
+                  <ul style={{ margin: '6px 0 0 0', padding: '0 0 0 16px', color: '#856404' }}>
+                    {expiringOrgs.map((org) => {
+                      const days = getDaysRemaining(org.trialEndsAt);
+                      return (
+                        <li key={org.id}>
+                          {org.name} — {days === 0 ? 'expires today' : `${days} day${days === 1 ? '' : 's'} remaining`}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </div>
+            )}
+
             <div className="admin-section-header">
               <h2>Organizations</h2>
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  setEditingOrg(null);
-                  setOrgForm({ name: '', subscriptionStatus: 'DEMO' });
-                  setShowOrgModal(true);
-                }}
-              >
-                <Plus size={16} />
-                New Organization
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setShowCreateAccount(!showCreateAccount);
+                    setCreateAccountError('');
+                  }}
+                >
+                  <UserPlus size={16} />
+                  Create Account
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setEditingOrg(null);
+                    setOrgForm({ name: '', subscriptionStatus: 'DEMO' });
+                    setShowOrgModal(true);
+                  }}
+                >
+                  <Plus size={16} />
+                  New Organization
+                </button>
+              </div>
             </div>
 
-            <div className="admin-org-list">
-              {organizations.map((org) => (
-                <div key={org.id} className="admin-org-card">
-                  <div className="admin-org-header" onClick={() => toggleOrgExpanded(org.id)}>
-                    <div className="admin-org-expand">
-                      {expandedOrgs.has(org.id) ? (
-                        <ChevronDown size={18} />
-                      ) : (
-                        <ChevronRight size={18} />
-                      )}
+            {/* Create Account Inline Form */}
+            {showCreateAccount && (
+              <div className="admin-org-card" style={{ marginBottom: '16px', padding: '16px' }}>
+                <h3 style={{ marginBottom: '12px' }}>Create New Account</h3>
+                <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '12px' }}>
+                  Creates an organization, a default location, and an admin user in one step.
+                </p>
+                <form onSubmit={handleCreateAccount}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="form-group">
+                      <label htmlFor="acctEmail">Email</label>
+                      <input
+                        id="acctEmail"
+                        type="email"
+                        value={createAccountForm.email}
+                        onChange={(e) => setCreateAccountForm({ ...createAccountForm, email: e.target.value })}
+                        placeholder="owner@restaurant.com"
+                        required
+                      />
                     </div>
-                    <div className="admin-org-info">
-                      <h3>{org.name}</h3>
-                      <span className={`admin-badge ${STATUS_COLORS[org.subscriptionStatus]}`}>
-                        {org.subscriptionStatus}
-                      </span>
+                    <div className="form-group">
+                      <label htmlFor="acctPassword">Password</label>
+                      <input
+                        id="acctPassword"
+                        type="password"
+                        value={createAccountForm.password}
+                        onChange={(e) => setCreateAccountForm({ ...createAccountForm, password: e.target.value })}
+                        placeholder="Min 8 characters"
+                        required
+                      />
                     </div>
-                    <div className="admin-org-counts">
-                      <span>
-                        <Users size={14} /> {org._count?.users || 0}
-                      </span>
-                      <span>
-                        <MapPin size={14} /> {org._count?.locations || 0}
-                      </span>
+                    <div className="form-group">
+                      <label htmlFor="acctCompany">Company Name</label>
+                      <input
+                        id="acctCompany"
+                        type="text"
+                        value={createAccountForm.companyName}
+                        onChange={(e) => setCreateAccountForm({ ...createAccountForm, companyName: e.target.value })}
+                        placeholder="Restaurant name (optional)"
+                      />
                     </div>
-                    <div className="admin-org-actions">
-                      <button
-                        className="btn btn-ghost btn-sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEditOrg(org);
-                        }}
+                    <div className="form-group">
+                      <label htmlFor="acctStatus">Status</label>
+                      <select
+                        id="acctStatus"
+                        value={createAccountForm.subscriptionStatus}
+                        onChange={(e) => setCreateAccountForm({ ...createAccountForm, subscriptionStatus: e.target.value })}
                       >
-                        <Edit size={14} />
-                      </button>
-                      <button
-                        className="btn btn-ghost btn-sm btn-danger"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteOrg(org.id);
-                        }}
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                        <option value="DEMO">Demo</option>
+                        <option value="TRIAL">Trial</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="acctDuration">Duration (days)</label>
+                      <input
+                        id="acctDuration"
+                        type="number"
+                        min={1}
+                        max={365}
+                        value={createAccountForm.durationDays}
+                        onChange={(e) => setCreateAccountForm({ ...createAccountForm, durationDays: parseInt(e.target.value) || 14 })}
+                      />
+                    </div>
+                    <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
+                      <span style={{ fontSize: '0.85rem', color: '#666' }}>
+                        <Clock size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                        Ends: {getEndDatePreview()}
+                      </span>
                     </div>
                   </div>
 
-                  {expandedOrgs.has(org.id) && (
-                    <div className="admin-org-details">
-                      <div className="admin-org-section">
-                        <div className="admin-org-section-header">
-                          <h4>Locations</h4>
-                          <button
-                            className="btn btn-ghost btn-sm"
-                            onClick={() => {
-                              setSelectedOrgId(org.id);
-                              setLocationForm({ name: '', number: '' });
-                              setShowLocationModal(true);
-                            }}
-                          >
-                            <Plus size={14} /> Add
-                          </button>
-                        </div>
-                        {org.locations && org.locations.length > 0 ? (
-                          <ul className="admin-location-list">
-                            {org.locations.map((loc) => (
-                              <li key={loc.id}>
-                                <MapPin size={14} />
-                                <span>{loc.name}</span>
-                                <span className={`admin-badge-sm ${loc.status === 'ACTIVE' ? 'badge-active' : ''}`}>
-                                  {loc.status}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="admin-empty">No locations</p>
-                        )}
-                      </div>
-
-                      <div className="admin-org-section">
-                        <div className="admin-org-section-header">
-                          <h4>Users</h4>
-                          <button
-                            className="btn btn-ghost btn-sm"
-                            onClick={() => openNewUserForOrg(org.id)}
-                          >
-                            <Plus size={14} /> Add
-                          </button>
-                        </div>
-                        {org.users && org.users.length > 0 ? (
-                          <ul className="admin-user-list">
-                            {org.users.map((user) => (
-                              <li key={user.id}>
-                                <span className="user-email">{user.email}</span>
-                                <span className="admin-badge-sm">{user.role}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="admin-empty">No users</p>
-                        )}
-                      </div>
-
-                      <div className="admin-org-meta">
-                        <span>Created: {new Date(org.createdAt).toLocaleDateString()}</span>
-                        {org.trialEndsAt && (
-                          <span>Trial ends: {new Date(org.trialEndsAt).toLocaleDateString()}</span>
-                        )}
-                      </div>
+                  {createAccountError && (
+                    <div className="admin-error" style={{ marginTop: '8px' }}>
+                      <AlertTriangle size={16} />
+                      {createAccountError}
                     </div>
                   )}
-                </div>
-              ))}
+
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '12px', justifyContent: 'flex-end' }}>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => setShowCreateAccount(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary">
+                      <Check size={16} />
+                      Create Account
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            <div className="admin-org-list">
+              {organizations.map((org) => {
+                const daysRemaining = getDaysRemaining(org.trialEndsAt);
+                const isExpiringSoon = daysRemaining !== null && daysRemaining >= 0 && daysRemaining <= 7;
+
+                return (
+                  <div key={org.id} className="admin-org-card">
+                    <div className="admin-org-header" onClick={() => toggleOrgExpanded(org.id)}>
+                      <div className="admin-org-expand">
+                        {expandedOrgs.has(org.id) ? (
+                          <ChevronDown size={18} />
+                        ) : (
+                          <ChevronRight size={18} />
+                        )}
+                      </div>
+                      <div className="admin-org-info">
+                        <h3>{org.name}</h3>
+                        <span className={`admin-badge ${STATUS_COLORS[org.subscriptionStatus]}`}>
+                          {org.subscriptionStatus}
+                        </span>
+                      </div>
+                      <div className="admin-org-counts">
+                        <span>
+                          <Users size={14} /> {org._count?.users || 0}
+                        </span>
+                        <span>
+                          <MapPin size={14} /> {org._count?.locations || 0}
+                        </span>
+                      </div>
+
+                      {/* Expires column */}
+                      <div className="admin-org-expires" style={{ minWidth: '110px', textAlign: 'center' }}>
+                        {org.trialEndsAt ? (
+                          <span style={{
+                            fontSize: '0.8rem',
+                            color: isExpiringSoon ? '#dc3545' : '#666',
+                            fontWeight: isExpiringSoon ? 600 : 400,
+                          }}>
+                            <Clock size={12} style={{ verticalAlign: 'middle', marginRight: '3px' }} />
+                            {new Date(org.trialEndsAt).toLocaleDateString()}
+                            {isExpiringSoon && (
+                              <span style={{ display: 'block', fontSize: '0.7rem' }}>
+                                {daysRemaining === 0 ? 'Expires today' : `${daysRemaining}d left`}
+                              </span>
+                            )}
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: '0.8rem', color: '#999' }}>Never</span>
+                        )}
+                      </div>
+
+                      {/* Actions dropdown */}
+                      <div className="admin-org-actions" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <select
+                          className="admin-action-select"
+                          style={{
+                            fontSize: '0.8rem',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            border: '1px solid #ccc',
+                            background: '#fff',
+                            cursor: 'pointer',
+                          }}
+                          value=""
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            if (e.target.value) {
+                              handleOrgAction(org, e.target.value);
+                              e.target.value = '';
+                            }
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          disabled={actionLoading[org.id]}
+                        >
+                          <option value="">Actions...</option>
+                          {org.subscriptionStatus !== 'TRIAL' && org.subscriptionStatus !== 'ACTIVE' && (
+                            <option value="upgrade-trial">Upgrade to Trial</option>
+                          )}
+                          {org.subscriptionStatus !== 'ACTIVE' && (
+                            <option value="upgrade-active">Upgrade to Active</option>
+                          )}
+                          {org.trialEndsAt && (
+                            <option value="extend-30">Extend 30 days</option>
+                          )}
+                          {org.subscriptionStatus !== 'SUSPENDED' && (
+                            <option value="suspend">Suspend</option>
+                          )}
+                        </select>
+                        {actionLoading[org.id] && <Loader2 size={14} className="loading-spinner" />}
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditOrg(org);
+                          }}
+                        >
+                          <Edit size={14} />
+                        </button>
+                        <button
+                          className="btn btn-ghost btn-sm btn-danger"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteOrg(org.id);
+                          }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Inline action error */}
+                    {actionErrors[org.id] && (
+                      <div className="admin-error" style={{ margin: '0 16px 8px 16px', fontSize: '0.8rem' }}>
+                        <AlertTriangle size={14} />
+                        {actionErrors[org.id]}
+                      </div>
+                    )}
+
+                    {expandedOrgs.has(org.id) && (
+                      <div className="admin-org-details">
+                        <div className="admin-org-section">
+                          <div className="admin-org-section-header">
+                            <h4>Locations</h4>
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              onClick={() => {
+                                setSelectedOrgId(org.id);
+                                setLocationForm({ name: '', number: '' });
+                                setShowLocationModal(true);
+                              }}
+                            >
+                              <Plus size={14} /> Add
+                            </button>
+                          </div>
+                          {org.locations && org.locations.length > 0 ? (
+                            <ul className="admin-location-list">
+                              {org.locations.map((loc) => (
+                                <li key={loc.id}>
+                                  <MapPin size={14} />
+                                  <span>{loc.name}</span>
+                                  <span className={`admin-badge-sm ${loc.status === 'ACTIVE' ? 'badge-active' : ''}`}>
+                                    {loc.status}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="admin-empty">No locations</p>
+                          )}
+                        </div>
+
+                        <div className="admin-org-section">
+                          <div className="admin-org-section-header">
+                            <h4>Users</h4>
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              onClick={() => openNewUserForOrg(org.id)}
+                            >
+                              <Plus size={14} /> Add
+                            </button>
+                          </div>
+                          {org.users && org.users.length > 0 ? (
+                            <ul className="admin-user-list">
+                              {org.users.map((user) => (
+                                <li key={user.id}>
+                                  <span className="user-email">{user.email}</span>
+                                  <span className="admin-badge-sm">{user.role}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="admin-empty">No users</p>
+                          )}
+                        </div>
+
+                        <div className="admin-org-meta">
+                          <span>Created: {new Date(org.createdAt).toLocaleDateString()}</span>
+                          {org.trialEndsAt && (
+                            <span>Trial ends: {new Date(org.trialEndsAt).toLocaleDateString()}</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
 
               {organizations.length === 0 && (
                 <div className="admin-empty-state">

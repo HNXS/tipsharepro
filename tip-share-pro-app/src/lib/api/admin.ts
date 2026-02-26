@@ -210,6 +210,40 @@ export async function deleteUser(id: string): Promise<void> {
   });
 }
 
+// Account management (create org+location+user, change status, extend trial)
+export async function createAccount(data: {
+  email: string;
+  password: string;
+  companyName?: string;
+  subscriptionStatus?: string;
+  durationDays?: number;
+}): Promise<Organization> {
+  return adminRequest<Organization>('/admin/accounts', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function changeAccountStatus(
+  orgId: string,
+  data: { status: string; durationDays?: number }
+): Promise<Organization> {
+  return adminRequest<Organization>(`/admin/accounts/${orgId}/status`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function extendAccount(
+  orgId: string,
+  days: number
+): Promise<Organization> {
+  return adminRequest<Organization>(`/admin/accounts/${orgId}/extend`, {
+    method: 'PUT',
+    body: JSON.stringify({ days }),
+  });
+}
+
 // Stats
 export async function getAdminStats(): Promise<AdminStats> {
   return adminRequest<AdminStats>('/admin/stats');
