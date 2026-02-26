@@ -22,6 +22,7 @@ export interface LoginResult {
     name: string;
     role: string;
     companyName: string;
+    locationId: string | null;
     locationName: string | null;
   };
 }
@@ -33,6 +34,7 @@ export interface SessionInfo {
     name: string;
     role: string;
     companyName: string;
+    locationId: string | null;
     locationName: string | null;
   };
   organization: {
@@ -87,6 +89,7 @@ export class AuthService {
         name: this.extractNameFromEmail(user.email),
         role: user.role,
         companyName: user.organization.name,
+        locationId: user.locationId || null,
         locationName: user.location?.name || null,
       },
     };
@@ -156,6 +159,7 @@ export class AuthService {
         name: this.extractNameFromEmail(user.email),
         role: user.role,
         companyName: user.organization.name,
+        locationId: user.locationId || null,
         locationName: user.location?.name || null,
       },
     };
@@ -184,6 +188,7 @@ export class AuthService {
         name: this.extractNameFromEmail(user.email),
         role: user.role,
         companyName: user.organization.name,
+        locationId: user.locationId || null,
         locationName: user.location?.name || null,
       },
       organization: {

@@ -30,6 +30,7 @@ export interface LoginResponse {
     name: string;
     role: string;
     companyName: string;
+    locationId: string | null;
     locationName: string | null;
   };
 }
@@ -41,6 +42,7 @@ export interface SessionResponse {
     name: string;
     role: string;
     companyName: string;
+    locationId: string | null;
     locationName: string | null;
   };
   organization: {

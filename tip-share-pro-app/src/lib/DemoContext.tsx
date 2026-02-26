@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode } from 'react';
 import {
   DemoState,
   Settings,
@@ -18,13 +18,38 @@ import {
   ALL_PREDEFINED_CATEGORIES,
   DEFAULT_CATEGORY_WEIGHTS,
 } from './types';
-import { isAuthenticated as checkAuth, clearToken } from './api';
+import {
+  isAuthenticated as checkAuth,
+  clearToken,
+  getSession,
+  validateSession,
+  getEmployees,
+  getJobCategories,
+  getSettings as apiGetSettings,
+  createEmployee as apiCreateEmployee,
+  updateEmployee as apiUpdateEmployee,
+  deleteEmployee as apiDeleteEmployee,
+  updateSettings as apiUpdateSettings,
+  createJobCategory as apiCreateJobCategory,
+  updateJobCategory as apiUpdateJobCategory,
+  deleteJobCategory as apiDeleteJobCategory,
+  dollarsToCents,
+} from './api';
+import {
+  mapApiEmployeeToFrontend,
+  mapApiJobCategoryToFrontend,
+  mapApiSettingsToFrontend,
+  mapFrontendSettingsToUpdateRequest,
+  categoryColorToHex,
+} from './api/mappers';
 
 // Auth user type
 export interface AuthUser {
   name: string;
   companyName: string;
   role: string;
+  email?: string;
+  locationId?: string | null;
 }
 
 // Extended state type with auth
@@ -33,6 +58,12 @@ interface ExtendedDemoState extends DemoState {
   user: AuthUser | null;
   isLoading: boolean;
   error: string | null;
+}
+
+// Internal state that includes demo/real tracking
+interface InternalState extends ExtendedDemoState {
+  isDemo: boolean;
+  locationId: string | null;
 }
 
 interface DemoContextType {
@@ -79,6 +110,8 @@ interface DemoContextType {
 
 const DemoContext = createContext<DemoContextType | undefined>(undefined);
 
+const DEMO_EMAIL = 'demo@tipsharepro.com';
+
 // Calculate initial projected pool
 const calculateProjectedPool = (monthlySales: number, rate: number): number => {
   return (monthlySales / 2) * (rate / 100);
@@ -89,12 +122,15 @@ const initialProjectedPool = calculateProjectedPool(
   DEFAULT_SETTINGS.contributionRate
 );
 
-const initialState: ExtendedDemoState = {
+const initialState: InternalState = {
   // Auth state
   isAuthenticated: false,
   user: null,
   isLoading: true,
   error: null,
+  // Demo/real tracking
+  isDemo: true,
+  locationId: null,
   // App state
   currentStep: 0,
   settings: DEFAULT_SETTINGS,
@@ -111,22 +147,117 @@ const initialState: ExtendedDemoState = {
 };
 
 export function DemoProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<ExtendedDemoState>(initialState);
+  const [state, setState] = useState<InternalState>(initialState);
 
-  // Check for existing session on mount
-  useEffect(() => {
-    const hasToken = checkAuth();
-    setState(prev => ({
-      ...prev,
-      isLoading: false,
-      currentStep: hasToken ? 1 : 0,
-    }));
+  // Ref to access latest state in async callbacks without stale closures
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
+  // ============================================================================
+  // Data loading from API (real accounts only)
+  // ============================================================================
+
+  const loadUserData = useCallback(async () => {
+    try {
+      const [employeesResp, categoriesResp, settingsResp] = await Promise.all([
+        getEmployees({ status: 'ACTIVE' }),
+        getJobCategories(),
+        apiGetSettings(),
+      ]);
+
+      // Map API types to frontend types
+      const frontendCategories = categoriesResp.categories.map(mapApiJobCategoryToFrontend);
+      const frontendEmployees = employeesResp.employees.map(mapApiEmployeeToFrontend);
+      const frontendSettings = mapApiSettingsToFrontend(settingsResp, frontendCategories);
+
+      const projectedPool = calculateProjectedPool(
+        frontendSettings.estimatedMonthlySales,
+        frontendSettings.contributionRate
+      );
+
+      setState(prev => ({
+        ...prev,
+        settings: frontendSettings,
+        employees: frontendEmployees,
+        estimatedMonthlySales: frontendSettings.estimatedMonthlySales,
+        projectedPool,
+        prePaidAmount: 0,
+        netPool: projectedPool,
+        distributionResults: [],
+        isLoading: false,
+      }));
+    } catch (err) {
+      console.error('Failed to load user data:', err);
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: 'Failed to load your data. Please try refreshing.',
+      }));
+    }
   }, []);
 
+  // ============================================================================
+  // Session restore on mount
+  // ============================================================================
+
+  useEffect(() => {
+    const restoreSession = async () => {
+      const hasToken = checkAuth();
+      if (!hasToken) {
+        setState(prev => ({ ...prev, isLoading: false, currentStep: 0 }));
+        return;
+      }
+
+      try {
+        const isValid = await validateSession();
+        if (!isValid) {
+          setState(prev => ({ ...prev, isLoading: false, currentStep: 0 }));
+          return;
+        }
+
+        const session = await getSession();
+        const email = session.user.email;
+        const isDemo = email === DEMO_EMAIL;
+
+        setState(prev => ({
+          ...prev,
+          isAuthenticated: true,
+          user: {
+            name: session.user.name,
+            companyName: session.user.companyName,
+            role: session.user.role,
+            email,
+            locationId: session.user.locationId,
+          },
+          currentStep: 1,
+          isDemo,
+          locationId: session.user.locationId || null,
+          // For demo, keep defaults; for real, isLoading stays true until loadUserData finishes
+          isLoading: !isDemo,
+        }));
+
+        if (!isDemo) {
+          // Load real data from API
+          await loadUserData();
+        } else {
+          setState(prev => ({ ...prev, isLoading: false }));
+        }
+      } catch {
+        // Session invalid or network error
+        clearToken();
+        setState(prev => ({ ...prev, isLoading: false, currentStep: 0 }));
+      }
+    };
+
+    restoreSession();
+  }, [loadUserData]);
+
+  // ============================================================================
   // Recalculate distribution when relevant state changes
+  // ============================================================================
+
   useEffect(() => {
     if (state.currentStep > 0 && state.employees.length > 0) {
-      // Auto-calculate distribution when settings or employees change
       const timer = setTimeout(() => {
         calculateDistributionInternal();
       }, 100);
@@ -134,18 +265,30 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     }
   }, [state.currentStep, state.settings, state.employees, state.prePaidAmount]);
 
+  // ============================================================================
   // Auth handlers
+  // ============================================================================
+
   const handleLoginSuccess = useCallback((user: AuthUser) => {
+    const isDemo = user.email === DEMO_EMAIL;
+
     setState(prev => ({
       ...prev,
       isAuthenticated: true,
       user,
       currentStep: 1,
-      isLoading: false,
+      isLoading: !isDemo, // Real accounts need to load data
       error: null,
-      showWelcomeDialog: true, // Show welcome dialog on login
+      isDemo,
+      locationId: user.locationId || null,
+      showWelcomeDialog: true,
     }));
-  }, []);
+
+    if (!isDemo) {
+      // Load real data from API
+      loadUserData();
+    }
+  }, [loadUserData]);
 
   const handleLogout = useCallback(() => {
     clearToken();
@@ -167,6 +310,10 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setState(prev => ({ ...prev, error }));
   }, []);
 
+  // ============================================================================
+  // Settings mutations (with background API sync for real accounts)
+  // ============================================================================
+
   const updateSettings = useCallback((updates: Partial<Settings>) => {
     setState(prev => {
       const newSettings = { ...prev.settings, ...updates };
@@ -181,19 +328,28 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         estimatedMonthlySales: monthlySales,
       };
     });
+
+    // Background sync for real accounts
+    if (!stateRef.current.isDemo) {
+      const apiUpdates = mapFrontendSettingsToUpdateRequest(updates);
+      if (Object.keys(apiUpdates).length > 0) {
+        apiUpdateSettings(apiUpdates).catch(err =>
+          console.error('Failed to sync settings:', err)
+        );
+      }
+    }
   }, []);
 
   const setContributionMethod = useCallback((method: ContributionMethod) => {
     setState(prev => {
       const oldMethod = prev.settings.contributionMethod;
-      const waseSalesBased = isSalesBasedMethod(oldMethod);
+      const wasSalesBased = isSalesBasedMethod(oldMethod);
       const isSalesBased = isSalesBasedMethod(method);
 
       const defaultRate = getDefaultRateForMethod(method);
 
-      // If switching between sales-based and tips-based, update the amount
       let newAmount = prev.settings.estimatedMonthlySales;
-      if (waseSalesBased !== isSalesBased) {
+      if (wasSalesBased !== isSalesBased) {
         newAmount = getDefaultAmountForMethod(method);
       }
 
@@ -213,7 +369,29 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         estimatedMonthlySales: newAmount,
       };
     });
+
+    // Background sync for real accounts
+    if (!stateRef.current.isDemo) {
+      const defaultRate = getDefaultRateForMethod(method);
+      const oldMethod = stateRef.current.settings.contributionMethod;
+      const wasSalesBased = isSalesBasedMethod(oldMethod);
+      const isSalesBased = isSalesBasedMethod(method);
+      let newAmount = stateRef.current.settings.estimatedMonthlySales;
+      if (wasSalesBased !== isSalesBased) {
+        newAmount = getDefaultAmountForMethod(method);
+      }
+
+      apiUpdateSettings({
+        contributionMethod: method,
+        contributionRate: defaultRate,
+        estimatedMonthlySales: newAmount,
+      }).catch(err => console.error('Failed to sync contribution method:', err));
+    }
   }, []);
+
+  // ============================================================================
+  // Category selection & custom categories (local-only, no API sync needed)
+  // ============================================================================
 
   const toggleCategorySelection = useCallback((categoryId: string) => {
     setState(prev => {
@@ -269,11 +447,13 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // Update a category's weight and sync all jobs in that category
+  // ============================================================================
+  // Category weight & name mutations (with background API sync)
+  // ============================================================================
+
   const updateCategoryWeight = useCallback((color: CategoryColor, weight: number) => {
     setState(prev => {
       const newCategoryWeights = { ...prev.settings.categoryWeights, [color]: weight };
-      // Update all jobs in this category to use the new weight
       const newJobCategories = prev.settings.jobCategories.map(job =>
         job.categoryColor === color
           ? { ...job, variableWeight: weight as VariableWeight }
@@ -288,9 +468,20 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         },
       };
     });
+
+    // Background sync: update weight for all jobs in this category
+    if (!stateRef.current.isDemo) {
+      const jobsInCategory = stateRef.current.settings.jobCategories.filter(
+        j => j.categoryColor === color
+      );
+      for (const job of jobsInCategory) {
+        apiUpdateJobCategory(job.id, { weight }).catch(err =>
+          console.error(`Failed to sync weight for job ${job.id}:`, err)
+        );
+      }
+    }
   }, []);
 
-  // Update a category's display name
   const updateCategoryName = useCallback((color: CategoryColor, name: string) => {
     setState(prev => ({
       ...prev,
@@ -301,7 +492,10 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  // Move a job from one category to another
+  // ============================================================================
+  // Job mutations (with background API sync)
+  // ============================================================================
+
   const moveJobToCategory = useCallback((jobId: string, newCategoryColor: CategoryColor) => {
     setState(prev => {
       const newWeight = prev.settings.categoryWeights[newCategoryColor] || 1;
@@ -318,36 +512,107 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         settings: { ...prev.settings, jobCategories: newJobCategories },
       };
     });
+
+    // Background sync
+    if (!stateRef.current.isDemo) {
+      const newWeight = stateRef.current.settings.categoryWeights[newCategoryColor] || 1;
+      apiUpdateJobCategory(jobId, {
+        weight: newWeight,
+        badgeColor: categoryColorToHex(newCategoryColor),
+      }).catch(err => console.error(`Failed to sync job move for ${jobId}:`, err));
+    }
   }, []);
 
-  // Add a new job to a specific category
   const addJobToCategory = useCallback((name: string, categoryColor: CategoryColor) => {
     if (!name.trim()) return;
-    setState(prev => {
-      const id = name.trim().toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
-      const weight = prev.settings.categoryWeights[categoryColor] || 1;
+
+    const isDemo = stateRef.current.isDemo;
+
+    if (isDemo) {
+      // Demo mode: local-only with timestamp ID
+      setState(prev => {
+        const id = name.trim().toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
+        const weight = prev.settings.categoryWeights[categoryColor] || 1;
+        const groupMap: Record<CategoryColor, string> = {
+          boh: 'kitchen', foh: 'frontOfHouse', bar: 'bar', support: 'support', custom: 'custom',
+        };
+        const newJob: JobCategory = {
+          id,
+          name: name.trim(),
+          variableWeight: weight as VariableWeight,
+          categoryColor,
+          group: groupMap[categoryColor] as JobCategory['group'],
+        };
+        return {
+          ...prev,
+          settings: {
+            ...prev.settings,
+            jobCategories: [...prev.settings.jobCategories, newJob],
+            selectedCategories: [...prev.settings.selectedCategories, id],
+          },
+        };
+      });
+    } else {
+      // Real account: create via API, then update state with real ID
+      const weight = stateRef.current.settings.categoryWeights[categoryColor] || 1;
+      const tempId = name.trim().toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
       const groupMap: Record<CategoryColor, string> = {
         boh: 'kitchen', foh: 'frontOfHouse', bar: 'bar', support: 'support', custom: 'custom',
       };
-      const newJob: JobCategory = {
-        id,
+
+      // Optimistic local update with temp ID
+      setState(prev => {
+        const newJob: JobCategory = {
+          id: tempId,
+          name: name.trim(),
+          variableWeight: weight as VariableWeight,
+          categoryColor,
+          group: groupMap[categoryColor] as JobCategory['group'],
+        };
+        return {
+          ...prev,
+          settings: {
+            ...prev.settings,
+            jobCategories: [...prev.settings.jobCategories, newJob],
+            selectedCategories: [...prev.settings.selectedCategories, tempId],
+          },
+        };
+      });
+
+      // Create via API and replace temp ID with real ID
+      apiCreateJobCategory({
         name: name.trim(),
-        variableWeight: weight as VariableWeight,
-        categoryColor,
-        group: groupMap[categoryColor] as JobCategory['group'],
-      };
-      return {
-        ...prev,
-        settings: {
-          ...prev.settings,
-          jobCategories: [...prev.settings.jobCategories, newJob],
-          selectedCategories: [...prev.settings.selectedCategories, id],
-        },
-      };
-    });
+        weight,
+        badgeColor: categoryColorToHex(categoryColor),
+      }).then(created => {
+        const frontendCat = mapApiJobCategoryToFrontend(created);
+        setState(prev => ({
+          ...prev,
+          settings: {
+            ...prev.settings,
+            jobCategories: prev.settings.jobCategories.map(j =>
+              j.id === tempId ? { ...frontendCat } : j
+            ),
+            selectedCategories: prev.settings.selectedCategories.map(id =>
+              id === tempId ? frontendCat.id : id
+            ),
+          },
+        }));
+      }).catch(err => {
+        console.error('Failed to create job category:', err);
+        // Rollback optimistic update
+        setState(prev => ({
+          ...prev,
+          settings: {
+            ...prev.settings,
+            jobCategories: prev.settings.jobCategories.filter(j => j.id !== tempId),
+            selectedCategories: prev.settings.selectedCategories.filter(id => id !== tempId),
+          },
+        }));
+      });
+    }
   }, []);
 
-  // Remove a job
   const removeJob = useCallback((jobId: string) => {
     setState(prev => ({
       ...prev,
@@ -357,6 +622,13 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         selectedCategories: prev.settings.selectedCategories.filter(id => id !== jobId),
       },
     }));
+
+    // Background sync
+    if (!stateRef.current.isDemo) {
+      apiDeleteJobCategory(jobId).catch(err =>
+        console.error(`Failed to delete job category ${jobId}:`, err)
+      );
+    }
   }, []);
 
   const updateJobCategory = useCallback((categoryId: string, updates: Partial<JobCategory>) => {
@@ -389,7 +661,18 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         jobCategories: prev.settings.jobCategories.filter(cat => cat.id !== categoryId),
       },
     }));
+
+    // Background sync
+    if (!stateRef.current.isDemo) {
+      apiDeleteJobCategory(categoryId).catch(err =>
+        console.error(`Failed to delete job category ${categoryId}:`, err)
+      );
+    }
   }, []);
+
+  // ============================================================================
+  // Employee mutations (with background API sync)
+  // ============================================================================
 
   const updateEmployee = useCallback((employeeId: string, updates: Partial<Employee>) => {
     setState(prev => ({
@@ -398,13 +681,70 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         emp.id === employeeId ? { ...emp, ...updates } : emp
       ),
     }));
+
+    // Background sync for persistent fields only
+    if (!stateRef.current.isDemo) {
+      const apiUpdates: Record<string, unknown> = {};
+      if (updates.hourlyRate !== undefined) {
+        apiUpdates.hourlyRateCents = dollarsToCents(updates.hourlyRate);
+      }
+      if (updates.jobCategoryId !== undefined) {
+        apiUpdates.jobCategoryId = updates.jobCategoryId;
+      }
+      if (Object.keys(apiUpdates).length > 0) {
+        apiUpdateEmployee(employeeId, apiUpdates as { hourlyRateCents?: number; jobCategoryId?: string }).catch(err =>
+          console.error(`Failed to sync employee ${employeeId}:`, err)
+        );
+      }
+    }
   }, []);
 
   const addEmployee = useCallback((employee: Employee) => {
-    setState(prev => ({
-      ...prev,
-      employees: [...prev.employees, employee],
-    }));
+    const isDemo = stateRef.current.isDemo;
+
+    if (isDemo) {
+      setState(prev => ({
+        ...prev,
+        employees: [...prev.employees, employee],
+      }));
+    } else {
+      // Optimistic local update
+      setState(prev => ({
+        ...prev,
+        employees: [...prev.employees, employee],
+      }));
+
+      const locationId = stateRef.current.locationId;
+      if (!locationId) {
+        console.error('Cannot create employee: no locationId');
+        return;
+      }
+
+      // Create via API and replace temp ID with real ID
+      apiCreateEmployee({
+        name: employee.name,
+        locationId,
+        jobCategoryId: employee.jobCategoryId,
+        hourlyRateCents: dollarsToCents(employee.hourlyRate),
+      }).then(created => {
+        const frontendEmp = mapApiEmployeeToFrontend(created);
+        setState(prev => ({
+          ...prev,
+          employees: prev.employees.map(emp =>
+            emp.id === employee.id
+              ? { ...frontendEmp, hoursWorked: employee.hoursWorked, weightAdjustment: employee.weightAdjustment || 0 }
+              : emp
+          ),
+        }));
+      }).catch(err => {
+        console.error('Failed to create employee:', err);
+        // Rollback
+        setState(prev => ({
+          ...prev,
+          employees: prev.employees.filter(emp => emp.id !== employee.id),
+        }));
+      });
+    }
   }, []);
 
   const removeEmployee = useCallback((employeeId: string) => {
@@ -412,6 +752,13 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       ...prev,
       employees: prev.employees.filter(emp => emp.id !== employeeId),
     }));
+
+    // Background sync: soft-delete via API
+    if (!stateRef.current.isDemo) {
+      apiDeleteEmployee(employeeId).catch(err =>
+        console.error(`Failed to delete employee ${employeeId}:`, err)
+      );
+    }
   }, []);
 
   // Adjust individual employee weight by delta (±0.25 increments, max +0.75 above base, never below base)
@@ -444,7 +791,10 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // Set pre-paid amount and recalculate net pool
+  // ============================================================================
+  // Distribution & pre-paid (always local-only)
+  // ============================================================================
+
   const setPrePaidAmount = useCallback((amount: number) => {
     setState(prev => ({
       ...prev,
@@ -453,87 +803,104 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  // Reset everything to default demo values
+  // ============================================================================
+  // Reset functions (demo = defaults, real = re-fetch from API)
+  // ============================================================================
+
   const resetToDefaults = useCallback(() => {
-    setState(prev => {
-      const projectedPool = calculateProjectedPool(
-        DEFAULT_SETTINGS.estimatedMonthlySales,
-        DEFAULT_SETTINGS.contributionRate
-      );
-      return {
-        ...prev,
-        settings: DEFAULT_SETTINGS,
-        employees: DEFAULT_EMPLOYEES.map(emp => ({ ...emp, weightAdjustment: 0 })),
-        estimatedMonthlySales: DEFAULT_SETTINGS.estimatedMonthlySales,
-        projectedPool,
-        prePaidAmount: 0,
-        netPool: projectedPool,
-        distributionResults: [],
-      };
-    });
-  }, []);
+    if (stateRef.current.isDemo) {
+      setState(prev => {
+        const projectedPool = calculateProjectedPool(
+          DEFAULT_SETTINGS.estimatedMonthlySales,
+          DEFAULT_SETTINGS.contributionRate
+        );
+        return {
+          ...prev,
+          settings: DEFAULT_SETTINGS,
+          employees: DEFAULT_EMPLOYEES.map(emp => ({ ...emp, weightAdjustment: 0 })),
+          estimatedMonthlySales: DEFAULT_SETTINGS.estimatedMonthlySales,
+          projectedPool,
+          prePaidAmount: 0,
+          netPool: projectedPool,
+          distributionResults: [],
+        };
+      });
+    } else {
+      setState(prev => ({ ...prev, isLoading: true }));
+      loadUserData();
+    }
+  }, [loadUserData]);
 
-  // Reset only settings to defaults (keeps distribution table employees)
   const resetSettingsToDefaults = useCallback(() => {
-    setState(prev => {
-      const projectedPool = calculateProjectedPool(
-        DEFAULT_SETTINGS.estimatedMonthlySales,
-        DEFAULT_SETTINGS.contributionRate
-      );
-      const netPool = projectedPool - prev.prePaidAmount;
-      return {
-        ...prev,
-        settings: DEFAULT_SETTINGS,
-        estimatedMonthlySales: DEFAULT_SETTINGS.estimatedMonthlySales,
-        projectedPool,
-        netPool,
-      };
-    });
-  }, []);
+    if (stateRef.current.isDemo) {
+      setState(prev => {
+        const projectedPool = calculateProjectedPool(
+          DEFAULT_SETTINGS.estimatedMonthlySales,
+          DEFAULT_SETTINGS.contributionRate
+        );
+        const netPool = projectedPool - prev.prePaidAmount;
+        return {
+          ...prev,
+          settings: DEFAULT_SETTINGS,
+          estimatedMonthlySales: DEFAULT_SETTINGS.estimatedMonthlySales,
+          projectedPool,
+          netPool,
+        };
+      });
+    } else {
+      setState(prev => ({ ...prev, isLoading: true }));
+      loadUserData();
+    }
+  }, [loadUserData]);
 
-  // Reset only distribution table to defaults (keeps settings)
   const resetDistributionToDefaults = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      employees: DEFAULT_EMPLOYEES.map(emp => ({ ...emp, weightAdjustment: 0 })),
-      prePaidAmount: 0,
-      netPool: prev.projectedPool,
-      distributionResults: [],
-    }));
-  }, []);
+    if (stateRef.current.isDemo) {
+      setState(prev => ({
+        ...prev,
+        employees: DEFAULT_EMPLOYEES.map(emp => ({ ...emp, weightAdjustment: 0 })),
+        prePaidAmount: 0,
+        netPool: prev.projectedPool,
+        distributionResults: [],
+      }));
+    } else {
+      // For real accounts, re-fetch employees from API (resets hours/weights to 0)
+      setState(prev => ({ ...prev, isLoading: true }));
+      loadUserData();
+    }
+  }, [loadUserData]);
 
-  // Show/hide welcome dialog
+  // ============================================================================
+  // UI state toggles (always local-only)
+  // ============================================================================
+
   const setShowWelcomeDialog = useCallback((show: boolean) => {
     setState(prev => ({ ...prev, showWelcomeDialog: show }));
   }, []);
 
-  // Show/hide help library dialog
   const setShowHelpLibrary = useCallback((show: boolean) => {
     setState(prev => ({ ...prev, showHelpLibrary: show }));
   }, []);
 
-  // Toggle print option for $/Hr column
   const setPrintIncludeSharePerHour = useCallback((include: boolean) => {
     setState(prev => ({ ...prev, printIncludeSharePerHour: include }));
   }, []);
 
-  // Internal calculate distribution function (called by effect)
+  // ============================================================================
+  // Distribution calculation (always local-only)
+  // ============================================================================
+
   const calculateDistributionInternal = () => {
     setState(prev => {
       const { employees, settings, netPool } = prev;
 
-      // Filter employees with hours > 0
       const activeEmployees = employees.filter(emp => emp.hoursWorked > 0);
 
       if (activeEmployees.length === 0) {
         return { ...prev, distributionResults: [] };
       }
 
-      // Calculate basis for each employee (HIDDEN from users!)
-      // Basis = Hours × Rate × (Category Weight + Individual Adjustment)
       const employeesWithBasis = activeEmployees.map(emp => {
         const category = settings.jobCategories.find(cat => cat.id === emp.jobCategoryId);
-        // Use category-level weight from categoryWeights map
         const categoryColor = category?.categoryColor || 'support';
         const baseWeight = settings.categoryWeights?.[categoryColor] ?? category?.variableWeight ?? 2;
         const weightAdjustment = emp.weightAdjustment || 0;
@@ -551,10 +918,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         };
       });
 
-      // Calculate total basis
       const totalBasis = employeesWithBasis.reduce((sum, emp) => sum + emp.basis, 0);
 
-      // Calculate share percentage and amount for each employee
       const results: DistributionResult[] = employeesWithBasis.map(emp => {
         const sharePercentage = totalBasis > 0 ? (emp.basis / totalBasis) * 100 : 0;
         const shareAmount = netPool * (sharePercentage / 100);
@@ -577,22 +942,42 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         };
       });
 
-      // Adjust received amounts to match pool exactly
       const adjustedResults = adjustReceivedAmounts(results, netPool);
 
       return { ...prev, distributionResults: adjustedResults };
     });
   };
 
-  // Public calculate distribution (explicit call)
   const calculateDistribution = useCallback(() => {
     calculateDistributionInternal();
   }, []);
 
+  // ============================================================================
+  // Context value — expose ExtendedDemoState (not InternalState) to consumers
+  // ============================================================================
+
+  const exposedState: ExtendedDemoState = {
+    isAuthenticated: state.isAuthenticated,
+    user: state.user,
+    isLoading: state.isLoading,
+    error: state.error,
+    currentStep: state.currentStep,
+    settings: state.settings,
+    employees: state.employees,
+    estimatedMonthlySales: state.estimatedMonthlySales,
+    projectedPool: state.projectedPool,
+    distributionResults: state.distributionResults,
+    prePaidAmount: state.prePaidAmount,
+    netPool: state.netPool,
+    showWelcomeDialog: state.showWelcomeDialog,
+    showHelpLibrary: state.showHelpLibrary,
+    printIncludeSharePerHour: state.printIncludeSharePerHour,
+  };
+
   return (
     <DemoContext.Provider
       value={{
-        state,
+        state: exposedState,
         // Auth
         handleLoginSuccess,
         handleLogout,
@@ -640,34 +1025,28 @@ export function DemoProvider({ children }: { children: ReactNode }) {
 
 // Helper function to adjust received amounts so they sum exactly to the pool total
 function adjustReceivedAmounts(results: DistributionResult[], totalPool: number): DistributionResult[] {
-  // Round each share to whole dollars, preserving original order
   const rounded = results.map((r, index) => ({
     ...r,
     receivedAmount: Math.round(r.shareAmount),
     dollarsPerHour: r.hoursWorked > 0 ? Math.round(r.shareAmount) / r.hoursWorked : 0,
-    _originalIndex: index, // Track original order
+    _originalIndex: index,
   }));
 
-  // Calculate the difference between total pool and sum of rounded amounts
   const totalRounded = rounded.reduce((sum, r) => sum + r.receivedAmount, 0);
   let diff = Math.round(totalPool) - totalRounded;
 
   if (diff !== 0) {
-    // Sort by the fractional part of the original amount (for rounding fairness)
     const withError = rounded.map(r => ({
       ...r,
       error: r.shareAmount - r.receivedAmount,
     }));
 
     if (diff > 0) {
-      // Need to add - prioritize those rounded down the most
       withError.sort((a, b) => b.error - a.error);
     } else {
-      // Need to subtract - prioritize those rounded up the most
       withError.sort((a, b) => a.error - b.error);
     }
 
-    // Apply adjustments one dollar at a time
     let i = 0;
     while (diff !== 0 && i < withError.length) {
       const adjustment = diff > 0 ? 1 : -1;
@@ -679,7 +1058,6 @@ function adjustReceivedAmounts(results: DistributionResult[], totalPool: number)
       i++;
     }
 
-    // Restore original order before returning
     withError.sort((a, b) => a._originalIndex - b._originalIndex);
     return withError.map(({ error, _originalIndex, ...r }) => r);
   }

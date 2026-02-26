@@ -78,3 +78,16 @@ export type {
   UpdateEmployeeRequest,
   EmployeeListOptions,
 } from './employees';
+
+// Mappers (API ↔ Frontend type conversion)
+export {
+  hexToCategoryColor,
+  categoryColorToHex,
+  mapApiEmployeeToFrontend,
+  mapFrontendEmployeeToCreateRequest,
+  mapApiJobCategoryToFrontend,
+  deriveCategoryWeights,
+  deriveCategoryNames,
+  mapApiSettingsToFrontend,
+  mapFrontendSettingsToUpdateRequest,
+} from './mappers';

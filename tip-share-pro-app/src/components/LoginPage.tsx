@@ -10,6 +10,8 @@ interface LoginPageProps {
     name: string;
     companyName: string;
     role: string;
+    email?: string;
+    locationId?: string | null;
   }) => void;
 }
 
@@ -73,6 +75,8 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
           name: response.user.name,
           companyName: response.user.companyName,
           role: response.user.role,
+          email: response.user.email,
+          locationId: response.user.locationId,
         });
       } catch (err) {
         if (err instanceof ApiError) {
@@ -96,6 +100,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
         name: 'Sarah Chen',
         companyName: 'The Golden Fork',
         role: 'manager',
+        email: 'demo@tipsharepro.com',
       });
       setIsLoading(false);
       return;
@@ -108,6 +113,8 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
         name: response.user.name,
         companyName: response.user.companyName,
         role: response.user.role,
+        email: response.user.email,
+        locationId: response.user.locationId,
       });
     } catch (err) {
       if (err instanceof ApiError) {
