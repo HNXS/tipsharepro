@@ -25,6 +25,12 @@ export interface LoginResult {
     locationId: string | null;
     locationName: string | null;
   };
+  organization: {
+    id: string;
+    name: string;
+    subscriptionStatus: string;
+    trialEndsAt: string | null;
+  };
 }
 
 export interface SessionInfo {
@@ -41,6 +47,7 @@ export interface SessionInfo {
     id: string;
     name: string;
     subscriptionStatus: string;
+    trialEndsAt: string | null;
   };
 }
 
@@ -92,6 +99,12 @@ export class AuthService {
         locationId: user.locationId || null,
         locationName: user.location?.name || null,
       },
+      organization: {
+        id: user.organization.id,
+        name: user.organization.name,
+        subscriptionStatus: user.organization.subscriptionStatus,
+        trialEndsAt: user.organization.trialEndsAt?.toISOString() || null,
+      },
     };
   }
 
@@ -116,11 +129,16 @@ export class AuthService {
     const passwordHash = await this.hashPassword(password);
 
     // Create Organization + Location + User in a transaction
+    const DEMO_DURATION_DAYS = 14;
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + DEMO_DURATION_DAYS);
+
     const user = await prisma.$transaction(async (tx) => {
       const organization = await tx.organization.create({
         data: {
           name: orgName,
           subscriptionStatus: 'DEMO',
+          trialEndsAt,
         },
       });
 
@@ -162,6 +180,12 @@ export class AuthService {
         locationId: user.locationId || null,
         locationName: user.location?.name || null,
       },
+      organization: {
+        id: user.organization.id,
+        name: user.organization.name,
+        subscriptionStatus: user.organization.subscriptionStatus,
+        trialEndsAt: user.organization.trialEndsAt?.toISOString() || null,
+      },
     };
   }
 
@@ -195,6 +219,7 @@ export class AuthService {
         id: user.organization.id,
         name: user.organization.name,
         subscriptionStatus: user.organization.subscriptionStatus,
+        trialEndsAt: user.organization.trialEndsAt?.toISOString() || null,
       },
     };
   }
