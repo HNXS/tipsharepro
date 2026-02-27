@@ -1147,13 +1147,23 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         apiGetEntriesForDate(periodId, date),
         apiGetEmployeesForDate(periodId, date),
       ]);
+      // Update pool from running totals (actual pay period data replaces estimate)
+      const totals = dateResp.runningTotals;
+      const poolFromEntries = totals
+        ? (totals.totalActualContribCents || totals.totalCalculatedContribCents) / 100
+        : null;
+
       setState(prev => ({
         ...prev,
         dailyEntries: dateResp.entries,
         dateNavigation: dateResp.navigation,
-        runningTotals: dateResp.runningTotals,
+        runningTotals: totals,
         employeesForDate: empsResp.employees,
         payPeriodLoading: false,
+        ...(poolFromEntries != null ? {
+          projectedPool: poolFromEntries,
+          netPool: poolFromEntries - prev.prePaidAmount,
+        } : {}),
       }));
     } catch (err) {
       console.error('Failed to load date entries:', err);
@@ -1177,11 +1187,21 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     try {
       setState(prev => ({ ...prev, saveStatus: 'saving' }));
       const result = await apiBulkUpsertEntries(periodId, date, entries);
+      // Update pool from running totals (actual pay period data)
+      const totals = result.runningTotals;
+      const poolFromEntries = totals
+        ? (totals.totalActualContribCents || totals.totalCalculatedContribCents) / 100
+        : null;
+
       setState(prev => ({
         ...prev,
         dailyEntries: result.entries,
-        runningTotals: result.runningTotals,
+        runningTotals: totals,
         saveStatus: 'saved',
+        ...(poolFromEntries != null ? {
+          projectedPool: poolFromEntries,
+          netPool: poolFromEntries - prev.prePaidAmount,
+        } : {}),
       }));
       // Reset save status after 2s
       setTimeout(() => {
