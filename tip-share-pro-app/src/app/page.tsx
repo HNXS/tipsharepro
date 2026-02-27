@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { useDemo } from '@/lib/DemoContext';
+import { canAccess } from '@/lib/permissions';
 import Header from '@/components/Header';
 import SubscriptionBanner from '@/components/SubscriptionBanner';
 import LoginPage from '@/components/LoginPage';
@@ -9,10 +11,23 @@ import DistributionTable from '@/components/DistributionTable';
 import PayPeriodBar from '@/components/PayPeriodBar';
 import WelcomeDialog from '@/components/WelcomeDialog';
 import HelpLibraryDialog from '@/components/HelpLibraryDialog';
+import UserManagement from '@/components/UserManagement';
+import LocationManagement from '@/components/LocationManagement';
+import ScenarioSandbox from '@/components/ScenarioSandbox';
+import TwoFactorSetup from '@/components/TwoFactorSetup';
+import BillingPage from '@/components/BillingPage';
+import { X, Calculator } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 
+// Panel types that can be opened from the "More" menu
+export type PanelType = 'team' | 'locations' | 'rounding' | 'sandbox' | '2fa' | 'billing' | null;
+
 export default function Home() {
-  const { state, handleLoginSuccess, setShowWelcomeDialog, setShowHelpLibrary } = useDemo();
+  const { state, handleLoginSuccess, setShowWelcomeDialog, setShowHelpLibrary, updateSettings } = useDemo();
+  const [activePanel, setActivePanel] = useState<PanelType>(null);
+
+  const isDemo = state.subscriptionStatus === 'DEMO';
+  const userRole = state.user?.role;
 
   // Show loading spinner while checking auth
   if (state.isLoading) {
@@ -31,23 +46,25 @@ export default function Home() {
     return <LoginPage onLoginSuccess={handleLoginSuccess} />;
   }
 
+  const closePanel = () => setActivePanel(null);
+
   // Main app: Settings + Distribution Table on same page
   return (
     <div className="app-container">
       <SubscriptionBanner />
-      <Header />
+      <Header onOpenPanel={setActivePanel} />
       <main className="main-content">
         {/* Settings Section */}
         <section id="settings-section">
           <SettingsPage />
         </section>
-        
+
         {/* Pay Period Bar (real accounts only) */}
         <PayPeriodBar />
 
         {/* Divider */}
         <div className="section-divider" />
-        
+
         {/* Distribution Table Section */}
         <section id="distribution-section">
           <DistributionTable />
@@ -61,11 +78,132 @@ export default function Home() {
           &copy; {new Date().getFullYear()} TipSharePro. Fair and transparent tip sharing for your team.
         </p>
       </footer>
+
+      {/* Welcome / Help dialogs */}
       {state.showWelcomeDialog && (
         <WelcomeDialog onClose={() => setShowWelcomeDialog(false)} subscriptionStatus={state.subscriptionStatus} />
       )}
       {state.showHelpLibrary && (
         <HelpLibraryDialog onClose={() => setShowHelpLibrary(false)} />
+      )}
+
+      {/* ================================================================
+          Secondary Feature Panels (opened from Header "More" menu)
+          ================================================================ */}
+
+      {/* Team Members */}
+      {activePanel === 'team' && !isDemo && canAccess(userRole, 'users') && (
+        <div className="modal-overlay" onClick={closePanel}>
+          <div className="modal-content panel-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Team Members</h3>
+              <button className="modal-close-btn" onClick={closePanel}><X size={18} /></button>
+            </div>
+            <div className="modal-body">
+              <UserManagement />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Locations */}
+      {activePanel === 'locations' && !isDemo && canAccess(userRole, 'locations') && (
+        <div className="modal-overlay" onClick={closePanel}>
+          <div className="modal-content panel-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Locations</h3>
+              <button className="modal-close-btn" onClick={closePanel}><X size={18} /></button>
+            </div>
+            <div className="modal-body">
+              <LocationManagement />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Scenario Sandbox */}
+      {activePanel === 'sandbox' && !isDemo && canAccess(userRole, 'scenarioSandbox') && (
+        <ScenarioSandbox onClose={closePanel} />
+      )}
+
+      {/* Rounding Mode */}
+      {activePanel === 'rounding' && !isDemo && canAccess(userRole, 'settings.rounding') && (
+        <div className="modal-overlay" onClick={closePanel}>
+          <div className="modal-content panel-modal-sm" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3><Calculator size={18} /> Rounding Mode</h3>
+              <button className="modal-close-btn" onClick={closePanel}><X size={18} /></button>
+            </div>
+            <div className="modal-body">
+              <div className="rounding-mode-options">
+                <label className="radio-option">
+                  <input
+                    type="radio"
+                    name="roundingMode"
+                    value="NEAREST"
+                    checked={!state.settings.roundingMode || state.settings.roundingMode === 'NEAREST'}
+                    onChange={() => updateSettings({ roundingMode: 'NEAREST' } as Partial<typeof state.settings>)}
+                  />
+                  <div>
+                    <strong>Standard Rounding</strong>
+                    <p className="form-help">Rounds to the nearest cent (Math.round). Most common.</p>
+                  </div>
+                </label>
+                <label className="radio-option">
+                  <input
+                    type="radio"
+                    name="roundingMode"
+                    value="DOWN"
+                    checked={state.settings.roundingMode === 'DOWN'}
+                    onChange={() => updateSettings({ roundingMode: 'DOWN' } as Partial<typeof state.settings>)}
+                  />
+                  <div>
+                    <strong>Floor Rounding</strong>
+                    <p className="form-help">Always rounds down (Math.floor). Cents may vary by $0.01 per employee.</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Two-Factor Authentication */}
+      {activePanel === '2fa' && !isDemo && (
+        <div className="modal-overlay" onClick={closePanel}>
+          <div className="modal-content panel-modal-sm" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Two-Factor Authentication</h3>
+              <button className="modal-close-btn" onClick={closePanel}><X size={18} /></button>
+            </div>
+            <div className="modal-body">
+              <TwoFactorSetup
+                enabled={state.user?.twoFactorEnabled || false}
+                currentMethod={state.user?.twoFactorMethod || undefined}
+                onStatusChange={(enabled) => {
+                  if (state.user) {
+                    state.user.twoFactorEnabled = enabled;
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Billing */}
+      {activePanel === 'billing' && !isDemo && canAccess(userRole, 'billing') && (
+        <div className="modal-overlay" onClick={closePanel}>
+          <div className="modal-content panel-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Billing</h3>
+              <button className="modal-close-btn" onClick={closePanel}><X size={18} /></button>
+            </div>
+            <div className="modal-body">
+              <BillingPage />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

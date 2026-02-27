@@ -5592,6 +5592,14 @@ html {
   max-width: 560px;
 }
 
+.modal-content.panel-modal {
+  max-width: 680px;
+}
+
+.modal-content.panel-modal-sm {
+  max-width: 480px;
+}
+
 .modal-header {
   display: flex;
   align-items: center;

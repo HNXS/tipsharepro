@@ -252,8 +252,9 @@ export function DemoProvider({ children }: { children: ReactNode }) {
 
   const loadUserData = useCallback(async () => {
     try {
+      const locId = stateRef.current.locationId;
       const [employeesResp, categoriesResp, settingsResp] = await Promise.all([
-        getEmployees({ status: 'ACTIVE' }),
+        getEmployees({ status: 'ACTIVE', locationId: locId || undefined }),
         getJobCategories(),
         apiGetSettings(),
       ]);
@@ -875,10 +876,11 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         }));
       }).catch(err => {
         console.error('Failed to create employee:', err);
-        // Rollback
+        // Rollback and show error
         setState(prev => ({
           ...prev,
           employees: prev.employees.filter(emp => emp.id !== employee.id),
+          error: `Failed to save employee "${employee.name}". Please try again.`,
         }));
       });
     }

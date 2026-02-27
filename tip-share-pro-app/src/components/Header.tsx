@@ -5,6 +5,7 @@ import { useDemo } from '@/lib/DemoContext';
 import { canAccess } from '@/lib/permissions';
 import { LogOut, User, HelpCircle, BookOpen, MapPin, Menu, Users, Calculator, FlaskConical, Shield, CreditCard } from 'lucide-react';
 import Image from 'next/image';
+import type { PanelType } from '@/app/page';
 
 const TIER_SUBTITLE: Record<string, string | null> = {
   DEMO: 'Demo Mode',
@@ -14,7 +15,11 @@ const TIER_SUBTITLE: Record<string, string | null> = {
   CANCELLED: 'Account Cancelled',
 };
 
-export default function Header() {
+interface HeaderProps {
+  onOpenPanel: (panel: PanelType) => void;
+}
+
+export default function Header({ onOpenPanel }: HeaderProps) {
   const { state, handleLogout, setShowWelcomeDialog, setShowHelpLibrary } = useDemo();
   const subtitle = TIER_SUBTITLE[state.subscriptionStatus] ?? null;
   const userRole = state.user?.role;
@@ -36,31 +41,30 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [menuOpen]);
 
-  const scrollTo = (id: string) => {
+  const openPanel = (panel: PanelType) => {
     setMenuOpen(false);
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    onOpenPanel(panel);
   };
 
   // Build menu items based on role
-  const menuItems: Array<{ id: string; label: string; icon: React.ReactNode; sectionId: string }> = [];
+  const menuItems: Array<{ id: PanelType; label: string; icon: React.ReactNode }> = [];
 
   if (!isDemo) {
     if (canAccess(userRole, 'users')) {
-      menuItems.push({ id: 'team', label: 'Team Members', icon: <Users size={16} />, sectionId: 'section-users' });
+      menuItems.push({ id: 'team', label: 'Team Members', icon: <Users size={16} /> });
     }
     if (canAccess(userRole, 'locations')) {
-      menuItems.push({ id: 'locations', label: 'Locations', icon: <MapPin size={16} />, sectionId: 'section-locations' });
+      menuItems.push({ id: 'locations', label: 'Locations', icon: <MapPin size={16} /> });
     }
     if (canAccess(userRole, 'settings.rounding')) {
-      menuItems.push({ id: 'rounding', label: 'Rounding Mode', icon: <Calculator size={16} />, sectionId: 'section-rounding' });
+      menuItems.push({ id: 'rounding', label: 'Rounding Mode', icon: <Calculator size={16} /> });
     }
     if (canAccess(userRole, 'scenarioSandbox')) {
-      menuItems.push({ id: 'sandbox', label: 'Scenario Sandbox', icon: <FlaskConical size={16} />, sectionId: 'section-sandbox' });
+      menuItems.push({ id: 'sandbox', label: 'Scenario Sandbox', icon: <FlaskConical size={16} /> });
     }
-    menuItems.push({ id: '2fa', label: 'Two-Factor Auth', icon: <Shield size={16} />, sectionId: 'section-2fa' });
+    menuItems.push({ id: '2fa', label: 'Two-Factor Auth', icon: <Shield size={16} /> });
     if (canAccess(userRole, 'billing')) {
-      menuItems.push({ id: 'billing', label: 'Billing', icon: <CreditCard size={16} />, sectionId: 'section-billing' });
+      menuItems.push({ id: 'billing', label: 'Billing', icon: <CreditCard size={16} /> });
     }
   }
 
@@ -137,7 +141,7 @@ export default function Header() {
                       <button
                         key={item.id}
                         className="header-dropdown-item"
-                        onClick={() => scrollTo(item.sectionId)}
+                        onClick={() => openPanel(item.id)}
                       >
                         {item.icon}
                         <span>{item.label}</span>
