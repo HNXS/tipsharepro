@@ -7,14 +7,14 @@ import type { PreviewEmployee, DistributionEmployee, DistributionSummary } from 
 import { InlineCategoryDot } from './CategoryBadge';
 import { CategoryColor } from '@/lib/types';
 import { hexToCategoryColor, categoryColorToHex } from '@/lib/api/mappers';
-import { X, Calculator, RotateCcw, Download, Loader2, AlertCircle, FlaskConical } from 'lucide-react';
+import { X, Calculator, RotateCcw, Download, Upload, Loader2, AlertCircle, FlaskConical } from 'lucide-react';
 
 interface SandboxProps {
   onClose: () => void;
 }
 
 export default function ScenarioSandbox({ onClose }: SandboxProps) {
-  const { state } = useDemo();
+  const { state, updateEmployee, updateCategoryWeight } = useDemo();
 
   // Pre-populate from current real data
   const initialPool = useMemo(() => {
@@ -47,6 +47,7 @@ export default function ScenarioSandbox({ onClose }: SandboxProps) {
   const [summary, setSummary] = useState<DistributionSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [imported, setImported] = useState(false);
 
   const handleCalculate = useCallback(async () => {
     if (poolCents <= 0 || employees.length === 0) return;
@@ -84,6 +85,45 @@ export default function ScenarioSandbox({ onClose }: SandboxProps) {
     a.download = 'scenario-sandbox.csv';
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleApplyToReal = () => {
+    // Apply sandbox employee data back to actual employees
+    for (const sandboxEmp of employees) {
+      const realEmp = state.employees.find(e => e.id === sandboxEmp.employeeId);
+      if (!realEmp) continue;
+
+      const updates: Record<string, number> = {};
+      if (sandboxEmp.hoursWorked !== realEmp.hoursWorked) {
+        updates.hoursWorked = sandboxEmp.hoursWorked;
+      }
+      const sandboxRate = sandboxEmp.hourlyRateCents / 100;
+      if (sandboxRate !== realEmp.hourlyRate) {
+        updates.hourlyRate = sandboxRate;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        updateEmployee(sandboxEmp.employeeId, updates);
+      }
+    }
+
+    // Apply sandbox weights back to category weights
+    const catWeightMap: Record<string, number[]> = {};
+    for (const emp of employees) {
+      const catColor = hexToCategoryColor(emp.badgeColor);
+      if (!catWeightMap[catColor]) catWeightMap[catColor] = [];
+      catWeightMap[catColor].push(emp.weight);
+    }
+    for (const [catColor, weights] of Object.entries(catWeightMap)) {
+      const avgWeight = Math.round(weights.reduce((a, b) => a + b, 0) / weights.length);
+      const currentWeight = state.settings.categoryWeights[catColor as CategoryColor] || 1;
+      if (avgWeight !== currentWeight) {
+        updateCategoryWeight(catColor as CategoryColor, avgWeight);
+      }
+    }
+
+    setImported(true);
+    setTimeout(() => setImported(false), 3000);
   };
 
   const updateEmployeeField = (idx: number, field: keyof PreviewEmployee, value: number) => {
@@ -223,10 +263,21 @@ export default function ScenarioSandbox({ onClose }: SandboxProps) {
             Reset
           </button>
           {results && (
-            <button className="btn btn-outline" onClick={handleExportCSV}>
-              <Download size={16} />
-              Export CSV
-            </button>
+            <>
+              <button className="btn btn-outline" onClick={handleExportCSV}>
+                <Download size={16} />
+                Export CSV
+              </button>
+              <button
+                className={`btn ${imported ? 'btn-outline' : 'btn-outline'}`}
+                onClick={handleApplyToReal}
+                disabled={imported}
+                title="Apply sandbox hours, rates, and weights to your actual data"
+              >
+                <Upload size={16} />
+                {imported ? 'Applied!' : 'Apply to Real Data'}
+              </button>
+            </>
           )}
           <button className="btn btn-primary" onClick={handleCalculate} disabled={loading || poolCents <= 0}>
             {loading ? <Loader2 size={16} className="loading-spinner" /> : <Calculator size={16} />}

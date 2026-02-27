@@ -17,6 +17,7 @@ import { InlineCategoryDot } from './CategoryBadge';
 import { Lock, ChevronRight, RotateCcw, GripVertical, X, Plus, Printer } from 'lucide-react';
 import PrintDialog from './PrintDialog';
 import UserManagement from './UserManagement';
+import LocationManagement from './LocationManagement';
 import ScenarioSandbox from './ScenarioSandbox';
 import TwoFactorSetup from './TwoFactorSetup';
 import BillingPage from './BillingPage';
@@ -169,22 +170,26 @@ export default function SettingsPage() {
       <div className="settings-header no-print">
         <h1 className="page-title">{isDemo ? 'Demo Settings' : 'Settings'}</h1>
         <div className="settings-actions">
-          <button
-            onClick={resetSettingsToDefaults}
-            className="btn btn-outline btn-sm"
-            title="Reset settings to defaults"
-          >
-            <RotateCcw size={16} />
-            Reset Settings
-          </button>
-          <button
-            onClick={resetToDefaults}
-            className="btn btn-outline btn-sm"
-            title="Reset everything to defaults"
-          >
-            <RotateCcw size={16} />
-            Reset All
-          </button>
+          {isDemo && (
+            <>
+              <button
+                onClick={resetSettingsToDefaults}
+                className="btn btn-outline btn-sm"
+                title="Reset settings to defaults"
+              >
+                <RotateCcw size={16} />
+                Reset Settings
+              </button>
+              <button
+                onClick={resetToDefaults}
+                className="btn btn-outline btn-sm"
+                title="Reset everything to defaults"
+              >
+                <RotateCcw size={16} />
+                Reset All
+              </button>
+            </>
+          )}
           <button
             onClick={() => setShowPrintDialog(true)}
             className="btn btn-outline btn-sm"
@@ -531,14 +536,21 @@ export default function SettingsPage() {
 
       {/* Users/Permissions — real accounts, Admin only */}
       {!isDemo && canManageUsers && (
-        <div className="card settings-section">
+        <div id="section-users" className="card settings-section">
           <UserManagement />
+        </div>
+      )}
+
+      {/* Locations — Admin only */}
+      {!isDemo && canAccess(userRole, 'locations') && (
+        <div id="section-locations" className="card settings-section">
+          <LocationManagement />
         </div>
       )}
 
       {/* Scenario Sandbox — Admin + Manager */}
       {!isDemo && canAccess(userRole, 'scenarioSandbox') && (
-        <div className="card settings-section">
+        <div id="section-sandbox" className="card settings-section">
           <div className="settings-section-header">
             <h3 className="settings-section-title">Scenario Sandbox</h3>
             <button className="btn btn-primary btn-sm" onClick={() => setShowSandbox(true)}>
@@ -554,7 +566,7 @@ export default function SettingsPage() {
 
       {/* Rounding Mode — Admin only */}
       {canAccess(userRole, 'settings.rounding') && !isDemo && (
-        <div className="card settings-section">
+        <div id="section-rounding" className="card settings-section">
           <h3 className="settings-section-title">Rounding Mode</h3>
           <div className="rounding-mode-options">
             <label className="radio-option">
@@ -589,7 +601,7 @@ export default function SettingsPage() {
 
       {/* Two-Factor Authentication — all real accounts */}
       {!isDemo && (
-        <div className="card settings-section">
+        <div id="section-2fa" className="card settings-section">
           <TwoFactorSetup
             enabled={state.user?.twoFactorEnabled || false}
             currentMethod={state.user?.twoFactorMethod || undefined}
@@ -607,7 +619,9 @@ export default function SettingsPage() {
 
       {/* Billing — Admin only, real accounts */}
       {!isDemo && canAccess(userRole, 'billing') && (
-        <BillingPage />
+        <div id="section-billing">
+          <BillingPage />
+        </div>
       )}
 
       {/* Navigation */}

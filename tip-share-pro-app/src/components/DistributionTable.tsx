@@ -360,7 +360,14 @@ function DailyEntryTable() {
   }, [handleSave]);
 
   if (employeesForDate.length === 0) {
-    return <p className="text-muted" style={{ padding: '1rem' }}>No active employees found for this date.</p>;
+    return (
+      <div className="daily-entry-empty-state">
+        <p className="daily-entry-empty-title">No active employees found for this date.</p>
+        <p className="daily-entry-empty-hint">
+          Add employees in the Distribution Table below first, then come back to enter daily sales.
+        </p>
+      </div>
+    );
   }
 
   return (

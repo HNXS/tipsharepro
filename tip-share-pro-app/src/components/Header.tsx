@@ -1,8 +1,9 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import { useDemo } from '@/lib/DemoContext';
 import { canAccess } from '@/lib/permissions';
-import { LogOut, User, HelpCircle, BookOpen, MapPin } from 'lucide-react';
+import { LogOut, User, HelpCircle, BookOpen, MapPin, Menu, Users, Calculator, FlaskConical, Shield, CreditCard } from 'lucide-react';
 import Image from 'next/image';
 
 const TIER_SUBTITLE: Record<string, string | null> = {
@@ -17,6 +18,51 @@ export default function Header() {
   const { state, handleLogout, setShowWelcomeDialog, setShowHelpLibrary } = useDemo();
   const subtitle = TIER_SUBTITLE[state.subscriptionStatus] ?? null;
   const userRole = state.user?.role;
+  const isDemo = state.subscriptionStatus === 'DEMO';
+
+  // Dropdown menu state
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [menuOpen]);
+
+  const scrollTo = (id: string) => {
+    setMenuOpen(false);
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // Build menu items based on role
+  const menuItems: Array<{ id: string; label: string; icon: React.ReactNode; sectionId: string }> = [];
+
+  if (!isDemo) {
+    if (canAccess(userRole, 'users')) {
+      menuItems.push({ id: 'team', label: 'Team Members', icon: <Users size={16} />, sectionId: 'section-users' });
+    }
+    if (canAccess(userRole, 'locations')) {
+      menuItems.push({ id: 'locations', label: 'Locations', icon: <MapPin size={16} />, sectionId: 'section-locations' });
+    }
+    if (canAccess(userRole, 'settings.rounding')) {
+      menuItems.push({ id: 'rounding', label: 'Rounding Mode', icon: <Calculator size={16} />, sectionId: 'section-rounding' });
+    }
+    if (canAccess(userRole, 'scenarioSandbox')) {
+      menuItems.push({ id: 'sandbox', label: 'Scenario Sandbox', icon: <FlaskConical size={16} />, sectionId: 'section-sandbox' });
+    }
+    menuItems.push({ id: '2fa', label: 'Two-Factor Auth', icon: <Shield size={16} />, sectionId: 'section-2fa' });
+    if (canAccess(userRole, 'billing')) {
+      menuItems.push({ id: 'billing', label: 'Billing', icon: <CreditCard size={16} />, sectionId: 'section-billing' });
+    }
+  }
 
   return (
     <header className="header no-print">
@@ -74,6 +120,34 @@ export default function Header() {
           )}
 
           <div className="header-buttons">
+            {/* More menu for advanced features */}
+            {menuItems.length > 0 && (
+              <div className="header-menu-wrap" ref={menuRef}>
+                <button
+                  onClick={() => setMenuOpen(prev => !prev)}
+                  className={`btn btn-outline btn-sm ${menuOpen ? 'btn-active' : ''}`}
+                  title="More options"
+                >
+                  <Menu size={16} />
+                  <span className="hide-mobile">More</span>
+                </button>
+                {menuOpen && (
+                  <div className="header-dropdown">
+                    {menuItems.map(item => (
+                      <button
+                        key={item.id}
+                        className="header-dropdown-item"
+                        onClick={() => scrollTo(item.sectionId)}
+                      >
+                        {item.icon}
+                        <span>{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <button
               onClick={() => setShowWelcomeDialog(true)}
               className="btn btn-outline btn-sm"
