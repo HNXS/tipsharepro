@@ -6,7 +6,7 @@ import { CONTRIBUTION_METHOD_LABELS, HELP_TEXT, CategoryColor, CATEGORY_COLOR_MA
 import { InlineCategoryDot } from './CategoryBadge';
 import HelpTooltip from './HelpTooltip';
 import PrintDialog from './PrintDialog';
-import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock, GripVertical, Trash2, LogOut, Save, Check, AlertCircle } from 'lucide-react';
+import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock, GripVertical, Trash2, LogOut } from 'lucide-react';
 
 // Editable number input that properly handles backspace and typing
 interface EditableNumberInputProps {
@@ -298,136 +298,6 @@ function AddEmployeeRow({ jobCategories, categoryNames, onAdd, isDragging, dragO
   );
 }
 
-// ============================================================================
-// Save Status Indicator
-// ============================================================================
-
-function SaveStatusIndicator({ status }: { status: 'idle' | 'saving' | 'saved' | 'error' }) {
-  if (status === 'idle') return null;
-  return (
-    <span className={`daily-entry-save-indicator save-${status}`}>
-      {status === 'saving' && <><Save size={14} /> Saving...</>}
-      {status === 'saved' && <><Check size={14} /> Saved</>}
-      {status === 'error' && <><AlertCircle size={14} /> Error</>}
-    </span>
-  );
-}
-
-// ============================================================================
-// Daily Entry Table (real accounts with active pay period + selected date)
-// ============================================================================
-
-function DailyEntryTable() {
-  const { state, saveDailyEntries } = useDemo();
-  const { employeesForDate, dailyEntries, saveStatus } = state;
-
-  // Local sales state for editing — keyed by employeeId
-  const [localSales, setLocalSales] = useState<Record<string, string>>({});
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Sync local sales from entries when date changes
-  useEffect(() => {
-    const salesMap: Record<string, string> = {};
-    for (const emp of employeesForDate) {
-      const entry = emp.existingEntry || dailyEntries.find(e => e.employeeId === emp.id);
-      salesMap[emp.id] = entry?.sales != null ? String(entry.sales) : '';
-    }
-    setLocalSales(salesMap);
-  }, [employeesForDate, dailyEntries]);
-
-  const handleSalesChange = useCallback((employeeId: string, value: string) => {
-    setLocalSales(prev => ({ ...prev, [employeeId]: value }));
-  }, []);
-
-  const handleSave = useCallback(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      const entries = Object.entries(localSales)
-        .filter(([, val]) => val !== '' && !isNaN(parseFloat(val)))
-        .map(([employeeId, val]) => ({
-          employeeId,
-          salesCents: Math.round(parseFloat(val) * 100),
-        }));
-      if (entries.length > 0) {
-        saveDailyEntries(entries);
-      }
-    }, 500);
-  }, [localSales, saveDailyEntries]);
-
-  // Trigger save on blur
-  const handleBlur = useCallback(() => {
-    handleSave();
-  }, [handleSave]);
-
-  if (employeesForDate.length === 0) {
-    return (
-      <div className="daily-entry-empty-state">
-        <p className="daily-entry-empty-title">No active employees found for this date.</p>
-        <p className="daily-entry-empty-hint">
-          Add employees in the Distribution Table below first, then come back to enter daily sales.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="table-container">
-      <div className="daily-entry-header">
-        <span className="daily-entry-title">Daily Sales Entry</span>
-        <SaveStatusIndicator status={saveStatus} />
-      </div>
-      <table className="distribution-table daily-entry-table">
-        <thead>
-          <tr>
-            <th className="col-name">Name</th>
-            <th className="col-category">Category</th>
-            <th className="col-sales">Sales ($)</th>
-            <th className="col-contribution">Contribution ($)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {employeesForDate.map(emp => {
-            const entry = emp.existingEntry || dailyEntries.find(e => e.employeeId === emp.id);
-            const contribution = entry?.actualContribution ?? entry?.calculatedContribution ?? null;
-
-            return (
-              <tr key={emp.id}>
-                <td className="col-name">
-                  <div className="employee-name-cell">
-                    <span className="employee-name-static">{emp.name}</span>
-                  </div>
-                </td>
-                <td className="col-category">
-                  <span className="daily-entry-category">{emp.jobCategory.name}</span>
-                </td>
-                <td className="col-sales">
-                  <div className="daily-entry-cell">
-                    <span className="daily-entry-prefix">$</span>
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      value={localSales[emp.id] || ''}
-                      onChange={e => handleSalesChange(emp.id, e.target.value)}
-                      onBlur={handleBlur}
-                      onKeyDown={e => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-                      className="table-input daily-entry-input"
-                      placeholder="0.00"
-                    />
-                  </div>
-                </td>
-                <td className="col-contribution">
-                  <span className="daily-entry-contribution">
-                    {contribution != null ? `$${contribution.toFixed(2)}` : '—'}
-                  </span>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
 
 // ============================================================================
 // Archived Distribution View (read-only results from finalized period)
@@ -544,7 +414,6 @@ export default function DistributionTable() {
   const isDemo = state.subscriptionStatus === 'DEMO';
 
   // Mode detection for real accounts
-  const isDailyEntryMode = !isDemo && !!state.activePayPeriod && !!state.selectedDate && state.activePayPeriod.status !== 'ARCHIVED';
   const isArchivedViewMode = !isDemo && !!state.activePayPeriod && state.activePayPeriod.status === 'ARCHIVED' && !!state.calculationResult;
 
   // Print dialog state
@@ -819,9 +688,7 @@ export default function DistributionTable() {
       </div>
 
       {/* Table: conditional rendering based on mode */}
-      {isDailyEntryMode ? (
-        <DailyEntryTable />
-      ) : isArchivedViewMode ? (
+      {isArchivedViewMode ? (
         <ArchivedDistributionTable />
       ) : (
         <>

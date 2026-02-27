@@ -176,6 +176,7 @@ interface DemoContextType {
   saveDailyEntries: (entries: { employeeId: string; salesCents: number | null }[]) => Promise<void>;
   runCalculation: (employeeHours: EmployeeHours[]) => Promise<void>;
   clearPayPeriodSelection: () => void;
+  closeDailyEntry: () => void;
   // Loading state
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -1222,6 +1223,16 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const closeDailyEntry = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      selectedDate: null,
+      dailyEntries: [],
+      dateNavigation: null,
+      employeesForDate: [],
+    }));
+  }, []);
+
   // ============================================================================
   // Distribution calculation (always local-only)
   // ============================================================================
@@ -1377,6 +1388,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         saveDailyEntries,
         runCalculation,
         clearPayPeriodSelection,
+        closeDailyEntry,
         // Demo
         resetToDefaults,
         resetSettingsToDefaults,

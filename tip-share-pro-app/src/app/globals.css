@@ -5845,6 +5845,74 @@ html {
   color: var(--text-secondary);
 }
 
+/* Daily Entry Modal */
+.daily-entry-modal {
+  max-width: 600px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.daily-entry-modal-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.daily-entry-modal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--bg-border);
+  background: var(--bg-elevated);
+}
+
+.daily-entry-modal-nav-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.daily-entry-modal-nav-date {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.daily-entry-modal-nav-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.daily-entry-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem 1rem;
+}
+
+.daily-entry-modal-footer {
+  border-top: 1px solid var(--bg-border);
+  padding: 0.75rem 1rem;
+  background: var(--bg-elevated);
+}
+
+.daily-entry-modal-summary {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.daily-entry-modal-summary-period {
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px dashed var(--bg-border);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
 /* ============================================================================
    Archived Distribution View
    ============================================================================ */

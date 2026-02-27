@@ -16,6 +16,7 @@ import LocationManagement from '@/components/LocationManagement';
 import ScenarioSandbox from '@/components/ScenarioSandbox';
 import TwoFactorSetup from '@/components/TwoFactorSetup';
 import BillingPage from '@/components/BillingPage';
+import DailyEntryModal from '@/components/DailyEntryModal';
 import { X, Calculator, AlertCircle } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 
@@ -23,7 +24,7 @@ import { Loader2 } from 'lucide-react';
 export type PanelType = 'team' | 'locations' | 'rounding' | 'sandbox' | '2fa' | 'billing' | null;
 
 export default function Home() {
-  const { state, handleLoginSuccess, setShowWelcomeDialog, setShowHelpLibrary, updateSettings, setError } = useDemo();
+  const { state, handleLoginSuccess, setShowWelcomeDialog, setShowHelpLibrary, updateSettings, setError, closeDailyEntry } = useDemo();
   const [activePanel, setActivePanel] = useState<PanelType>(null);
 
   const isDemo = state.subscriptionStatus === 'DEMO';
@@ -215,6 +216,11 @@ export default function Home() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Daily Sales Entry Modal */}
+      {!isDemo && state.selectedDate && state.activePayPeriod && state.activePayPeriod.status !== 'ARCHIVED' && (
+        <DailyEntryModal onClose={closeDailyEntry} />
       )}
     </div>
   );
