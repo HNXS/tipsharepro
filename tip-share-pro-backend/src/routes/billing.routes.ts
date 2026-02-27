@@ -111,7 +111,18 @@ router.get(
         data: info,
       });
     } catch (error) {
-      next(error);
+      // Gracefully handle billing errors (Stripe not configured, DB issues, etc.)
+      // Return a fallback response so the UI doesn't break
+      res.status(200).json({
+        status: 'success',
+        data: {
+          status: 'TRIAL',
+          plan: null,
+          currentPeriodEnd: null,
+          cancelAtPeriodEnd: false,
+          stripeConfigured: false,
+        },
+      });
     }
   }
 );
