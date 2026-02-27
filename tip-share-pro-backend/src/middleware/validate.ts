@@ -88,7 +88,7 @@ export const calculateDistributionSchema = z.object({
 export const dailyEntrySchema = z.object({
   employeeId: z.string().uuid(),
   salesCents: z.number().int().min(0).max(99999999).nullable(),
-  actualContribCents: z.number().int().min(0).max(9999999).nullable(),
+  actualContribCents: z.number().int().min(0).max(9999999).nullable().optional(),
 });
 
 // Bulk daily entries
