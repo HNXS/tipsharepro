@@ -13,7 +13,7 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 // Token storage key
-const TOKEN_KEY = 'demo_token';
+const TOKEN_KEY = 'tsp_token';
 
 /**
  * API Error class

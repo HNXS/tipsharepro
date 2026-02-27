@@ -328,6 +328,7 @@ export default function DistributionTable() {
   } = useDemo();
 
   const { settings, employees, distributionResults, projectedPool, prePaidAmount, netPool, printIncludeSharePerHour } = state;
+  const isDemo = state.subscriptionStatus === 'DEMO';
 
   // Print dialog state
   const [showPrintDialog, setShowPrintDialog] = useState(false);
@@ -545,19 +546,26 @@ export default function DistributionTable() {
             <Printer size={16} />
             Print
           </button>
-          <button className="btn btn-faded btn-sm" title="Email feature available in full version">
-            <Mail size={16} />
-            <Lock size={12} className="lock-icon" />
-          </button>
+          {isDemo ? (
+            <button className="btn btn-faded btn-sm" title="Email feature available in full version">
+              <Mail size={16} />
+              <Lock size={12} className="lock-icon" />
+            </button>
+          ) : (
+            <button className="btn btn-outline btn-sm" title="Email distribution report">
+              <Mail size={16} />
+              Email
+            </button>
+          )}
         </div>
       </div>
 
       {/* Stat Cards Row */}
       <div className="stat-cards-container">
         <div className="stat-cards-row print-stat-cards">
-          <StatCard label="Day/Date" value="" isDemo className="hide-print" />
-          <StatCard label="Location" value="" isDemo className="hide-print" />
-          <StatCard label="Pay Period" value="" isDemo />
+          <StatCard label="Day/Date" value={isDemo ? '' : '\u2014'} isDemo={isDemo} className="hide-print" />
+          <StatCard label="Location" value={isDemo ? '' : '\u2014'} isDemo={isDemo} className="hide-print" />
+          <StatCard label="Pay Period" value={isDemo ? '' : '\u2014'} isDemo={isDemo} />
           <StatCard
             label="Contrib. Method"
             value={CONTRIBUTION_METHOD_LABELS[settings.contributionMethod]}
@@ -570,7 +578,7 @@ export default function DistributionTable() {
             helpText={HELP_TEXT.grossPool}
           />
           <StatCard
-            label="Pre-Paid Demo"
+            label="Pre-Paid"
             value={prePaidAmount}
             prefix="$"
             editable
@@ -584,10 +592,12 @@ export default function DistributionTable() {
             value={Math.round(netPool)}
             prefix="$"
           />
-          <StatCard
-            label="Top Contributors"
-            value="Barb B. (aka: Malibu) & Ken Dahl"
-          />
+          {isDemo && (
+            <StatCard
+              label="Top Contributors"
+              value="Barb B. (aka: Malibu) & Ken Dahl"
+            />
+          )}
         </div>
       </div>
 

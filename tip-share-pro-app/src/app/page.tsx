@@ -58,7 +58,7 @@ export default function Home() {
         </p>
       </footer>
       {state.showWelcomeDialog && (
-        <WelcomeDialog onClose={() => setShowWelcomeDialog(false)} />
+        <WelcomeDialog onClose={() => setShowWelcomeDialog(false)} subscriptionStatus={state.subscriptionStatus} />
       )}
       {state.showHelpLibrary && (
         <HelpLibraryDialog onClose={() => setShowHelpLibrary(false)} />

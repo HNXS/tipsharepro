@@ -95,23 +95,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
       return;
     }
 
-    // Sign-in mode
-    // Demo mode: bypass API for demo credentials
-    const isDemoMode = email === 'demo@tipsharepro.com' && password === 'demo123';
-
-    if (isDemoMode) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      onLoginSuccess({
-        name: 'Sarah Chen',
-        companyName: 'The Golden Fork',
-        role: 'manager',
-        email: 'demo@tipsharepro.com',
-        organization: { subscriptionStatus: 'DEMO', trialEndsAt: null },
-      });
-      setIsLoading(false);
-      return;
-    }
-
+    // Sign-in mode — all logins go through the real API
     try {
       const response = await login({ email, password });
 

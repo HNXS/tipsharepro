@@ -6,12 +6,25 @@
 
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
+import rateLimit from 'express-rate-limit';
 import { validate } from '../middleware/validate';
 import { authenticate } from '../middleware/auth.middleware';
 import { authService } from '../services/auth.service';
 import { ApiResponse, AuthenticatedRequest } from '../types/index';
 
 const router = Router();
+
+// Rate limiter for login/register: 5 attempts per minute per IP
+const authLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: 'error',
+    error: { code: 'RATE_LIMITED', message: 'Too many attempts. Please try again in a minute.' },
+  },
+});
 
 // ============================================================================
 // Validation Schemas
@@ -38,6 +51,7 @@ const registerSchema = z.object({
  */
 router.post(
   '/login',
+  authLimiter,
   validate(loginSchema),
   async (req: Request, res: Response<ApiResponse>, next: NextFunction) => {
     try {
@@ -61,6 +75,7 @@ router.post(
  */
 router.post(
   '/register',
+  authLimiter,
   validate(registerSchema),
   async (req: Request, res: Response<ApiResponse>, next: NextFunction) => {
     try {

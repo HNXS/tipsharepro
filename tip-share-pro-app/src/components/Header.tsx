@@ -4,8 +4,17 @@ import { useDemo } from '@/lib/DemoContext';
 import { LogOut, User, HelpCircle, BookOpen } from 'lucide-react';
 import Image from 'next/image';
 
+const TIER_SUBTITLE: Record<string, string | null> = {
+  DEMO: 'Demo Mode',
+  TRIAL: 'Trial',
+  ACTIVE: null,
+  SUSPENDED: 'Account Suspended',
+  CANCELLED: 'Account Cancelled',
+};
+
 export default function Header() {
   const { state, handleLogout, setShowWelcomeDialog, setShowHelpLibrary } = useDemo();
+  const subtitle = TIER_SUBTITLE[state.subscriptionStatus] ?? null;
 
   return (
     <header className="header no-print">
@@ -21,7 +30,7 @@ export default function Header() {
           />
           <div className="header-text">
             <h1 className="header-title">TipSharePro</h1>
-            <p className="header-subtitle">Demo Mode</p>
+            {subtitle && <p className="header-subtitle">{subtitle}</p>}
           </div>
         </div>
 

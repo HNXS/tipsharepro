@@ -1,6 +1,7 @@
 'use client';
 
 import { HELP_PDFS } from '@/lib/types';
+import { useDemo } from '@/lib/DemoContext';
 import { X, BookOpen, FileText } from 'lucide-react';
 
 interface HelpLibraryDialogProps {
@@ -8,6 +9,9 @@ interface HelpLibraryDialogProps {
 }
 
 export default function HelpLibraryDialog({ onClose }: HelpLibraryDialogProps) {
+  const { state } = useDemo();
+  const isDemo = state.subscriptionStatus === 'DEMO';
+  const visiblePdfs = HELP_PDFS.filter(pdf => !pdf.demoOnly || isDemo);
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal help-library-dialog" onClick={(e) => e.stopPropagation()}>
@@ -29,7 +33,7 @@ export default function HelpLibraryDialog({ onClose }: HelpLibraryDialogProps) {
         {/* Content */}
         <div className="modal-body">
           <div className="help-library-cards">
-            {HELP_PDFS.map((pdf) => (
+            {visiblePdfs.map((pdf) => (
               <a
                 key={pdf.id}
                 href={pdf.file}

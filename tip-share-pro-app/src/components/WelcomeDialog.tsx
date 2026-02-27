@@ -5,9 +5,13 @@ import { X, ArrowRight, Info } from 'lucide-react';
 
 interface WelcomeDialogProps {
   onClose: () => void;
+  subscriptionStatus?: string;
 }
 
-export default function WelcomeDialog({ onClose }: WelcomeDialogProps) {
+export default function WelcomeDialog({ onClose, subscriptionStatus = 'DEMO' }: WelcomeDialogProps) {
+  const isDemo = subscriptionStatus === 'DEMO';
+  const title = isDemo ? 'Welcome to TipSharePro Demo' : 'Welcome to TipSharePro';
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal welcome-dialog" onClick={(e) => e.stopPropagation()}>
@@ -15,7 +19,7 @@ export default function WelcomeDialog({ onClose }: WelcomeDialogProps) {
         <div className="modal-header">
           <div className="modal-header-content">
             <Info size={24} className="modal-icon" />
-            <h2 className="modal-title">Welcome to TipSharePro Demo</h2>
+            <h2 className="modal-title">{title}</h2>
           </div>
           <button
             onClick={onClose}
@@ -28,11 +32,13 @@ export default function WelcomeDialog({ onClose }: WelcomeDialogProps) {
 
         {/* Content */}
         <div className="modal-body">
-          <div className="welcome-text">
-            {DEMO_WELCOME_TEXT.split('\n\n').map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
-            ))}
-          </div>
+          {isDemo && (
+            <div className="welcome-text">
+              {DEMO_WELCOME_TEXT.split('\n\n').map((paragraph, index) => (
+                <p key={index}>{paragraph}</p>
+              ))}
+            </div>
+          )}
 
           <div className="welcome-highlights">
             <h3>Quick Tips:</h3>

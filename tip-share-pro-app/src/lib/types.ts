@@ -341,7 +341,7 @@ export const HELP_PDFS = [
   { id: 'sales-factor', title: 'Why Use Sales as the Contribution Factor', description: 'IRS alignment & accuracy', file: '/help/why-sales-contribution-factor.pdf' },
   { id: 'category-weights', title: 'Category Weights', description: 'Setting up categories & weights', file: '/help/category-weights.pdf' },
   { id: 'pre-paid', title: 'What Does Pre-Paid Mean', description: 'Handling terminated employees', file: '/help/what-does-pre-paid-mean.pdf' },
-  { id: 'full-version', title: 'What to Expect in Full Version', description: 'Features beyond the demo', file: '/help/what-to-expect-full-version.pdf' },
+  { id: 'full-version', title: 'What to Expect in Full Version', description: 'Features beyond the demo', file: '/help/what-to-expect-full-version.pdf', demoOnly: true as const },
 ];
 
 // Demo welcome dialog text (from Demo Welcome Pop Up 2-16-26)
@@ -352,6 +352,3 @@ The example table displayed assumes your distribution of employees' data is up t
 Enter Hours, Double Check for Errors, Print for Transparency and Email to Payroll.
 
 That being said, you can change any data you wish in this demo and return to original settings by pressing Reset Settings, Reset Dist. Table or Reset All.`;
-
-// Demo dialog for reducing employees
-export const DEMO_EMPLOYEE_DIALOG = 'You can set hours to zero on any employee you want to eliminate from the pool if it holds too many recipients.';

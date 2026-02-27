@@ -11,13 +11,19 @@ import { config } from '../config/index';
 
 const router = Router();
 
-// Simple admin key authentication for now
-// In production, this should be a proper admin authentication system
+// Admin key authentication — requires ADMIN_SECRET_KEY env var
 const adminAuth = (req: Request, res: Response, next: NextFunction) => {
-  const adminKey = req.headers['x-admin-key'];
+  const validKey = process.env.ADMIN_SECRET_KEY;
 
-  // Use environment variable or fallback for development
-  const validKey = process.env.ADMIN_SECRET_KEY || 'tipsharepro-admin-2026';
+  if (!validKey) {
+    console.error('[ADMIN] ADMIN_SECRET_KEY is not set — rejecting all admin requests');
+    return res.status(500).json({
+      status: 'error',
+      error: { code: 'SERVER_CONFIG', message: 'Admin endpoint is not configured' }
+    });
+  }
+
+  const adminKey = req.headers['x-admin-key'];
 
   if (adminKey !== validKey) {
     return res.status(401).json({

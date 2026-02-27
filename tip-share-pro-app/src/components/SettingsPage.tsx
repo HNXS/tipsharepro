@@ -45,6 +45,7 @@ export default function SettingsPage() {
   } = useDemo();
 
   const { settings } = state;
+  const isDemo = state.subscriptionStatus === 'DEMO';
   const contributionRateOptions = getContributionRateOptions(settings.contributionMethod);
 
   // Local state for monthly estimate input (only format with commas on blur)
@@ -137,12 +138,12 @@ export default function SettingsPage() {
       {/* Print-only Settings Header with Logo */}
       <div className="print-settings-header print-only">
         <img src="/logo-full.png" alt="TipSharePro" className="print-settings-logo" />
-        <div className="print-settings-title">Demo Settings</div>
+        <div className="print-settings-title">{isDemo ? 'Demo Settings' : 'Settings'}</div>
       </div>
 
       {/* Settings Header with Actions */}
       <div className="settings-header no-print">
-        <h1 className="page-title">Demo Settings</h1>
+        <h1 className="page-title">{isDemo ? 'Demo Settings' : 'Settings'}</h1>
         <div className="settings-actions">
           <button
             onClick={resetSettingsToDefaults}
@@ -472,35 +473,37 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* Blocked Features Teaser */}
-      <div className="card card-promo">
-        <div className="promo-header">
-          <Lock size={20} className="promo-icon" />
-          <h3 className="promo-title">Full Version Features</h3>
+      {/* Blocked Features Teaser — only for DEMO tier */}
+      {isDemo && (
+        <div className="card card-promo">
+          <div className="promo-header">
+            <Lock size={20} className="promo-icon" />
+            <h3 className="promo-title">Full Version Features</h3>
+          </div>
+          <div className="promo-features">
+            <div className="promo-feature promo-feature-disabled">
+              <Lock size={14} />
+              <span>Location Settings</span>
+            </div>
+            <div className="promo-feature promo-feature-disabled">
+              <Lock size={14} />
+              <span>Pay Period Start/End Dates</span>
+            </div>
+            <div className="promo-feature promo-feature-disabled">
+              <Lock size={14} />
+              <span>Launch Date</span>
+            </div>
+            <div className="promo-feature promo-feature-disabled">
+              <Lock size={14} />
+              <span>Users/Permissions</span>
+            </div>
+            <div className="promo-feature promo-feature-disabled">
+              <Lock size={14} />
+              <span>Scenario Sand Box</span>
+            </div>
+          </div>
         </div>
-        <div className="promo-features">
-          <div className="promo-feature promo-feature-disabled">
-            <Lock size={14} />
-            <span>Location Settings</span>
-          </div>
-          <div className="promo-feature promo-feature-disabled">
-            <Lock size={14} />
-            <span>Pay Period Start/End Dates</span>
-          </div>
-          <div className="promo-feature promo-feature-disabled">
-            <Lock size={14} />
-            <span>Launch Date</span>
-          </div>
-          <div className="promo-feature promo-feature-disabled">
-            <Lock size={14} />
-            <span>Users/Permissions</span>
-          </div>
-          <div className="promo-feature promo-feature-disabled">
-            <Lock size={14} />
-            <span>Scenario Sand Box</span>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Navigation */}
       <div className="nav-buttons nav-buttons-between">

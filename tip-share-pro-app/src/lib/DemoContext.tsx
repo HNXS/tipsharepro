@@ -328,7 +328,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       isExpired: isSubscriptionExpired(subStatus, trialEnd),
       daysRemaining: getDaysRemaining(trialEnd),
       isReadOnly: isSubscriptionExpired(subStatus, trialEnd),
-      showWelcomeDialog: true,
+      showWelcomeDialog: subStatus !== 'ACTIVE',
     }));
 
     if (!isDemo) {
