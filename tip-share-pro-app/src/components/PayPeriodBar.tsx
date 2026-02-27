@@ -43,7 +43,11 @@ function getDateRange(start: string, end: string): string[] {
   const current = new Date(start + 'T00:00:00');
   const endDate = new Date(end + 'T00:00:00');
   while (current <= endDate) {
-    dates.push(current.toISOString().split('T')[0]);
+    // Use local date parts to avoid UTC timezone shift
+    const y = current.getFullYear();
+    const m = String(current.getMonth() + 1).padStart(2, '0');
+    const d = String(current.getDate()).padStart(2, '0');
+    dates.push(`${y}-${m}-${d}`);
     current.setDate(current.getDate() + 1);
   }
   return dates;
@@ -76,9 +80,11 @@ function CreatePayPeriodModal({
   onCreate: (start: string, end: string) => void;
   loading: boolean;
 }) {
-  const today = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const [startDate, setStartDate] = useState(today);
-  const twoWeeksLater = new Date(Date.now() + 13 * 86400000).toISOString().split('T')[0];
+  const later = new Date(now.getTime() + 13 * 86400000);
+  const twoWeeksLater = `${later.getFullYear()}-${String(later.getMonth() + 1).padStart(2, '0')}-${String(later.getDate()).padStart(2, '0')}`;
   const [endDate, setEndDate] = useState(twoWeeksLater);
 
   const isValid = startDate && endDate && endDate > startDate;
