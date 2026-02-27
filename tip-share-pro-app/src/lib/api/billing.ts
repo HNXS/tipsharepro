@@ -11,6 +11,7 @@ export interface SubscriptionInfo {
   plan: string | null;
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
+  stripeConfigured?: boolean;
 }
 
 export async function createCheckoutSession(): Promise<{ url: string }> {

@@ -107,25 +107,46 @@ export async function getSubscriptionInfo(orgId: string): Promise<{
   plan: string | null;
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
+  stripeConfigured: boolean;
 }> {
-  const s = requireStripe();
-
   const org = await prisma.organization.findUnique({
     where: { id: orgId },
     select: { stripeCustomerId: true, subscriptionStatus: true },
   });
 
-  if (!org || !org.stripeCustomerId) {
+  if (!org) {
     return {
-      status: org?.subscriptionStatus || 'DEMO',
+      status: 'DEMO',
       plan: null,
       currentPeriodEnd: null,
       cancelAtPeriodEnd: false,
+      stripeConfigured: !!stripe,
+    };
+  }
+
+  // If Stripe is not configured, return DB-only subscription info
+  if (!stripe) {
+    return {
+      status: org.subscriptionStatus,
+      plan: null,
+      currentPeriodEnd: null,
+      cancelAtPeriodEnd: false,
+      stripeConfigured: false,
+    };
+  }
+
+  if (!org.stripeCustomerId) {
+    return {
+      status: org.subscriptionStatus,
+      plan: null,
+      currentPeriodEnd: null,
+      cancelAtPeriodEnd: false,
+      stripeConfigured: true,
     };
   }
 
   // Get active subscriptions from Stripe
-  const subscriptions = await s.subscriptions.list({
+  const subscriptions = await stripe.subscriptions.list({
     customer: org.stripeCustomerId,
     status: 'active',
     limit: 1,
@@ -137,6 +158,7 @@ export async function getSubscriptionInfo(orgId: string): Promise<{
       plan: null,
       currentPeriodEnd: null,
       cancelAtPeriodEnd: false,
+      stripeConfigured: true,
     };
   }
 
@@ -150,7 +172,7 @@ export async function getSubscriptionInfo(orgId: string): Promise<{
     nextBillingDate = new Date(sub.cancel_at * 1000).toISOString();
   } else {
     try {
-      const invoices = await s.invoices.list({
+      const invoices = await stripe.invoices.list({
         subscription: sub.id,
         status: 'paid',
         limit: 1,
@@ -168,6 +190,7 @@ export async function getSubscriptionInfo(orgId: string): Promise<{
     plan: priceNickname,
     currentPeriodEnd: nextBillingDate,
     cancelAtPeriodEnd: sub.cancel_at_period_end,
+    stripeConfigured: true,
   };
 }
 

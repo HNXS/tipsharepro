@@ -155,43 +155,53 @@ export default function BillingPage() {
       {/* Actions Card */}
       <div className="card" style={{ marginTop: '1rem' }}>
         <h3 className="card-title" style={{ marginBottom: '1rem' }}>Actions</h3>
-        <div className="billing-actions">
-          {(statusKey === 'DEMO' || statusKey === 'TRIAL' || statusKey === 'CANCELLED') && (
-            <button
-              className="btn btn-primary"
-              onClick={handleCheckout}
-              disabled={actionLoading !== null}
-            >
-              {actionLoading === 'checkout' ? (
-                <Loader2 size={16} className="loading-spinner" />
-              ) : (
-                <CreditCard size={16} />
-              )}
-              {statusKey === 'CANCELLED' ? 'Resubscribe' : 'Subscribe Now'}
-            </button>
-          )}
 
-          {statusKey === 'ACTIVE' && (
-            <button
-              className="btn btn-outline"
-              onClick={handlePortal}
-              disabled={actionLoading !== null}
-            >
-              {actionLoading === 'portal' ? (
-                <Loader2 size={16} className="loading-spinner" />
-              ) : (
-                <ExternalLink size={16} />
+        {subscription?.stripeConfigured === false ? (
+          <p className="form-help">
+            Online billing is not yet configured. Your subscription is managed by TipSharePro support.
+            Contact us if you have questions about your account status.
+          </p>
+        ) : (
+          <>
+            <div className="billing-actions">
+              {(statusKey === 'DEMO' || statusKey === 'TRIAL' || statusKey === 'CANCELLED') && (
+                <button
+                  className="btn btn-primary"
+                  onClick={handleCheckout}
+                  disabled={actionLoading !== null}
+                >
+                  {actionLoading === 'checkout' ? (
+                    <Loader2 size={16} className="loading-spinner" />
+                  ) : (
+                    <CreditCard size={16} />
+                  )}
+                  {statusKey === 'CANCELLED' ? 'Resubscribe' : 'Subscribe Now'}
+                </button>
               )}
-              Manage Billing
-            </button>
-          )}
-        </div>
 
-        <p className="form-help" style={{ marginTop: '1rem' }}>
-          {statusKey === 'ACTIVE'
-            ? 'Manage your payment method, view invoices, and update subscription through the Stripe billing portal.'
-            : 'Subscribe to TipSharePro to unlock all features. Payment is handled securely through Stripe.'}
-        </p>
+              {statusKey === 'ACTIVE' && (
+                <button
+                  className="btn btn-outline"
+                  onClick={handlePortal}
+                  disabled={actionLoading !== null}
+                >
+                  {actionLoading === 'portal' ? (
+                    <Loader2 size={16} className="loading-spinner" />
+                  ) : (
+                    <ExternalLink size={16} />
+                  )}
+                  Manage Billing
+                </button>
+              )}
+            </div>
+
+            <p className="form-help" style={{ marginTop: '1rem' }}>
+              {statusKey === 'ACTIVE'
+                ? 'Manage your payment method, view invoices, and update subscription through the Stripe billing portal.'
+                : 'Subscribe to TipSharePro to unlock all features. Payment is handled securely through Stripe.'}
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

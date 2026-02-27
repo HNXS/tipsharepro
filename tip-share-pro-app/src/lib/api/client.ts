@@ -95,10 +95,16 @@ export async function apiRequest<T>(
   const url = `${API_BASE}${endpoint}`;
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
     const response = await fetch(url, {
       ...options,
       headers,
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     const data: ApiResponse<T> = await response.json();
 
@@ -115,6 +121,11 @@ export async function apiRequest<T>(
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
+    }
+
+    // Timeout error
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new ApiError('Request timed out', 0, 'TIMEOUT');
     }
 
     // Network or parsing error
