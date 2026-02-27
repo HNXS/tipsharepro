@@ -16,14 +16,14 @@ import LocationManagement from '@/components/LocationManagement';
 import ScenarioSandbox from '@/components/ScenarioSandbox';
 import TwoFactorSetup from '@/components/TwoFactorSetup';
 import BillingPage from '@/components/BillingPage';
-import { X, Calculator } from 'lucide-react';
+import { X, Calculator, AlertCircle } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 
 // Panel types that can be opened from the "More" menu
 export type PanelType = 'team' | 'locations' | 'rounding' | 'sandbox' | '2fa' | 'billing' | null;
 
 export default function Home() {
-  const { state, handleLoginSuccess, setShowWelcomeDialog, setShowHelpLibrary, updateSettings } = useDemo();
+  const { state, handleLoginSuccess, setShowWelcomeDialog, setShowHelpLibrary, updateSettings, setError } = useDemo();
   const [activePanel, setActivePanel] = useState<PanelType>(null);
 
   const isDemo = state.subscriptionStatus === 'DEMO';
@@ -54,6 +54,17 @@ export default function Home() {
       <SubscriptionBanner />
       <Header onOpenPanel={setActivePanel} />
       <main className="main-content">
+        {/* Error Banner */}
+        {state.error && (
+          <div className="alert alert-error" style={{ margin: '0.5rem 1rem' }}>
+            <AlertCircle size={16} />
+            <span>{state.error}</span>
+            <button className="btn btn-outline btn-sm" style={{ marginLeft: 'auto' }} onClick={() => setError(null)}>
+              <X size={14} />
+            </button>
+          </div>
+        )}
+
         {/* Settings Section */}
         <section id="settings-section">
           <SettingsPage />

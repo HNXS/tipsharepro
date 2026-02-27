@@ -1156,7 +1156,16 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       }));
     } catch (err) {
       console.error('Failed to load date entries:', err);
-      setState(prev => ({ ...prev, payPeriodLoading: false }));
+      const msg = err instanceof Error ? err.message : 'Failed to load daily entries';
+      setState(prev => ({
+        ...prev,
+        payPeriodLoading: false,
+        selectedDate: null,
+        employeesForDate: [],
+        dailyEntries: [],
+        dateNavigation: null,
+        error: msg,
+      }));
     }
   }, []);
 
