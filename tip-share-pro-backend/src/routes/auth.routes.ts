@@ -7,10 +7,18 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import rateLimit from 'express-rate-limit';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import { validate } from '../middleware/validate';
 import { authenticate } from '../middleware/auth.middleware';
 import { authService } from '../services/auth.service';
 import { ApiResponse, AuthenticatedRequest } from '../types/index';
+import { prisma } from '../utils/prisma';
+import { config } from '../config/index';
+import { emailService } from '../services/email.service';
+import { smsService } from '../services/sms.service';
+import crypto from 'crypto';
+import { sendWelcomeEmail, send2FACodeEmail } from '../services/notifications.service';
 
 const router = Router();
 
@@ -57,6 +65,60 @@ router.post(
     try {
       const { email, password } = req.body;
 
+      // Pre-check: does user have 2FA enabled?
+      const user2fa = await prisma.user.findFirst({
+        where: { email: email.toLowerCase() },
+        select: { id: true, twoFactorEnabled: true, twoFactorMethod: true, phone: true, passwordHash: true },
+      });
+
+      if (user2fa && user2fa.twoFactorEnabled && user2fa.twoFactorMethod) {
+        // Verify password first
+        const isValidPassword = await bcrypt.compare(password, user2fa.passwordHash);
+        if (!isValidPassword) {
+          // Fall through to normal login for consistent error messages
+          await authService.login(email, password); // Will throw UnauthorizedError
+        }
+
+        // Generate temp token for 2FA flow
+        const tempToken = jwt.sign(
+          { sub: user2fa.id, purpose: '2fa' },
+          config.jwt.secret,
+          { expiresIn: '5m' }
+        );
+
+        // Auto-send code
+        const code = crypto.randomInt(100000, 999999).toString();
+        const codeHash = await bcrypt.hash(code, 6);
+        await prisma.twoFactorCode.deleteMany({ where: { userId: user2fa.id } });
+        await prisma.twoFactorCode.create({
+          data: {
+            userId: user2fa.id,
+            codeHash,
+            method: user2fa.twoFactorMethod,
+            expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+          },
+        });
+
+        if (user2fa.twoFactorMethod === 'EMAIL') {
+          await send2FACodeEmail(email, code);
+        } else {
+          await smsService.sendSms({
+            to: user2fa.phone!,
+            body: `TipSharePro code: ${code}. Expires in 10 min.`,
+          });
+        }
+
+        res.status(200).json({
+          status: 'success',
+          data: {
+            requires2FA: true,
+            tempToken,
+            method: user2fa.twoFactorMethod,
+          },
+        });
+        return;
+      }
+
       const result = await authService.login(email, password);
 
       res.status(200).json({
@@ -82,6 +144,9 @@ router.post(
       const { email, password, companyName } = req.body;
 
       const result = await authService.register(email, password, companyName);
+
+      // Send welcome email (fire-and-forget)
+      sendWelcomeEmail(email, companyName || result.user.companyName);
 
       res.status(201).json({
         status: 'success',

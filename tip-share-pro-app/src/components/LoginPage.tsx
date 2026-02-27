@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { LogIn, UserPlus, AlertCircle, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { login, register, ApiError } from '@/lib/api';
+import type { TwoFactorRequiredResponse } from '@/lib/api';
+import TwoFactorVerify from './TwoFactorVerify';
 
 interface LoginPageProps {
   onLoginSuccess: (user: {
@@ -27,6 +29,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [companyName, setCompanyName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [twoFactorData, setTwoFactorData] = useState<TwoFactorRequiredResponse | null>(null);
 
   // Check URL param for signup mode (campaign links)
   useEffect(() => {
@@ -99,13 +102,22 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
     try {
       const response = await login({ email, password });
 
+      // Check if 2FA is required
+      if ('requires2FA' in response && response.requires2FA) {
+        setTwoFactorData(response);
+        setIsLoading(false);
+        return;
+      }
+
+      // Normal login success
+      const loginResponse = response as Exclude<typeof response, TwoFactorRequiredResponse>;
       onLoginSuccess({
-        name: response.user.name,
-        companyName: response.user.companyName,
-        role: response.user.role,
-        email: response.user.email,
-        locationId: response.user.locationId,
-        organization: response.organization,
+        name: loginResponse.user.name,
+        companyName: loginResponse.user.companyName,
+        role: loginResponse.user.role,
+        email: loginResponse.user.email,
+        locationId: loginResponse.user.locationId,
+        organization: loginResponse.organization,
       });
     } catch (err) {
       if (err instanceof ApiError) {
@@ -117,6 +129,33 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
       setIsLoading(false);
     }
   };
+
+  // Show 2FA verification screen
+  if (twoFactorData) {
+    return (
+      <div className="login-page">
+        <div className="login-bg-pattern" />
+        <TwoFactorVerify
+          tempToken={twoFactorData.tempToken}
+          method={twoFactorData.method}
+          onVerified={(data) => {
+            onLoginSuccess({
+              name: data.user.name,
+              companyName: data.user.companyName,
+              role: data.user.role,
+              email: data.user.email,
+              locationId: data.user.locationId,
+              organization: data.organization,
+            });
+          }}
+          onCancel={() => {
+            setTwoFactorData(null);
+            setError(null);
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="login-page">

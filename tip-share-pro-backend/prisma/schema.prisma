@@ -81,6 +81,7 @@ model Location {
   name           String
   number         String?
   status         LocationStatus @default(ACTIVE)
+  settings       Json           @default("{}")
   createdAt      DateTime       @default(now()) @map("created_at")
   updatedAt      DateTime       @updatedAt @map("updated_at")
 

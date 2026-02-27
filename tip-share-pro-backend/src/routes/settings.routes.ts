@@ -12,6 +12,7 @@ import { authenticate, authorize } from '../middleware/auth.middleware';
 import { settingsService, ContributionMethod } from '../services/settings.service';
 import { ApiResponse, AuthenticatedRequest } from '../types/index';
 import { UserRole } from '@prisma/client';
+import { logAudit } from '../services/audit.service';
 
 const router = Router();
 
@@ -71,10 +72,24 @@ router.put(
     try {
       const user = (req as AuthenticatedRequest).user;
 
+      // Fetch current settings for audit trail
+      const before = await settingsService.getSettings(user.organizationId);
+
       const settings = await settingsService.updateSettings(
         user.organizationId,
         req.body
       );
+
+      await logAudit({
+        orgId: user.organizationId,
+        userId: user.id,
+        action: 'UPDATE',
+        entityType: 'Settings',
+        entityId: user.organizationId,
+        before: JSON.parse(JSON.stringify(before.settings)),
+        after: JSON.parse(JSON.stringify(settings.settings)),
+        req,
+      });
 
       res.status(200).json({
         status: 'success',

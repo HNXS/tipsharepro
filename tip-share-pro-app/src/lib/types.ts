@@ -58,6 +58,7 @@ export interface Settings {
   categoryNames: Record<CategoryColor, string>;
   payPeriodStartDate?: string;
   payPeriodEndDate?: string;
+  roundingMode?: 'NEAREST' | 'DOWN';
 }
 
 // Stat Card for Distribution Table header

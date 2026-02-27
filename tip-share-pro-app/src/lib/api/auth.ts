@@ -41,6 +41,12 @@ export interface LoginResponse {
   };
 }
 
+export interface TwoFactorRequiredResponse {
+  requires2FA: true;
+  tempToken: string;
+  method: 'EMAIL' | 'SMS';
+}
+
 export interface SessionResponse {
   user: {
     id: string;
@@ -50,6 +56,8 @@ export interface SessionResponse {
     companyName: string;
     locationId: string | null;
     locationName: string | null;
+    twoFactorEnabled?: boolean;
+    twoFactorMethod?: string | null;
   };
   organization: {
     id: string;
@@ -64,13 +72,19 @@ export interface SessionResponse {
 // ============================================================================
 
 /**
- * Login with email and password
+ * Login with email and password.
+ * Returns LoginResponse on success, or TwoFactorRequiredResponse if 2FA is enabled.
  */
-export async function login(credentials: LoginRequest): Promise<LoginResponse> {
-  const response = await post<LoginResponse>('/auth/login', credentials);
+export async function login(credentials: LoginRequest): Promise<LoginResponse | TwoFactorRequiredResponse> {
+  const response = await post<LoginResponse | TwoFactorRequiredResponse>('/auth/login', credentials);
 
-  // Store the token
-  setToken(response.token);
+  // If 2FA is required, don't store token yet — return the temp response
+  if ('requires2FA' in response && response.requires2FA) {
+    return response;
+  }
+
+  // Normal login — store the token
+  setToken((response as LoginResponse).token);
 
   return response;
 }

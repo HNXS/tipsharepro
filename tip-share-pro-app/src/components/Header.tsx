@@ -1,7 +1,8 @@
 'use client';
 
 import { useDemo } from '@/lib/DemoContext';
-import { LogOut, User, HelpCircle, BookOpen } from 'lucide-react';
+import { canAccess } from '@/lib/permissions';
+import { LogOut, User, HelpCircle, BookOpen, MapPin } from 'lucide-react';
 import Image from 'next/image';
 
 const TIER_SUBTITLE: Record<string, string | null> = {
@@ -15,6 +16,7 @@ const TIER_SUBTITLE: Record<string, string | null> = {
 export default function Header() {
   const { state, handleLogout, setShowWelcomeDialog, setShowHelpLibrary } = useDemo();
   const subtitle = TIER_SUBTITLE[state.subscriptionStatus] ?? null;
+  const userRole = state.user?.role;
 
   return (
     <header className="header no-print">
@@ -47,6 +49,27 @@ export default function Header() {
                   ({state.user.companyName})
                 </span>
               )}
+              {userRole && userRole !== 'ADMIN' && (
+                <span className="header-role-badge" data-role={userRole}>
+                  {userRole === 'MANAGER' ? 'Manager' : 'Designee'}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Location Switcher — shown when multiple locations and admin/manager */}
+          {state.locations && state.locations.length > 1 && canAccess(userRole, 'locations') && (
+            <div className="header-location-switcher">
+              <MapPin size={14} />
+              <select
+                className="form-select header-location-select"
+                value={state.activeLocationId || ''}
+                onChange={e => state.switchLocation?.(e.target.value)}
+              >
+                {state.locations.map((loc: { id: string; name: string }) => (
+                  <option key={loc.id} value={loc.id}>{loc.name}</option>
+                ))}
+              </select>
             </div>
           )}
 

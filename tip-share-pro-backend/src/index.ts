@@ -75,6 +75,9 @@ app.use(
   })
 );
 
+// Raw body for Stripe webhook (must come BEFORE express.json)
+app.use('/api/v1/billing/webhook', express.raw({ type: 'application/json' }));
+
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));

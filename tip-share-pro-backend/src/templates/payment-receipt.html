@@ -1,0 +1,31 @@
+<!--
+  Payment Receipt
+  ===============
+  Sent after a successful invoice payment.
+
+  Variables:
+    {{companyName}}  — the company / restaurant name
+    {{amount}}       — formatted dollar amount (e.g. "$49.00")
+    {{date}}         — formatted date (e.g. "February 27, 2026")
+-->
+<h2 style="margin:0 0 16px;font-size:20px;color:#1a1a2e;">Payment Received</h2>
+<p style="margin:0 0 16px;font-size:15px;color:#333;line-height:1.6;">
+  Thank you! We&rsquo;ve received your payment for <strong>{{companyName}}</strong>.
+</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;background:#f9f9fb;border-radius:6px;overflow:hidden;">
+  <tr>
+    <td style="padding:16px 20px;border-bottom:1px solid #eee;">
+      <span style="font-size:13px;color:#888;">Amount</span><br />
+      <span style="font-size:16px;font-weight:600;color:#333;">{{amount}}</span>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:16px 20px;">
+      <span style="font-size:13px;color:#888;">Date</span><br />
+      <span style="font-size:16px;font-weight:600;color:#333;">{{date}}</span>
+    </td>
+  </tr>
+</table>
+<p style="margin:0;font-size:13px;color:#888;">
+  You can view your full billing history in Settings &rarr; Billing.
+</p>

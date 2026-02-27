@@ -16,6 +16,11 @@ import HelpTooltip from './HelpTooltip';
 import { InlineCategoryDot } from './CategoryBadge';
 import { Lock, ChevronRight, RotateCcw, GripVertical, X, Plus, Printer } from 'lucide-react';
 import PrintDialog from './PrintDialog';
+import UserManagement from './UserManagement';
+import ScenarioSandbox from './ScenarioSandbox';
+import TwoFactorSetup from './TwoFactorSetup';
+import BillingPage from './BillingPage';
+import { canAccess } from '@/lib/permissions';
 
 // The 5 category color keys in display order
 const CATEGORY_COLORS: CategoryColor[] = ['boh', 'foh', 'bar', 'support', 'custom'];
@@ -46,7 +51,24 @@ export default function SettingsPage() {
 
   const { settings } = state;
   const isDemo = state.subscriptionStatus === 'DEMO';
+  const userRole = state.user?.role;
+  const canEditSettings = canAccess(userRole, 'settings.method') || isDemo;
+  const canManageUsers = canAccess(userRole, 'users');
   const contributionRateOptions = getContributionRateOptions(settings.contributionMethod);
+
+  // Designee sees nothing on settings page
+  if (!isDemo && userRole === 'DESIGNEE') {
+    return (
+      <div className="content-container">
+        <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
+          <p className="text-secondary">Settings are managed by your Admin.</p>
+          <p className="text-tertiary" style={{ marginTop: '0.5rem' }}>
+            Contact your restaurant administrator to make changes.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Local state for monthly estimate input (only format with commas on blur)
   const [monthlyInputValue, setMonthlyInputValue] = useState(
@@ -68,6 +90,8 @@ export default function SettingsPage() {
 
   // Print dialog state
   const [showPrintDialog, setShowPrintDialog] = useState(false);
+  // Scenario sandbox state
+  const [showSandbox, setShowSandbox] = useState(false);
 
   // Local state for new job input
   const [newJobName, setNewJobName] = useState('');
@@ -505,6 +529,87 @@ export default function SettingsPage() {
         </div>
       )}
 
+      {/* Users/Permissions — real accounts, Admin only */}
+      {!isDemo && canManageUsers && (
+        <div className="card settings-section">
+          <UserManagement />
+        </div>
+      )}
+
+      {/* Scenario Sandbox — Admin + Manager */}
+      {!isDemo && canAccess(userRole, 'scenarioSandbox') && (
+        <div className="card settings-section">
+          <div className="settings-section-header">
+            <h3 className="settings-section-title">Scenario Sandbox</h3>
+            <button className="btn btn-primary btn-sm" onClick={() => setShowSandbox(true)}>
+              Open Sandbox
+            </button>
+          </div>
+          <p className="form-help">
+            Simulate different tip pool configurations without affecting real data.
+            Adjust hours, rates, and weights to see how distribution changes.
+          </p>
+        </div>
+      )}
+
+      {/* Rounding Mode — Admin only */}
+      {canAccess(userRole, 'settings.rounding') && !isDemo && (
+        <div className="card settings-section">
+          <h3 className="settings-section-title">Rounding Mode</h3>
+          <div className="rounding-mode-options">
+            <label className="radio-option">
+              <input
+                type="radio"
+                name="roundingMode"
+                value="NEAREST"
+                checked={!settings.roundingMode || settings.roundingMode === 'NEAREST'}
+                onChange={() => updateSettings({ roundingMode: 'NEAREST' } as Partial<typeof settings>)}
+              />
+              <div>
+                <strong>Standard Rounding</strong>
+                <p className="form-help">Rounds to the nearest cent (Math.round). Most common.</p>
+              </div>
+            </label>
+            <label className="radio-option">
+              <input
+                type="radio"
+                name="roundingMode"
+                value="DOWN"
+                checked={settings.roundingMode === 'DOWN'}
+                onChange={() => updateSettings({ roundingMode: 'DOWN' } as Partial<typeof settings>)}
+              />
+              <div>
+                <strong>Floor Rounding</strong>
+                <p className="form-help">Always rounds down (Math.floor). Cents may vary by $0.01 per employee.</p>
+              </div>
+            </label>
+          </div>
+        </div>
+      )}
+
+      {/* Two-Factor Authentication — all real accounts */}
+      {!isDemo && (
+        <div className="card settings-section">
+          <TwoFactorSetup
+            enabled={state.user?.twoFactorEnabled || false}
+            currentMethod={state.user?.twoFactorMethod || undefined}
+            onStatusChange={(enabled) => {
+              // Update user state to reflect new 2FA status
+              if (state.user) {
+                // Force a session reload on next page load to get fresh twoFactorMethod
+                // For now, just update the enabled flag locally
+                state.user.twoFactorEnabled = enabled;
+              }
+            }}
+          />
+        </div>
+      )}
+
+      {/* Billing — Admin only, real accounts */}
+      {!isDemo && canAccess(userRole, 'billing') && (
+        <BillingPage />
+      )}
+
       {/* Navigation */}
       <div className="nav-buttons nav-buttons-between">
         <button
@@ -530,6 +635,11 @@ export default function SettingsPage() {
           target="settings"
           onClose={() => setShowPrintDialog(false)}
         />
+      )}
+
+      {/* Scenario Sandbox Modal */}
+      {showSandbox && (
+        <ScenarioSandbox onClose={() => setShowSandbox(false)} />
       )}
     </div>
   );

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useDemo } from '@/lib/DemoContext';
 import { CONTRIBUTION_METHOD_LABELS, HELP_TEXT, CategoryColor, CATEGORY_COLOR_MAP, JobCategory } from '@/lib/types';
 import { InlineCategoryDot } from './CategoryBadge';
 import HelpTooltip from './HelpTooltip';
 import PrintDialog from './PrintDialog';
-import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock, GripVertical, Trash2, LogOut } from 'lucide-react';
+import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock, GripVertical, Trash2, LogOut, Save, Check, AlertCircle } from 'lucide-react';
 
 // Editable number input that properly handles backspace and typing
 interface EditableNumberInputProps {
@@ -298,6 +298,212 @@ function AddEmployeeRow({ jobCategories, categoryNames, onAdd, isDragging, dragO
   );
 }
 
+// ============================================================================
+// Save Status Indicator
+// ============================================================================
+
+function SaveStatusIndicator({ status }: { status: 'idle' | 'saving' | 'saved' | 'error' }) {
+  if (status === 'idle') return null;
+  return (
+    <span className={`daily-entry-save-indicator save-${status}`}>
+      {status === 'saving' && <><Save size={14} /> Saving...</>}
+      {status === 'saved' && <><Check size={14} /> Saved</>}
+      {status === 'error' && <><AlertCircle size={14} /> Error</>}
+    </span>
+  );
+}
+
+// ============================================================================
+// Daily Entry Table (real accounts with active pay period + selected date)
+// ============================================================================
+
+function DailyEntryTable() {
+  const { state, saveDailyEntries } = useDemo();
+  const { employeesForDate, dailyEntries, saveStatus } = state;
+
+  // Local sales state for editing — keyed by employeeId
+  const [localSales, setLocalSales] = useState<Record<string, string>>({});
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync local sales from entries when date changes
+  useEffect(() => {
+    const salesMap: Record<string, string> = {};
+    for (const emp of employeesForDate) {
+      const entry = emp.existingEntry || dailyEntries.find(e => e.employeeId === emp.id);
+      salesMap[emp.id] = entry?.sales != null ? String(entry.sales) : '';
+    }
+    setLocalSales(salesMap);
+  }, [employeesForDate, dailyEntries]);
+
+  const handleSalesChange = useCallback((employeeId: string, value: string) => {
+    setLocalSales(prev => ({ ...prev, [employeeId]: value }));
+  }, []);
+
+  const handleSave = useCallback(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      const entries = Object.entries(localSales)
+        .filter(([, val]) => val !== '' && !isNaN(parseFloat(val)))
+        .map(([employeeId, val]) => ({
+          employeeId,
+          salesCents: Math.round(parseFloat(val) * 100),
+        }));
+      if (entries.length > 0) {
+        saveDailyEntries(entries);
+      }
+    }, 500);
+  }, [localSales, saveDailyEntries]);
+
+  // Trigger save on blur
+  const handleBlur = useCallback(() => {
+    handleSave();
+  }, [handleSave]);
+
+  if (employeesForDate.length === 0) {
+    return <p className="text-muted" style={{ padding: '1rem' }}>No active employees found for this date.</p>;
+  }
+
+  return (
+    <div className="table-container">
+      <div className="daily-entry-header">
+        <span className="daily-entry-title">Daily Sales Entry</span>
+        <SaveStatusIndicator status={saveStatus} />
+      </div>
+      <table className="distribution-table daily-entry-table">
+        <thead>
+          <tr>
+            <th className="col-name">Name</th>
+            <th className="col-category">Category</th>
+            <th className="col-sales">Sales ($)</th>
+            <th className="col-contribution">Contribution ($)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {employeesForDate.map(emp => {
+            const entry = emp.existingEntry || dailyEntries.find(e => e.employeeId === emp.id);
+            const contribution = entry?.actualContribution ?? entry?.calculatedContribution ?? null;
+
+            return (
+              <tr key={emp.id}>
+                <td className="col-name">
+                  <div className="employee-name-cell">
+                    <span className="employee-name-static">{emp.name}</span>
+                  </div>
+                </td>
+                <td className="col-category">
+                  <span className="daily-entry-category">{emp.jobCategory.name}</span>
+                </td>
+                <td className="col-sales">
+                  <div className="daily-entry-cell">
+                    <span className="daily-entry-prefix">$</span>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={localSales[emp.id] || ''}
+                      onChange={e => handleSalesChange(emp.id, e.target.value)}
+                      onBlur={handleBlur}
+                      onKeyDown={e => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+                      className="table-input daily-entry-input"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </td>
+                <td className="col-contribution">
+                  <span className="daily-entry-contribution">
+                    {contribution != null ? `$${contribution.toFixed(2)}` : '—'}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ============================================================================
+// Archived Distribution View (read-only results from finalized period)
+// ============================================================================
+
+function ArchivedDistributionTable() {
+  const { state } = useDemo();
+  const { calculationResult, activePayPeriod } = state;
+
+  if (!calculationResult || !activePayPeriod) {
+    return <p className="text-muted" style={{ padding: '1rem' }}>No distribution data available for this period.</p>;
+  }
+
+  const { distribution, summary } = calculationResult;
+
+  return (
+    <div className="table-container">
+      <div className="archived-distribution-header">
+        <span className="archived-distribution-title">Finalized Distribution</span>
+        <span className="archived-distribution-date">
+          Calculated {new Date(calculationResult.calculatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+        </span>
+      </div>
+
+      {/* Summary cards */}
+      <div className="stat-cards-row" style={{ marginBottom: '0.75rem' }}>
+        <div className="stat-card">
+          <div className="stat-card-label">Total Pool</div>
+          <div className="stat-card-value">${(summary.totalPoolCents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-card-label">Participants</div>
+          <div className="stat-card-value">{summary.totalParticipants}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-card-label">Total Hours</div>
+          <div className="stat-card-value">{summary.totalHours.toFixed(1)}</div>
+        </div>
+      </div>
+
+      <table className="distribution-table">
+        <thead>
+          <tr>
+            <th className="col-name">Name</th>
+            <th className="col-category">Category</th>
+            <th className="col-hours">Hours</th>
+            <th className="col-share-percent">Share %</th>
+            <th className="col-share-dollars">Share $</th>
+            <th className="col-dollars-per-hour">$/Hr</th>
+          </tr>
+        </thead>
+        <tbody>
+          {distribution.map(emp => {
+            const dollarsPerHour = emp.hoursWorked > 0 ? (emp.receivedCents / 100) / emp.hoursWorked : 0;
+            return (
+              <tr key={emp.employeeId}>
+                <td className="col-name">
+                  <span className="employee-name-static">{emp.employeeName}</span>
+                </td>
+                <td className="col-category">{emp.jobCategory.name}</td>
+                <td className="col-hours">{emp.hoursWorked.toFixed(2)}</td>
+                <td className="col-share-percent">{emp.percentage.toFixed(2)}%</td>
+                <td className="col-share-dollars">${(emp.receivedCents / 100).toLocaleString('en-US')}</td>
+                <td className="col-dollars-per-hour">${dollarsPerHour.toFixed(2)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+        <tfoot>
+          <tr className="totals-row">
+            <td className="col-name"><strong>Totals</strong></td>
+            <td className="col-category">—</td>
+            <td className="col-hours"><strong>{summary.totalHours.toFixed(2)}</strong></td>
+            <td className="col-share-percent"><strong>100.00%</strong></td>
+            <td className="col-share-dollars"><strong>${(summary.distributedCents / 100).toLocaleString('en-US')}</strong></td>
+            <td className="col-dollars-per-hour">—</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
+}
+
 // Help text for distribution table
 const DISTRIBUTION_HELP = `The Distribution Table shows how the tip pool is divided among employees.
 
@@ -329,6 +535,10 @@ export default function DistributionTable() {
 
   const { settings, employees, distributionResults, projectedPool, prePaidAmount, netPool, printIncludeSharePerHour } = state;
   const isDemo = state.subscriptionStatus === 'DEMO';
+
+  // Mode detection for real accounts
+  const isDailyEntryMode = !isDemo && !!state.activePayPeriod && !!state.selectedDate && state.activePayPeriod.status !== 'ARCHIVED';
+  const isArchivedViewMode = !isDemo && !!state.activePayPeriod && state.activePayPeriod.status === 'ARCHIVED' && !!state.calculationResult;
 
   // Print dialog state
   const [showPrintDialog, setShowPrintDialog] = useState(false);
@@ -601,141 +811,150 @@ export default function DistributionTable() {
         </div>
       </div>
 
-      {/* Distribution Table */}
-      <div className="table-container">
-        <table className="distribution-table">
-          <thead>
-            <tr>
-              <th className="col-grip no-print"></th>
-              <th className="col-name">Name</th>
-              <th className="col-wages hide-print">Wages</th>
-              <th className="col-hours">Hours</th>
-              <th className="col-weight">Weight</th>
-              <th className="col-share-percent">Share %</th>
-              <th className="col-share-dollars">Share $</th>
-              <th className={`col-dollars-per-hour ${!printIncludeSharePerHour ? 'hide-print' : ''}`}>$/Hr</th>
-              <th className="col-actions no-print"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedResults.map((result, index) => (
-              <tr
-                key={result.employeeId}
-                draggable
-                onDragStart={(e) => handleDragStart(e, result.employeeId)}
-                onDragEnd={handleDragEnd}
-                onDragOver={(e) => handleDragOver(e, index)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, index)}
-                className={`${draggedId === result.employeeId ? 'row-dragging' : ''} ${dragOverIndex === index && draggedId !== result.employeeId ? 'row-drag-over' : ''}`}
-              >
-                <td className="col-grip no-print">
-                  <span className="row-grip-handle" title="Drag to reorder">
-                    <GripVertical size={14} />
-                  </span>
-                </td>
-                <td className={`col-name name-cell-${result.categoryColor}`}>
-                  <div className="employee-name-cell">
-                    <div className="employee-name-row">
-                      <InlineCategoryDot categoryColor={result.categoryColor} size={10} />
-                      <span className="table-input table-input-name employee-name-static">
-                        {result.employeeName}
-                      </span>
-                    </div>
-                    <JobCategorySelector
-                      value={result.jobCategoryId}
-                      jobCategories={settings.jobCategories}
-                      categoryNames={settings.categoryNames}
-                      onChange={(jobId) => handleJobChange(result.employeeId, jobId)}
-                    />
-                  </div>
-                </td>
-                <td className="col-wages hide-print">
-                  <EditableNumberInput
-                    value={result.hourlyRate}
-                    onChange={(val) => updateEmployee(result.employeeId, { hourlyRate: val })}
-                    decimals={2}
-                    className="table-input"
-                  />
-                </td>
-                <td className="col-hours">
-                  <EditableNumberInput
-                    value={result.hoursWorked}
-                    onChange={(val) => updateEmployee(result.employeeId, { hoursWorked: val })}
-                    decimals={2}
-                    className="table-input"
-                  />
-                </td>
-                <td className="col-weight">
-                  <WeightAdjuster
-                    baseWeight={result.variableWeight}
-                    adjustment={result.weightAdjustment}
-                    effectiveWeight={result.effectiveWeight}
-                    onAdjust={(delta) => adjustIndividualWeight(result.employeeId, delta)}
-                  />
-                </td>
-                <td className="col-share-percent">
-                  {result.sharePercentage.toFixed(2)}%
-                </td>
-                <td className="col-share-dollars">
-                  ${result.receivedAmount.toLocaleString('en-US')}
-                </td>
-                <td className={`col-dollars-per-hour ${!printIncludeSharePerHour ? 'hide-print' : ''}`}>
-                  ${result.dollarsPerHour.toFixed(2)}
-                </td>
-                <td className="col-actions no-print">
-                  <button
-                    className="btn-delete-employee"
-                    onClick={() => removeEmployee(result.employeeId)}
-                    title="Remove employee"
+      {/* Table: conditional rendering based on mode */}
+      {isDailyEntryMode ? (
+        <DailyEntryTable />
+      ) : isArchivedViewMode ? (
+        <ArchivedDistributionTable />
+      ) : (
+        <>
+          {/* Distribution Table (demo / normal mode) */}
+          <div className="table-container">
+            <table className="distribution-table">
+              <thead>
+                <tr>
+                  <th className="col-grip no-print"></th>
+                  <th className="col-name">Name</th>
+                  <th className="col-wages hide-print">Wages</th>
+                  <th className="col-hours">Hours</th>
+                  <th className="col-weight">Weight</th>
+                  <th className="col-share-percent">Share %</th>
+                  <th className="col-share-dollars">Share $</th>
+                  <th className={`col-dollars-per-hour ${!printIncludeSharePerHour ? 'hide-print' : ''}`}>$/Hr</th>
+                  <th className="col-actions no-print"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedResults.map((result, index) => (
+                  <tr
+                    key={result.employeeId}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, result.employeeId)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, index)}
+                    className={`${draggedId === result.employeeId ? 'row-dragging' : ''} ${dragOverIndex === index && draggedId !== result.employeeId ? 'row-drag-over' : ''}`}
                   >
-                    <Trash2 size={14} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="totals-row">
-              <td className="col-grip no-print"></td>
-              <td className="col-name">
-                <strong>Totals</strong>
-              </td>
-              <td className="col-wages hide-print">
-                <span className="totals-placeholder">—</span>
-              </td>
-              <td className="col-hours">
-                <strong>{totalHours.toFixed(2)}</strong>
-              </td>
-              <td className="col-weight">
-                <span className="totals-placeholder">—</span>
-              </td>
-              <td className="col-share-percent">
-                <strong>{totalSharePercent.toFixed(2)}%</strong>
-              </td>
-              <td className="col-share-dollars">
-                <strong>${totalShareDollars.toLocaleString('en-US')}</strong>
-              </td>
-              <td className={`col-dollars-per-hour ${!printIncludeSharePerHour ? 'hide-print' : ''}`}>
-                <span className="totals-placeholder">—</span>
-              </td>
-              <td className="col-actions no-print"></td>
-            </tr>
-          </tfoot>
-        </table>
+                    <td className="col-grip no-print">
+                      <span className="row-grip-handle" title="Drag to reorder">
+                        <GripVertical size={14} />
+                      </span>
+                    </td>
+                    <td className={`col-name name-cell-${result.categoryColor}`}>
+                      <div className="employee-name-cell">
+                        <div className="employee-name-row">
+                          <InlineCategoryDot categoryColor={result.categoryColor} size={10} />
+                          <span className="table-input table-input-name employee-name-static">
+                            {result.employeeName}
+                          </span>
+                        </div>
+                        <JobCategorySelector
+                          value={result.jobCategoryId}
+                          jobCategories={settings.jobCategories}
+                          categoryNames={settings.categoryNames}
+                          onChange={(jobId) => handleJobChange(result.employeeId, jobId)}
+                        />
+                      </div>
+                    </td>
+                    <td className="col-wages hide-print">
+                      <EditableNumberInput
+                        value={result.hourlyRate}
+                        onChange={(val) => updateEmployee(result.employeeId, { hourlyRate: val })}
+                        decimals={2}
+                        className="table-input"
+                      />
+                    </td>
+                    <td className="col-hours">
+                      <EditableNumberInput
+                        value={result.hoursWorked}
+                        onChange={(val) => updateEmployee(result.employeeId, { hoursWorked: val })}
+                        decimals={2}
+                        className="table-input"
+                      />
+                    </td>
+                    <td className="col-weight">
+                      <WeightAdjuster
+                        baseWeight={result.variableWeight}
+                        adjustment={result.weightAdjustment}
+                        effectiveWeight={result.effectiveWeight}
+                        onAdjust={(delta) => adjustIndividualWeight(result.employeeId, delta)}
+                      />
+                    </td>
+                    <td className="col-share-percent">
+                      {result.sharePercentage.toFixed(2)}%
+                    </td>
+                    <td className="col-share-dollars">
+                      ${result.receivedAmount.toLocaleString('en-US')}
+                    </td>
+                    <td className={`col-dollars-per-hour ${!printIncludeSharePerHour ? 'hide-print' : ''}`}>
+                      ${result.dollarsPerHour.toFixed(2)}
+                    </td>
+                    <td className="col-actions no-print">
+                      <button
+                        className="btn-delete-employee"
+                        onClick={() => removeEmployee(result.employeeId)}
+                        title="Remove employee"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="totals-row">
+                  <td className="col-grip no-print"></td>
+                  <td className="col-name">
+                    <strong>Totals</strong>
+                  </td>
+                  <td className="col-wages hide-print">
+                    <span className="totals-placeholder">—</span>
+                  </td>
+                  <td className="col-hours">
+                    <strong>{totalHours.toFixed(2)}</strong>
+                  </td>
+                  <td className="col-weight">
+                    <span className="totals-placeholder">—</span>
+                  </td>
+                  <td className="col-share-percent">
+                    <strong>{totalSharePercent.toFixed(2)}%</strong>
+                  </td>
+                  <td className="col-share-dollars">
+                    <strong>${totalShareDollars.toLocaleString('en-US')}</strong>
+                  </td>
+                  <td className={`col-dollars-per-hour ${!printIncludeSharePerHour ? 'hide-print' : ''}`}>
+                    <span className="totals-placeholder">—</span>
+                  </td>
+                  <td className="col-actions no-print"></td>
+                </tr>
+              </tfoot>
+            </table>
 
-        {/* Add Employee Row */}
-        <AddEmployeeRow
-          jobCategories={settings.jobCategories}
-          categoryNames={settings.categoryNames}
-          onAdd={handleAddEmployee}
-          isDragging={draggedId !== null}
-          dragOverTrash={dragOverTrash}
-          onTrashDragOver={handleTrashDragOver}
-          onTrashDragLeave={handleTrashDragLeave}
-          onTrashDrop={handleTrashDrop}
-        />
-      </div>
+            {/* Add Employee Row */}
+            <AddEmployeeRow
+              jobCategories={settings.jobCategories}
+              categoryNames={settings.categoryNames}
+              onAdd={handleAddEmployee}
+              isDragging={draggedId !== null}
+              dragOverTrash={dragOverTrash}
+              onTrashDragOver={handleTrashDragOver}
+              onTrashDragLeave={handleTrashDragLeave}
+              onTrashDrop={handleTrashDrop}
+            />
+          </div>
+        </>
+      )}
 
       {/* Color Key - always show all 5 categories */}
       <div className="category-color-key mt-4">

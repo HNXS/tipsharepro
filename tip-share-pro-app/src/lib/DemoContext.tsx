@@ -34,6 +34,24 @@ import {
   updateJobCategory as apiUpdateJobCategory,
   deleteJobCategory as apiDeleteJobCategory,
   dollarsToCents,
+  getPayPeriods as apiGetPayPeriods,
+  getCurrentPayPeriod as apiGetCurrentPayPeriod,
+  createPayPeriod as apiCreatePayPeriod,
+  updatePayPeriod as apiUpdatePayPeriod,
+  getEntriesForDate as apiGetEntriesForDate,
+  getEmployeesForDate as apiGetEmployeesForDate,
+  bulkUpsertEntries as apiBulkUpsertEntries,
+  apiCalculateDistribution,
+  getDistribution as apiGetDistribution,
+} from './api';
+import type {
+  PayPeriod,
+  DailyEntry,
+  DateEntriesResponse,
+  RunningTotals,
+  EmployeeForDate,
+  CalculationResult,
+  EmployeeHours,
 } from './api';
 import {
   mapApiEmployeeToFrontend,
@@ -42,6 +60,7 @@ import {
   mapFrontendSettingsToUpdateRequest,
   categoryColorToHex,
 } from './api/mappers';
+import { getLocations } from './api/locations';
 
 // Subscription status type
 type SubscriptionStatus = 'DEMO' | 'TRIAL' | 'ACTIVE' | 'SUSPENDED' | 'CANCELLED';
@@ -57,6 +76,8 @@ export interface AuthUser {
     subscriptionStatus: string;
     trialEndsAt: string | null;
   };
+  twoFactorEnabled?: boolean;
+  twoFactorMethod?: string | null;
 }
 
 // Extended state type with auth
@@ -70,6 +91,21 @@ interface ExtendedDemoState extends DemoState {
   isExpired: boolean;
   daysRemaining: number | null;
   isReadOnly: boolean;
+  // Pay period state (real accounts only)
+  activePayPeriod: PayPeriod | null;
+  payPeriods: PayPeriod[];
+  selectedDate: string | null;
+  dailyEntries: DailyEntry[];
+  dateNavigation: DateEntriesResponse['navigation'] | null;
+  runningTotals: RunningTotals | null;
+  employeesForDate: EmployeeForDate[];
+  calculationResult: CalculationResult | null;
+  payPeriodLoading: boolean;
+  saveStatus: 'idle' | 'saving' | 'saved' | 'error';
+  // Multi-location support
+  locations: Array<{ id: string; name: string }>;
+  activeLocationId: string | null;
+  switchLocation?: (locationId: string) => void;
 }
 
 // Internal state that includes demo/real tracking
@@ -130,6 +166,16 @@ interface DemoContextType {
   setShowWelcomeDialog: (show: boolean) => void;
   setShowHelpLibrary: (show: boolean) => void;
   setPrintIncludeSharePerHour: (include: boolean) => void;
+  // Pay period actions (real accounts only)
+  loadPayPeriods: () => Promise<void>;
+  createNewPayPeriod: (startDate: string, endDate: string) => Promise<void>;
+  selectPayPeriod: (periodId: string) => Promise<void>;
+  activatePayPeriod: () => Promise<void>;
+  archivePayPeriod: () => Promise<void>;
+  selectDate: (date: string) => Promise<void>;
+  saveDailyEntries: (entries: { employeeId: string; salesCents: number | null }[]) => Promise<void>;
+  runCalculation: (employeeHours: EmployeeHours[]) => Promise<void>;
+  clearPayPeriodSelection: () => void;
   // Loading state
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -177,6 +223,20 @@ const initialState: InternalState = {
   showWelcomeDialog: true,
   showHelpLibrary: false,
   printIncludeSharePerHour: false,
+  // Pay period state
+  activePayPeriod: null,
+  payPeriods: [],
+  selectedDate: null,
+  dailyEntries: [],
+  dateNavigation: null,
+  runningTotals: null,
+  employeesForDate: [],
+  calculationResult: null,
+  payPeriodLoading: false,
+  saveStatus: 'idle' as const,
+  // Multi-location
+  locations: [],
+  activeLocationId: null,
 };
 
 export function DemoProvider({ children }: { children: ReactNode }) {
@@ -208,6 +268,24 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         frontendSettings.contributionRate
       );
 
+      // Load pay periods and locations in parallel (non-blocking)
+      let currentPeriod: PayPeriod | null = null;
+      let allPeriods: PayPeriod[] = [];
+      let locationsList: Array<{ id: string; name: string }> = [];
+      try {
+        const locationId = stateRef.current.locationId;
+        const [periodsResp, current, locationsResp] = await Promise.all([
+          apiGetPayPeriods(locationId || undefined),
+          apiGetCurrentPayPeriod(locationId || undefined),
+          getLocations().catch(() => []),
+        ]);
+        allPeriods = periodsResp.payPeriods;
+        currentPeriod = current;
+        locationsList = locationsResp.map((l: { id: string; name: string }) => ({ id: l.id, name: l.name }));
+      } catch (err) {
+        console.error('Failed to load pay periods:', err);
+      }
+
       setState(prev => ({
         ...prev,
         settings: frontendSettings,
@@ -218,6 +296,10 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         netPool: projectedPool,
         distributionResults: [],
         isLoading: false,
+        payPeriods: allPeriods,
+        activePayPeriod: currentPeriod,
+        locations: locationsList,
+        activeLocationId: stateRef.current.locationId || (locationsList.length > 0 ? locationsList[0].id : null),
       }));
     } catch (err) {
       console.error('Failed to load user data:', err);
@@ -263,6 +345,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
             role: session.user.role,
             email,
             locationId: session.user.locationId,
+            twoFactorEnabled: session.user.twoFactorEnabled,
+            twoFactorMethod: session.user.twoFactorMethod,
           },
           currentStep: 1,
           isDemo,
@@ -941,6 +1025,193 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // ============================================================================
+  // Pay Period actions (real accounts only)
+  // ============================================================================
+
+  const loadPayPeriods = useCallback(async () => {
+    if (stateRef.current.isDemo) return;
+    const locationId = stateRef.current.locationId;
+    try {
+      setState(prev => ({ ...prev, payPeriodLoading: true }));
+      const [periodsResp, current] = await Promise.all([
+        apiGetPayPeriods(locationId || undefined),
+        apiGetCurrentPayPeriod(locationId || undefined),
+      ]);
+      setState(prev => ({
+        ...prev,
+        payPeriods: periodsResp.payPeriods,
+        activePayPeriod: current,
+        payPeriodLoading: false,
+      }));
+    } catch (err) {
+      console.error('Failed to load pay periods:', err);
+      setState(prev => ({ ...prev, payPeriodLoading: false }));
+    }
+  }, []);
+
+  const createNewPayPeriod = useCallback(async (startDate: string, endDate: string) => {
+    if (stateRef.current.isDemo) return;
+    const locationId = stateRef.current.locationId;
+    if (!locationId) return;
+    try {
+      setState(prev => ({ ...prev, payPeriodLoading: true }));
+      const created = await apiCreatePayPeriod({ locationId, startDate, endDate });
+      setState(prev => ({
+        ...prev,
+        activePayPeriod: created,
+        payPeriods: [created, ...prev.payPeriods],
+        payPeriodLoading: false,
+        selectedDate: null,
+        dailyEntries: [],
+        dateNavigation: null,
+        runningTotals: null,
+        employeesForDate: [],
+        calculationResult: null,
+      }));
+    } catch (err) {
+      console.error('Failed to create pay period:', err);
+      setState(prev => ({ ...prev, payPeriodLoading: false, error: 'Failed to create pay period.' }));
+    }
+  }, []);
+
+  const selectPayPeriod = useCallback(async (periodId: string) => {
+    if (stateRef.current.isDemo) return;
+    try {
+      setState(prev => ({ ...prev, payPeriodLoading: true }));
+      const found = stateRef.current.payPeriods.find(p => p.id === periodId);
+      if (!found) {
+        setState(prev => ({ ...prev, payPeriodLoading: false }));
+        return;
+      }
+      // If archived, load stored distribution
+      let calcResult: CalculationResult | null = null;
+      if (found.status === 'ARCHIVED') {
+        calcResult = await apiGetDistribution(periodId);
+      }
+      setState(prev => ({
+        ...prev,
+        activePayPeriod: found,
+        payPeriodLoading: false,
+        selectedDate: null,
+        dailyEntries: [],
+        dateNavigation: null,
+        runningTotals: null,
+        employeesForDate: [],
+        calculationResult: calcResult,
+      }));
+    } catch (err) {
+      console.error('Failed to select pay period:', err);
+      setState(prev => ({ ...prev, payPeriodLoading: false }));
+    }
+  }, []);
+
+  const activatePayPeriod = useCallback(async () => {
+    if (stateRef.current.isDemo || !stateRef.current.activePayPeriod) return;
+    const periodId = stateRef.current.activePayPeriod.id;
+    try {
+      const updated = await apiUpdatePayPeriod(periodId, { status: 'ACTIVE' });
+      setState(prev => ({
+        ...prev,
+        activePayPeriod: updated,
+        payPeriods: prev.payPeriods.map(p => p.id === periodId ? updated : p),
+      }));
+    } catch (err) {
+      console.error('Failed to activate pay period:', err);
+    }
+  }, []);
+
+  const archivePayPeriod = useCallback(async () => {
+    if (stateRef.current.isDemo || !stateRef.current.activePayPeriod) return;
+    const periodId = stateRef.current.activePayPeriod.id;
+    try {
+      const updated = await apiUpdatePayPeriod(periodId, { status: 'ARCHIVED' });
+      setState(prev => ({
+        ...prev,
+        activePayPeriod: updated,
+        payPeriods: prev.payPeriods.map(p => p.id === periodId ? updated : p),
+      }));
+    } catch (err) {
+      console.error('Failed to archive pay period:', err);
+    }
+  }, []);
+
+  const selectDate = useCallback(async (date: string) => {
+    if (stateRef.current.isDemo || !stateRef.current.activePayPeriod) return;
+    const periodId = stateRef.current.activePayPeriod.id;
+    try {
+      setState(prev => ({ ...prev, payPeriodLoading: true, selectedDate: date }));
+      const [dateResp, empsResp] = await Promise.all([
+        apiGetEntriesForDate(periodId, date),
+        apiGetEmployeesForDate(periodId, date),
+      ]);
+      setState(prev => ({
+        ...prev,
+        dailyEntries: dateResp.entries,
+        dateNavigation: dateResp.navigation,
+        runningTotals: dateResp.runningTotals,
+        employeesForDate: empsResp.employees,
+        payPeriodLoading: false,
+      }));
+    } catch (err) {
+      console.error('Failed to load date entries:', err);
+      setState(prev => ({ ...prev, payPeriodLoading: false }));
+    }
+  }, []);
+
+  const saveDailyEntries = useCallback(async (entries: { employeeId: string; salesCents: number | null }[]) => {
+    if (stateRef.current.isDemo || !stateRef.current.activePayPeriod || !stateRef.current.selectedDate) return;
+    const periodId = stateRef.current.activePayPeriod.id;
+    const date = stateRef.current.selectedDate;
+    try {
+      setState(prev => ({ ...prev, saveStatus: 'saving' }));
+      const result = await apiBulkUpsertEntries(periodId, date, entries);
+      setState(prev => ({
+        ...prev,
+        dailyEntries: result.entries,
+        runningTotals: result.runningTotals,
+        saveStatus: 'saved',
+      }));
+      // Reset save status after 2s
+      setTimeout(() => {
+        setState(prev => prev.saveStatus === 'saved' ? { ...prev, saveStatus: 'idle' } : prev);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to save entries:', err);
+      setState(prev => ({ ...prev, saveStatus: 'error' }));
+    }
+  }, []);
+
+  const runCalculation = useCallback(async (employeeHours: EmployeeHours[]) => {
+    if (stateRef.current.isDemo || !stateRef.current.activePayPeriod) return;
+    const periodId = stateRef.current.activePayPeriod.id;
+    try {
+      setState(prev => ({ ...prev, payPeriodLoading: true }));
+      const result = await apiCalculateDistribution(periodId, employeeHours);
+      setState(prev => ({
+        ...prev,
+        calculationResult: result,
+        payPeriodLoading: false,
+      }));
+    } catch (err) {
+      console.error('Failed to run calculation:', err);
+      setState(prev => ({ ...prev, payPeriodLoading: false, error: 'Calculation failed.' }));
+    }
+  }, []);
+
+  const clearPayPeriodSelection = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      activePayPeriod: null,
+      selectedDate: null,
+      dailyEntries: [],
+      dateNavigation: null,
+      runningTotals: null,
+      employeesForDate: [],
+      calculationResult: null,
+    }));
+  }, []);
+
+  // ============================================================================
   // Distribution calculation (always local-only)
   // ============================================================================
 
@@ -1032,6 +1303,25 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     showWelcomeDialog: state.showWelcomeDialog,
     showHelpLibrary: state.showHelpLibrary,
     printIncludeSharePerHour: state.printIncludeSharePerHour,
+    // Pay period state
+    activePayPeriod: state.activePayPeriod,
+    payPeriods: state.payPeriods,
+    selectedDate: state.selectedDate,
+    dailyEntries: state.dailyEntries,
+    dateNavigation: state.dateNavigation,
+    runningTotals: state.runningTotals,
+    employeesForDate: state.employeesForDate,
+    calculationResult: state.calculationResult,
+    payPeriodLoading: state.payPeriodLoading,
+    saveStatus: state.saveStatus,
+    // Multi-location
+    locations: state.locations,
+    activeLocationId: state.activeLocationId,
+    switchLocation: (locationId: string) => {
+      setState(prev => ({ ...prev, activeLocationId: locationId, locationId }));
+      // Reload data for new location
+      loadUserData();
+    },
   };
 
   return (
@@ -1066,6 +1356,16 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         // Distribution
         calculateDistribution,
         setPrePaidAmount,
+        // Pay periods
+        loadPayPeriods,
+        createNewPayPeriod,
+        selectPayPeriod,
+        activatePayPeriod,
+        archivePayPeriod,
+        selectDate,
+        saveDailyEntries,
+        runCalculation,
+        clearPayPeriodSelection,
         // Demo
         resetToDefaults,
         resetSettingsToDefaults,

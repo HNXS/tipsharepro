@@ -11,6 +11,7 @@ import { authenticate, authorize } from '../middleware/auth.middleware';
 import { employeeService } from '../services/employee.service';
 import { ApiResponse, AuthenticatedRequest } from '../types/index';
 import { UserRole, EmployeeStatus } from '@prisma/client';
+import { logAudit } from '../services/audit.service';
 
 const router = Router();
 
@@ -144,11 +145,25 @@ router.put(
       const user = (req as AuthenticatedRequest).user;
       const { employeeId } = req.params;
 
+      // Fetch before state for audit
+      const before = await employeeService.getById(user.organizationId, employeeId);
+
       const employee = await employeeService.update(
         user.organizationId,
         employeeId,
         req.body
       );
+
+      await logAudit({
+        orgId: user.organizationId,
+        userId: user.id,
+        action: 'UPDATE',
+        entityType: 'Employee',
+        entityId: employeeId,
+        before: JSON.parse(JSON.stringify(before)),
+        after: JSON.parse(JSON.stringify(employee)),
+        req,
+      });
 
       res.status(200).json({
         status: 'success',
@@ -175,6 +190,8 @@ router.put(
       const user = (req as AuthenticatedRequest).user;
       const { employeeId } = req.params;
 
+      const before = await employeeService.getById(user.organizationId, employeeId);
+
       const employee = await employeeService.correctName(
         user.organizationId,
         user.id,
@@ -182,6 +199,17 @@ router.put(
         req.body.name,
         req.body.reason
       );
+
+      await logAudit({
+        orgId: user.organizationId,
+        userId: user.id,
+        action: 'NAME_CORRECTION',
+        entityType: 'Employee',
+        entityId: employeeId,
+        before: { name: before.name },
+        after: { name: req.body.name, reason: req.body.reason },
+        req,
+      });
 
       res.status(200).json({
         status: 'success',
@@ -207,7 +235,19 @@ router.delete(
       const user = (req as AuthenticatedRequest).user;
       const { employeeId } = req.params;
 
+      const before = await employeeService.getById(user.organizationId, employeeId);
+
       await employeeService.delete(user.organizationId, employeeId);
+
+      await logAudit({
+        orgId: user.organizationId,
+        userId: user.id,
+        action: 'DELETE',
+        entityType: 'Employee',
+        entityId: employeeId,
+        before: JSON.parse(JSON.stringify(before)),
+        req,
+      });
 
       res.status(200).json({
         status: 'success',

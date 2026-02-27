@@ -42,6 +42,8 @@ export interface SessionInfo {
     companyName: string;
     locationId: string | null;
     locationName: string | null;
+    twoFactorEnabled: boolean;
+    twoFactorMethod: string | null;
   };
   organization: {
     id: string;
@@ -214,6 +216,8 @@ export class AuthService {
         companyName: user.organization.name,
         locationId: user.locationId || null,
         locationName: user.location?.name || null,
+        twoFactorEnabled: user.twoFactorEnabled,
+        twoFactorMethod: user.twoFactorMethod,
       },
       organization: {
         id: user.organization.id,

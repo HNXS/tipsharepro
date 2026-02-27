@@ -106,6 +106,7 @@ router.post(
   validate(
     z.object({
       totalPoolCents: z.number().int().positive(),
+      roundingMode: z.enum(['NEAREST', 'DOWN']).optional(),
       employees: z.array(
         z.object({
           employeeId: z.string(),
@@ -129,18 +130,19 @@ router.post(
       {
         totalPoolCents: number;
         employees: EmployeeCalculationInput[];
+        roundingMode?: 'NEAREST' | 'DOWN';
       }
     >,
     res: Response<ApiResponse>,
     next: NextFunction
   ) => {
     try {
-      const { totalPoolCents, employees } = req.body;
+      const { totalPoolCents, employees, roundingMode } = req.body;
 
-      logger.debug({ totalPoolCents, employeeCount: employees.length }, 'Preview calculation');
+      logger.debug({ totalPoolCents, employeeCount: employees.length, roundingMode }, 'Preview calculation');
 
       // Use the pure calculation function (no database)
-      const distribution = calculatePoolDistribution(employees, totalPoolCents);
+      const distribution = calculatePoolDistribution(employees, totalPoolCents, roundingMode || 'NEAREST');
 
       const totalHours = distribution.reduce((sum, d) => sum + d.hoursWorked, 0);
       const distributedCents = distribution.reduce((sum, d) => sum + d.receivedCents, 0);

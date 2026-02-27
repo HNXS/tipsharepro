@@ -19,6 +19,7 @@ import {
 } from '../types/index';
 import { CalculationError, NotFoundError } from '../utils/errors';
 import { logger } from '../utils/logger';
+import { settingsService } from './settings.service';
 
 // Configure Decimal.js for financial precision
 Decimal.set({ precision: 20, rounding: Decimal.ROUND_HALF_UP });
@@ -95,8 +96,12 @@ export class TipCalculationService {
       throw new CalculationError('No employees with hours found for calculation');
     }
 
-    // 5. Run the core calculation
-    const internalResults = this.runCalculation(calculationInputs, totalPoolCents);
+    // 5. Get rounding mode from org settings
+    const orgSettings = await settingsService.getSettings(payPeriod.organizationId);
+    const roundingMode = orgSettings.settings.roundingMode || 'NEAREST';
+
+    // 5b. Run the core calculation
+    const internalResults = this.runCalculation(calculationInputs, totalPoolCents, roundingMode);
 
     // 6. Apply rounding reconciliation
     const reconciledResults = this.reconcileRounding(internalResults, totalPoolCents);
@@ -182,7 +187,8 @@ export class TipCalculationService {
    */
   private runCalculation(
     employees: EmployeeCalculationInput[],
-    totalPoolCents: number
+    totalPoolCents: number,
+    roundingMode: 'NEAREST' | 'DOWN' = 'NEAREST'
   ): InternalDistributionResult[] {
     // Step 1: Calculate basis for each employee
     const resultsWithBasis = employees.map(emp => {
@@ -210,8 +216,10 @@ export class TipCalculationService {
       const percentage = new Decimal(emp._basis).dividedBy(totalBasis);
       const shareCents = percentage.times(totalPoolCents);
 
-      // Convert to whole dollars (cents) for received amount
-      const receivedCents = shareCents.round().toNumber();
+      // Apply rounding mode: NEAREST = Math.round, DOWN = Math.floor
+      const receivedCents = roundingMode === 'DOWN'
+        ? shareCents.floor().toNumber()
+        : shareCents.round().toNumber();
 
       return {
         employeeId: emp.employeeId,
@@ -444,7 +452,8 @@ export class TipCalculationService {
  */
 export function calculatePoolDistribution(
   employees: EmployeeCalculationInput[],
-  totalPoolCents: number
+  totalPoolCents: number,
+  roundingMode: 'NEAREST' | 'DOWN' = 'NEAREST'
 ): EmployeeDistributionResult[] {
   if (employees.length === 0) {
     return [];
@@ -507,7 +516,9 @@ export function calculatePoolDistribution(
   const results = withBasis.map(({ emp, basis }) => {
     const percentage = new Decimal(basis).dividedBy(totalBasis);
     const shareCents = percentage.times(totalPoolCents);
-    const receivedCents = shareCents.round().toNumber();
+    const receivedCents = roundingMode === 'DOWN'
+      ? shareCents.floor().toNumber()
+      : shareCents.round().toNumber();
 
     return {
       employeeId: emp.employeeId,

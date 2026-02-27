@@ -6,6 +6,7 @@ import SubscriptionBanner from '@/components/SubscriptionBanner';
 import LoginPage from '@/components/LoginPage';
 import SettingsPage from '@/components/SettingsPage';
 import DistributionTable from '@/components/DistributionTable';
+import PayPeriodBar from '@/components/PayPeriodBar';
 import WelcomeDialog from '@/components/WelcomeDialog';
 import HelpLibraryDialog from '@/components/HelpLibraryDialog';
 import { Loader2 } from 'lucide-react';
@@ -41,6 +42,9 @@ export default function Home() {
           <SettingsPage />
         </section>
         
+        {/* Pay Period Bar (real accounts only) */}
+        <PayPeriodBar />
+
         {/* Divider */}
         <div className="section-divider" />
         
