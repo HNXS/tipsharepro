@@ -222,8 +222,31 @@ router.put(
 );
 
 /**
+ * DELETE /employees/samples
+ * Hard-delete all sample employees (Admin only)
+ */
+router.delete(
+  '/samples',
+  authenticate,
+  authorize(UserRole.ADMIN),
+  async (req: Request, res: Response<ApiResponse>, next: NextFunction) => {
+    try {
+      const user = (req as AuthenticatedRequest).user;
+      const count = await employeeService.clearSamples(user.organizationId);
+
+      res.status(200).json({
+        status: 'success',
+        data: { message: `Cleared ${count} sample employees`, count },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
  * DELETE /employees/:employeeId
- * Soft-delete an employee (Admin only)
+ * Delete an employee (Admin only) — samples are hard-deleted, real employees are soft-deleted
  */
 router.delete(
   '/:employeeId',
