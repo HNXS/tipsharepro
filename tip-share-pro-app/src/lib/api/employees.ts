@@ -107,6 +107,13 @@ export async function deleteEmployee(
   return del<{ message: string }>(`/employees/${employeeId}`);
 }
 
+/**
+ * Clear all sample employees (hard-delete)
+ */
+export async function clearSampleEmployees(): Promise<{ message: string; count: number }> {
+  return del<{ message: string; count: number }>('/employees/samples');
+}
+
 // ============================================================================
 // Helpers
 // ============================================================================

@@ -69,6 +69,7 @@ export {
   createEmployee,
   updateEmployee,
   deleteEmployee,
+  clearSampleEmployees,
   dollarsToCents,
   centsToDollars,
 } from './employees';

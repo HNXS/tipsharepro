@@ -29,6 +29,7 @@ import {
   createEmployee as apiCreateEmployee,
   updateEmployee as apiUpdateEmployee,
   deleteEmployee as apiDeleteEmployee,
+  clearSampleEmployees,
   updateSettings as apiUpdateSettings,
   createJobCategory as apiCreateJobCategory,
   updateJobCategory as apiUpdateJobCategory,
@@ -102,6 +103,8 @@ interface ExtendedDemoState extends DemoState {
   calculationResult: CalculationResult | null;
   payPeriodLoading: boolean;
   saveStatus: 'idle' | 'saving' | 'saved' | 'error';
+  // Sample employee tracking
+  hasSampleEmployees: boolean;
   // Multi-location support
   locations: Array<{ id: string; name: string }>;
   activeLocationId: string | null;
@@ -177,6 +180,8 @@ interface DemoContextType {
   runCalculation: (employeeHours: EmployeeHours[]) => Promise<void>;
   clearPayPeriodSelection: () => void;
   closeDailyEntry: () => void;
+  // Sample data
+  clearSamples: () => Promise<void>;
   // Loading state
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -235,6 +240,8 @@ const initialState: InternalState = {
   calculationResult: null,
   payPeriodLoading: false,
   saveStatus: 'idle' as const,
+  // Sample employees
+  hasSampleEmployees: false,
   // Multi-location
   locations: [],
   activeLocationId: null,
@@ -263,6 +270,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       // Map API types to frontend types
       const frontendCategories = categoriesResp.categories.map(mapApiJobCategoryToFrontend);
       const frontendEmployees = employeesResp.employees.map(mapApiEmployeeToFrontend);
+      const hasSamples = employeesResp.employees.some((e: { isSample?: boolean }) => e.isSample === true);
       const frontendSettings = mapApiSettingsToFrontend(settingsResp, frontendCategories);
 
       const projectedPool = calculateProjectedPool(
@@ -298,6 +306,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         netPool: projectedPool,
         distributionResults: [],
         isLoading: false,
+        hasSampleEmployees: hasSamples,
         payPeriods: allPeriods,
         activePayPeriod: currentPeriod,
         locations: locationsList,
@@ -1253,6 +1262,17 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const clearSamples = useCallback(async () => {
+    if (stateRef.current.isDemo) return;
+    try {
+      await clearSampleEmployees();
+      setState(prev => ({ ...prev, hasSampleEmployees: false }));
+      await loadUserData();
+    } catch (err) {
+      console.error('Failed to clear sample employees:', err);
+    }
+  }, [loadUserData]);
+
   // ============================================================================
   // Distribution calculation (always local-only)
   // ============================================================================
@@ -1356,6 +1376,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     calculationResult: state.calculationResult,
     payPeriodLoading: state.payPeriodLoading,
     saveStatus: state.saveStatus,
+    // Sample employees
+    hasSampleEmployees: state.hasSampleEmployees,
     // Multi-location
     locations: state.locations,
     activeLocationId: state.activeLocationId,
@@ -1409,6 +1431,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         runCalculation,
         clearPayPeriodSelection,
         closeDailyEntry,
+        // Sample data
+        clearSamples,
         // Demo
         resetToDefaults,
         resetSettingsToDefaults,
