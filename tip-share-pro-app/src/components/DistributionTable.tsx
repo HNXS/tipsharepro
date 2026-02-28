@@ -408,6 +408,7 @@ export default function DistributionTable() {
     resetDistributionToDefaults,
     resetToDefaults,
     handleLogout,
+    clearSamples,
   } = useDemo();
 
   const { settings, employees, distributionResults, projectedPool, prePaidAmount, netPool, printIncludeSharePerHour } = state;
@@ -645,6 +646,22 @@ export default function DistributionTable() {
           )}
         </div>
       </div>
+
+      {/* Sample Data Banner */}
+      {state.hasSampleEmployees && !isDemo && (
+        <div className="sample-data-banner">
+          <span className="sample-data-banner-icon">i</span>
+          <span className="sample-data-banner-text">
+            You&apos;re viewing sample employees. Edit them to explore, or clear them to start fresh.
+          </span>
+          <button
+            onClick={clearSamples}
+            className="btn btn-outline btn-sm sample-data-banner-btn"
+          >
+            Clear All Samples
+          </button>
+        </div>
+      )}
 
       {/* Stat Cards Row */}
       <div className="stat-cards-container">
