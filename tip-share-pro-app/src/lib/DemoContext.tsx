@@ -958,7 +958,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   // Reset functions (demo = defaults, real = re-fetch from API)
   // ============================================================================
 
-  const resetToDefaults = useCallback(() => {
+  const resetToDefaults = useCallback(async () => {
     if (stateRef.current.isDemo) {
       setState(prev => {
         const projectedPool = calculateProjectedPool(
@@ -977,12 +977,18 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         };
       });
     } else {
+      // Reset settings in DB to defaults, then reload everything
       setState(prev => ({ ...prev, isLoading: true }));
-      loadUserData();
+      try {
+        await apiUpdateSettings(mapFrontendSettingsToUpdateRequest(DEFAULT_SETTINGS));
+      } catch (err) {
+        console.error('Failed to reset settings:', err);
+      }
+      await loadUserData();
     }
   }, [loadUserData]);
 
-  const resetSettingsToDefaults = useCallback(() => {
+  const resetSettingsToDefaults = useCallback(async () => {
     if (stateRef.current.isDemo) {
       setState(prev => {
         const projectedPool = calculateProjectedPool(
@@ -999,12 +1005,18 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         };
       });
     } else {
+      // Reset settings in DB to defaults, then reload
       setState(prev => ({ ...prev, isLoading: true }));
-      loadUserData();
+      try {
+        await apiUpdateSettings(mapFrontendSettingsToUpdateRequest(DEFAULT_SETTINGS));
+      } catch (err) {
+        console.error('Failed to reset settings:', err);
+      }
+      await loadUserData();
     }
   }, [loadUserData]);
 
-  const resetDistributionToDefaults = useCallback(() => {
+  const resetDistributionToDefaults = useCallback(async () => {
     if (stateRef.current.isDemo) {
       setState(prev => ({
         ...prev,
@@ -1014,9 +1026,9 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         distributionResults: [],
       }));
     } else {
-      // For real accounts, re-fetch employees from API (resets hours/weights to 0)
+      // Re-fetch employees from API (resets local hours/weights to 0)
       setState(prev => ({ ...prev, isLoading: true }));
-      loadUserData();
+      await loadUserData();
     }
   }, [loadUserData]);
 
