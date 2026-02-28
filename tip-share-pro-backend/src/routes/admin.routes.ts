@@ -8,6 +8,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { prisma } from '../utils/prisma';
 import bcrypt from 'bcryptjs';
 import { config } from '../config/index';
+import { SAMPLE_JOB_CATEGORIES, SAMPLE_EMPLOYEES, SAMPLE_ORG_SETTINGS } from '../constants/sample-data';
 
 const router = Router();
 
@@ -102,12 +103,62 @@ router.post('/organizations', async (req: Request, res: Response) => {
       });
     }
 
-    const organization = await prisma.organization.create({
-      data: {
-        name,
-        subscriptionStatus,
-        settings: {},
-      }
+    const DEMO_DURATION_DAYS = 14;
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + DEMO_DURATION_DAYS);
+
+    const organization = await prisma.$transaction(async (tx: any) => {
+      // 1. Create organization with default settings
+      const org = await tx.organization.create({
+        data: {
+          name,
+          subscriptionStatus,
+          trialEndsAt,
+          settings: SAMPLE_ORG_SETTINGS as any,
+        },
+      });
+
+      // 2. Create default location
+      const location = await tx.location.create({
+        data: {
+          organizationId: org.id,
+          name: 'Main Location',
+          number: '001',
+        },
+      });
+
+      // 3. Create job categories
+      await tx.jobCategory.createMany({
+        data: SAMPLE_JOB_CATEGORIES.map(cat => ({
+          organizationId: org.id,
+          name: cat.name,
+          weight: cat.weight,
+          badgeColor: cat.badgeColor,
+        })),
+      });
+
+      // 4. Look up created categories by name → id
+      const createdCategories = await tx.jobCategory.findMany({
+        where: { organizationId: org.id },
+      });
+      const categoryMap = new Map(createdCategories.map((c: any) => [c.name, c.id]));
+
+      // 5. Create sample employees
+      const now = new Date();
+      await tx.employee.createMany({
+        data: SAMPLE_EMPLOYEES.map(emp => ({
+          organizationId: org.id,
+          locationId: location.id,
+          jobCategoryId: categoryMap.get(emp.jobCategoryName)!,
+          name: emp.name,
+          hourlyRateCents: emp.hourlyRateCents,
+          isSample: true,
+          hiredAt: now,
+          status: 'ACTIVE' as const,
+        })),
+      });
+
+      return org;
     });
 
     res.status(201).json({
@@ -504,14 +555,17 @@ router.post('/accounts', async (req: Request, res: Response) => {
     trialEndsAt.setDate(trialEndsAt.getDate() + days);
 
     const user = await prisma.$transaction(async (tx: any) => {
+      // 1. Create organization with default settings
       const organization = await tx.organization.create({
         data: {
           name: orgName,
           subscriptionStatus,
           trialEndsAt: subscriptionStatus === 'ACTIVE' ? null : trialEndsAt,
+          settings: SAMPLE_ORG_SETTINGS as any,
         },
       });
 
+      // 2. Create default location
       const location = await tx.location.create({
         data: {
           organizationId: organization.id,
@@ -520,6 +574,38 @@ router.post('/accounts', async (req: Request, res: Response) => {
         },
       });
 
+      // 3. Create job categories
+      await tx.jobCategory.createMany({
+        data: SAMPLE_JOB_CATEGORIES.map(cat => ({
+          organizationId: organization.id,
+          name: cat.name,
+          weight: cat.weight,
+          badgeColor: cat.badgeColor,
+        })),
+      });
+
+      // 4. Look up created categories by name → id
+      const createdCategories = await tx.jobCategory.findMany({
+        where: { organizationId: organization.id },
+      });
+      const categoryMap = new Map(createdCategories.map((c: any) => [c.name, c.id]));
+
+      // 5. Create sample employees
+      const now = new Date();
+      await tx.employee.createMany({
+        data: SAMPLE_EMPLOYEES.map(emp => ({
+          organizationId: organization.id,
+          locationId: location.id,
+          jobCategoryId: categoryMap.get(emp.jobCategoryName)!,
+          name: emp.name,
+          hourlyRateCents: emp.hourlyRateCents,
+          isSample: true,
+          hiredAt: now,
+          status: 'ACTIVE' as const,
+        })),
+      });
+
+      // 6. Create user
       return tx.user.create({
         data: {
           organizationId: organization.id,
