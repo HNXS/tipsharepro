@@ -5,25 +5,27 @@
 
 import { Decimal } from '@prisma/client/runtime/library';
 
-// Badge colors from job-category.service.ts BADGE_COLORS map
+// Badge colors must match the frontend CATEGORY_COLOR_MAP hex values
+// so that hexToCategoryColor() maps them to the correct category group.
+// boh=#E85D04, foh=#8E44AD, bar=#35A0D2, support=#82B536
 export const SAMPLE_JOB_CATEGORIES = [
-  // BOH (Kitchen) — weight 3.00
-  { name: 'Lead Cook',    weight: new Decimal(3.00), badgeColor: '#DC2626' },
-  { name: 'Line Cook',    weight: new Decimal(3.00), badgeColor: '#EA580C' },
-  { name: 'Pastry Chef',  weight: new Decimal(3.00), badgeColor: '#D97706' },
-  { name: 'Pantry Chef',  weight: new Decimal(3.00), badgeColor: '#65A30D' },
-  // FOH (Non-Tipped) — weight 2.00
-  { name: 'Host/Hostess', weight: new Decimal(2.00), badgeColor: '#0284C7' },
-  { name: 'Busser',       weight: new Decimal(2.00), badgeColor: '#7C3AED' },
-  { name: 'Cashier',      weight: new Decimal(2.00), badgeColor: '#2563EB' },
-  { name: 'Runner',       weight: new Decimal(2.00), badgeColor: '#4F46E5' },
-  // Bar — weight 4.00
-  { name: 'Bartender',    weight: new Decimal(4.00), badgeColor: '#C026D3' },
-  { name: 'Barista',      weight: new Decimal(4.00), badgeColor: '#9333EA' },
-  { name: 'Bar Back',     weight: new Decimal(4.00), badgeColor: '#E11D48' },
-  // Support — weight 1.00
-  { name: 'Dishwasher',   weight: new Decimal(1.00), badgeColor: '#64748B' },
-  { name: 'Prep Cook',    weight: new Decimal(1.00), badgeColor: '#CA8A04' },
+  // BOH (Kitchen) — weight 3.00, hex #E85D04
+  { name: 'Lead Cook',    weight: new Decimal(3.00), badgeColor: '#E85D04' },
+  { name: 'Line Cook',    weight: new Decimal(3.00), badgeColor: '#E85D04' },
+  { name: 'Pastry Chef',  weight: new Decimal(3.00), badgeColor: '#E85D04' },
+  { name: 'Pantry Chef',  weight: new Decimal(3.00), badgeColor: '#E85D04' },
+  // FOH (Non-Tipped) — weight 2.00, hex #8E44AD
+  { name: 'Host/Hostess', weight: new Decimal(2.00), badgeColor: '#8E44AD' },
+  { name: 'Busser',       weight: new Decimal(2.00), badgeColor: '#8E44AD' },
+  { name: 'Cashier',      weight: new Decimal(2.00), badgeColor: '#8E44AD' },
+  { name: 'Runner',       weight: new Decimal(2.00), badgeColor: '#8E44AD' },
+  // Bar — weight 4.00, hex #35A0D2
+  { name: 'Bartender',    weight: new Decimal(4.00), badgeColor: '#35A0D2' },
+  { name: 'Barista',      weight: new Decimal(4.00), badgeColor: '#35A0D2' },
+  { name: 'Bar Back',     weight: new Decimal(4.00), badgeColor: '#35A0D2' },
+  // Support — weight 1.00, hex #82B536
+  { name: 'Dishwasher',   weight: new Decimal(1.00), badgeColor: '#82B536' },
+  { name: 'Prep Cook',    weight: new Decimal(1.00), badgeColor: '#82B536' },
 ];
 
 // Sample employees — reference category by name, resolved to ID during seeding
