@@ -301,9 +301,11 @@ export class EmployeeService {
     }
 
     if (employee.isSample) {
-      // Hard-delete sample employees — no audit trail needed
-      await prisma.employee.delete({
-        where: { id: employeeId },
+      // Hard-delete sample employees — clean up related records first
+      await prisma.$transaction(async (tx) => {
+        await tx.dailyEntry.deleteMany({ where: { employeeId } });
+        await tx.distribution.deleteMany({ where: { employeeId } });
+        await tx.employee.delete({ where: { id: employeeId } });
       });
     } else {
       // Soft-delete real employees
@@ -318,16 +320,25 @@ export class EmployeeService {
   }
 
   /**
-   * Hard-delete all sample employees for an organization
+   * Hard-delete all sample employees for an organization.
+   * Also deletes related daily entries and distributions first to avoid FK violations.
    */
   async clearSamples(organizationId: string): Promise<number> {
-    const result = await prisma.employee.deleteMany({
-      where: {
-        organizationId,
-        isSample: true,
-      },
+    // Find sample employee IDs first
+    const sampleEmployees = await prisma.employee.findMany({
+      where: { organizationId, isSample: true },
+      select: { id: true },
     });
-    return result.count;
+    const ids = sampleEmployees.map(e => e.id);
+    if (ids.length === 0) return 0;
+
+    // Delete related records, then employees, in a transaction
+    return prisma.$transaction(async (tx) => {
+      await tx.dailyEntry.deleteMany({ where: { employeeId: { in: ids } } });
+      await tx.distribution.deleteMany({ where: { employeeId: { in: ids } } });
+      const result = await tx.employee.deleteMany({ where: { id: { in: ids } } });
+      return result.count;
+    });
   }
 
   /**
