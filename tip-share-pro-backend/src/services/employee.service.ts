@@ -27,6 +27,7 @@ export interface EmployeeResponse {
   hourlyRate: number;        // Dollars for display
   hourlyRateCents: number;   // Cents for storage
   status: EmployeeStatus;
+  isSample: boolean;
   hiredAt: string;
   terminatedAt: string | null;
   createdAt: string;
@@ -285,7 +286,7 @@ export class EmployeeService {
   }
 
   /**
-   * Soft-delete an employee (set status to TERMINATED)
+   * Delete an employee — hard-delete samples, soft-delete real employees
    */
   async delete(organizationId: string, employeeId: string): Promise<void> {
     const employee = await prisma.employee.findFirst({
@@ -299,13 +300,34 @@ export class EmployeeService {
       throw new NotFoundError('Employee', employeeId);
     }
 
-    await prisma.employee.update({
-      where: { id: employeeId },
-      data: {
-        status: 'TERMINATED',
-        terminatedAt: new Date(),
+    if (employee.isSample) {
+      // Hard-delete sample employees — no audit trail needed
+      await prisma.employee.delete({
+        where: { id: employeeId },
+      });
+    } else {
+      // Soft-delete real employees
+      await prisma.employee.update({
+        where: { id: employeeId },
+        data: {
+          status: 'TERMINATED',
+          terminatedAt: new Date(),
+        },
+      });
+    }
+  }
+
+  /**
+   * Hard-delete all sample employees for an organization
+   */
+  async clearSamples(organizationId: string): Promise<number> {
+    const result = await prisma.employee.deleteMany({
+      where: {
+        organizationId,
+        isSample: true,
       },
     });
+    return result.count;
   }
 
   /**
@@ -317,6 +339,7 @@ export class EmployeeService {
     locationId: string;
     hourlyRateCents: number;
     status: EmployeeStatus;
+    isSample: boolean;
     hiredAt: Date;
     terminatedAt: Date | null;
     createdAt: Date;
@@ -338,6 +361,7 @@ export class EmployeeService {
       hourlyRate: employee.hourlyRateCents / 100,
       hourlyRateCents: employee.hourlyRateCents,
       status: employee.status,
+      isSample: employee.isSample,
       hiredAt: employee.hiredAt.toISOString(),
       terminatedAt: employee.terminatedAt?.toISOString() || null,
       createdAt: employee.createdAt.toISOString(),

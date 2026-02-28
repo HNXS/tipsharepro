@@ -24,6 +24,7 @@ export interface Employee {
   hourlyRate: number;          // Dollars
   hourlyRateCents: number;     // Cents
   status: 'ACTIVE' | 'TERMINATED';
+  isSample: boolean;
   hiredAt: string;
   terminatedAt: string | null;
   createdAt: string;
