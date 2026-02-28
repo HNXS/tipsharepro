@@ -11,6 +11,7 @@ import { config } from '../config/index';
 import { UnauthorizedError, ConflictError } from '../utils/errors';
 import { JwtPayload } from '../types/index';
 import { User, Organization } from '@prisma/client';
+import { SAMPLE_JOB_CATEGORIES, SAMPLE_EMPLOYEES, SAMPLE_ORG_SETTINGS } from '../constants/sample-data';
 
 // Types
 export interface LoginResult {
@@ -136,14 +137,17 @@ export class AuthService {
     trialEndsAt.setDate(trialEndsAt.getDate() + DEMO_DURATION_DAYS);
 
     const user = await prisma.$transaction(async (tx) => {
+      // 1. Create Organization with default settings
       const organization = await tx.organization.create({
         data: {
           name: orgName,
           subscriptionStatus: 'DEMO',
           trialEndsAt,
+          settings: SAMPLE_ORG_SETTINGS as unknown as import('@prisma/client').Prisma.InputJsonValue,
         },
       });
 
+      // 2. Create Location
       const location = await tx.location.create({
         data: {
           organizationId: organization.id,
@@ -152,6 +156,38 @@ export class AuthService {
         },
       });
 
+      // 3. Create job categories
+      await tx.jobCategory.createMany({
+        data: SAMPLE_JOB_CATEGORIES.map(cat => ({
+          organizationId: organization.id,
+          name: cat.name,
+          weight: cat.weight,
+          badgeColor: cat.badgeColor,
+        })),
+      });
+
+      // 4. Look up created categories by name → id
+      const createdCategories = await tx.jobCategory.findMany({
+        where: { organizationId: organization.id },
+      });
+      const categoryMap = new Map(createdCategories.map(c => [c.name, c.id]));
+
+      // 5. Create sample employees
+      const now = new Date();
+      await tx.employee.createMany({
+        data: SAMPLE_EMPLOYEES.map(emp => ({
+          organizationId: organization.id,
+          locationId: location.id,
+          jobCategoryId: categoryMap.get(emp.jobCategoryName)!,
+          name: emp.name,
+          hourlyRateCents: emp.hourlyRateCents,
+          isSample: true,
+          hiredAt: now,
+          status: 'ACTIVE' as const,
+        })),
+      });
+
+      // 6. Create User
       return tx.user.create({
         data: {
           organizationId: organization.id,
