@@ -7806,3 +7806,20 @@ html {
   align-items: center;
   gap: 0.25rem;
 }
+
+/* Contribution Grid - horizontal scroll with sticky name column */
+.contribution-grid-wrapper {
+  overflow-x: auto;
+}
+
+.contribution-grid-wrapper .table th:first-child,
+.contribution-grid-wrapper .table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--bg-surface);
+}
+
+.contribution-grid-wrapper .table-total td:first-child {
+  background: var(--bg-elevated);
+}

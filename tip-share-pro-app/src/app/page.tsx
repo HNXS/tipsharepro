@@ -15,6 +15,8 @@ import LocationManagement from '@/components/LocationManagement';
 import ScenarioSandbox from '@/components/ScenarioSandbox';
 import TwoFactorSetup from '@/components/TwoFactorSetup';
 import BillingPage from '@/components/BillingPage';
+import DailyContributionGrid from '@/components/DailyContributionGrid';
+import PayPeriodContributionSummary from '@/components/PayPeriodContributionSummary';
 import DailyEntryModal from '@/components/DailyEntryModal';
 import SessionMonitor from '@/components/SessionMonitor';
 import { X, Calculator, AlertCircle } from 'lucide-react';
@@ -71,6 +73,16 @@ export default function Home() {
         <section id="settings-section">
           <SettingsPage />
         </section>
+
+        {/* Contribution Tables (real accounts, non-draft periods) */}
+        {!isDemo && state.activePayPeriod && state.activePayPeriod.status !== 'DRAFT' && (
+          <section id="contributions-section">
+            <div className="section-divider" />
+            <DailyContributionGrid />
+            <div style={{ marginTop: '1rem' }} />
+            <PayPeriodContributionSummary />
+          </section>
+        )}
 
         {/* Divider */}
         <div className="section-divider" />
