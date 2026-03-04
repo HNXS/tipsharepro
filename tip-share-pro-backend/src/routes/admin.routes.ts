@@ -478,8 +478,12 @@ router.get('/stats', async (req: Request, res: Response) => {
     const [
       totalOrgs,
       orgsByStatus,
+      orgsByPlan,
+      activeSubscriptions,
       totalUsers,
       totalLocations,
+      totalLeads,
+      urgentLeads,
       recentLogins
     ] = await Promise.all([
       prisma.organization.count(),
@@ -487,8 +491,34 @@ router.get('/stats', async (req: Request, res: Response) => {
         by: ['subscriptionStatus'],
         _count: true,
       }),
+      prisma.organization.groupBy({
+        by: ['subscriptionPlan'],
+        where: { subscriptionStatus: 'ACTIVE', subscriptionPlan: { not: null } },
+        _count: true,
+      }),
+      prisma.organization.findMany({
+        where: { subscriptionStatus: 'ACTIVE' },
+        select: {
+          id: true,
+          name: true,
+          subscriptionPlan: true,
+          subscriptionStartedAt: true,
+          subscriptionRenewsAt: true,
+          _count: { select: { locations: true, users: true } },
+        },
+        orderBy: { subscriptionRenewsAt: 'asc' },
+      }),
       prisma.user.count(),
       prisma.location.count(),
+      prisma.lead.count({
+        where: { status: { notIn: ['SUBSCRIBED', 'EXPIRED', 'DISQUALIFIED'] } },
+      }),
+      prisma.lead.count({
+        where: {
+          viabilityDeadline: { lte: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) },
+          status: { notIn: ['SUBSCRIBED', 'EXPIRED', 'DISQUALIFIED'] },
+        },
+      }),
       prisma.user.findMany({
         where: {
           lastLoginAt: { not: null }
@@ -505,6 +535,13 @@ router.get('/stats', async (req: Request, res: Response) => {
       })
     ]);
 
+    const planBreakdown = orgsByPlan.reduce((acc, curr) => {
+      if (curr.subscriptionPlan) {
+        acc[curr.subscriptionPlan] = curr._count;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
     res.json({
       status: 'success',
       data: {
@@ -513,6 +550,14 @@ router.get('/stats', async (req: Request, res: Response) => {
           acc[curr.subscriptionStatus] = curr._count;
           return acc;
         }, {} as Record<string, number>),
+        subscriptions: {
+          total: (planBreakdown.MONTHLY || 0) + (planBreakdown.ANNUAL || 0),
+          monthly: planBreakdown.MONTHLY || 0,
+          annual: planBreakdown.ANNUAL || 0,
+          details: activeSubscriptions,
+        },
+        openLeads: totalLeads,
+        urgentLeads,
         totalUsers,
         totalLocations,
         recentLogins,
@@ -721,6 +766,342 @@ router.put('/accounts/:orgId/extend', async (req: Request, res: Response) => {
     res.status(500).json({
       status: 'error',
       error: { code: 'SERVER_ERROR', message: 'Failed to extend trial' },
+    });
+  }
+});
+
+// ============================================================================
+// PLATFORM SETTINGS (Autopilot toggles, etc.)
+// ============================================================================
+
+/**
+ * GET /admin/settings - Get all platform settings
+ */
+router.get('/settings', async (req: Request, res: Response) => {
+  try {
+    const settings = await prisma.platformSetting.findMany();
+    const settingsMap = settings.reduce((acc, s) => {
+      acc[s.key] = s.value;
+      return acc;
+    }, {} as Record<string, string>);
+
+    res.json({
+      status: 'success',
+      data: {
+        autopilotDemo: settingsMap['autopilot_demo'] === 'true',
+        autopilotTrial: settingsMap['autopilot_trial'] === 'true',
+        clockDateFormat: settingsMap['clock_date_format'] || 'Mon DD, YYYY',
+        clockTimeFormat: settingsMap['clock_time_format'] || '12h',
+        clockTimeZone: settingsMap['clock_time_zone'] || 'America/New_York',
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching platform settings:', error);
+    res.status(500).json({
+      status: 'error',
+      error: { code: 'SERVER_ERROR', message: 'Failed to fetch settings' }
+    });
+  }
+});
+
+/**
+ * PATCH /admin/settings - Update platform settings
+ */
+router.patch('/settings', async (req: Request, res: Response) => {
+  try {
+    const { autopilotDemo, autopilotTrial, clockDateFormat, clockTimeFormat, clockTimeZone } = req.body;
+
+    const updates: Array<{ key: string; value: string }> = [];
+    if (typeof autopilotDemo === 'boolean') {
+      updates.push({ key: 'autopilot_demo', value: String(autopilotDemo) });
+    }
+    if (typeof autopilotTrial === 'boolean') {
+      updates.push({ key: 'autopilot_trial', value: String(autopilotTrial) });
+    }
+    if (typeof clockDateFormat === 'string') {
+      updates.push({ key: 'clock_date_format', value: clockDateFormat });
+    }
+    if (typeof clockTimeFormat === 'string') {
+      updates.push({ key: 'clock_time_format', value: clockTimeFormat });
+    }
+    if (typeof clockTimeZone === 'string') {
+      updates.push({ key: 'clock_time_zone', value: clockTimeZone });
+    }
+
+    for (const { key, value } of updates) {
+      await prisma.platformSetting.upsert({
+        where: { key },
+        update: { value },
+        create: { key, value },
+      });
+    }
+
+    const settings = await prisma.platformSetting.findMany();
+    const settingsMap = settings.reduce((acc, s) => {
+      acc[s.key] = s.value;
+      return acc;
+    }, {} as Record<string, string>);
+
+    res.json({
+      status: 'success',
+      data: {
+        autopilotDemo: settingsMap['autopilot_demo'] === 'true',
+        autopilotTrial: settingsMap['autopilot_trial'] === 'true',
+        clockDateFormat: settingsMap['clock_date_format'] || 'Mon DD, YYYY',
+        clockTimeFormat: settingsMap['clock_time_format'] || '12h',
+        clockTimeZone: settingsMap['clock_time_zone'] || 'America/New_York',
+      }
+    });
+  } catch (error) {
+    console.error('Error updating platform settings:', error);
+    res.status(500).json({
+      status: 'error',
+      error: { code: 'SERVER_ERROR', message: 'Failed to update settings' }
+    });
+  }
+});
+
+// ============================================================================
+// LEADS PIPELINE
+// ============================================================================
+
+/**
+ * GET /admin/leads - List all leads with optional filters
+ */
+router.get('/leads', async (req: Request, res: Response) => {
+  try {
+    const { status, type, search, sort } = req.query;
+
+    const where: Record<string, unknown> = {};
+    if (status) where.status = status as string;
+    if (type) where.leadType = type as string;
+    if (search) {
+      const s = search as string;
+      where.OR = [
+        { firstName: { contains: s, mode: 'insensitive' } },
+        { lastName: { contains: s, mode: 'insensitive' } },
+        { email: { contains: s, mode: 'insensitive' } },
+        { companyName: { contains: s, mode: 'insensitive' } },
+      ];
+    }
+
+    let orderBy: Record<string, string> = { createdAt: 'desc' };
+    if (sort === 'oldest') orderBy = { createdAt: 'asc' };
+    else if (sort === 'urgent') orderBy = { viabilityDeadline: 'asc' };
+
+    const leads = await prisma.lead.findMany({
+      where,
+      orderBy,
+    });
+
+    res.json({ status: 'success', data: leads });
+  } catch (error) {
+    console.error('Error fetching leads:', error);
+    res.status(500).json({
+      status: 'error',
+      error: { code: 'SERVER_ERROR', message: 'Failed to fetch leads' },
+    });
+  }
+});
+
+/**
+ * GET /admin/leads/stats - Lead counts by status and type
+ */
+router.get('/leads/stats', async (req: Request, res: Response) => {
+  try {
+    const [totalLeads, byStatus, byType, urgentCount] = await Promise.all([
+      prisma.lead.count(),
+      prisma.lead.groupBy({ by: ['status'], _count: true }),
+      prisma.lead.groupBy({ by: ['leadType'], _count: true }),
+      prisma.lead.count({
+        where: {
+          viabilityDeadline: { lte: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) },
+          status: { notIn: ['SUBSCRIBED', 'EXPIRED', 'DISQUALIFIED'] },
+        },
+      }),
+    ]);
+
+    res.json({
+      status: 'success',
+      data: {
+        totalLeads,
+        byStatus: byStatus.reduce((acc, curr) => {
+          acc[curr.status] = curr._count;
+          return acc;
+        }, {} as Record<string, number>),
+        byType: byType.reduce((acc, curr) => {
+          acc[curr.leadType] = curr._count;
+          return acc;
+        }, {} as Record<string, number>),
+        urgentCount,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching lead stats:', error);
+    res.status(500).json({
+      status: 'error',
+      error: { code: 'SERVER_ERROR', message: 'Failed to fetch lead stats' },
+    });
+  }
+});
+
+/**
+ * POST /admin/leads - Create a new lead
+ */
+router.post('/leads', async (req: Request, res: Response) => {
+  try {
+    const {
+      firstName, lastName, email, phone, companyName, state,
+      leadType, source, notes, viabilityDays = 14,
+      ipAddress, deviceFingerprint,
+    } = req.body;
+
+    if (!firstName || !lastName || !email || !leadType) {
+      return res.status(400).json({
+        status: 'error',
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'firstName, lastName, email, and leadType are required',
+        },
+      });
+    }
+
+    const validTypes = ['DEMO_REQUEST', 'TRIAL_REQUEST', 'QUESTION', 'CALLBACK'];
+    if (!validTypes.includes(leadType)) {
+      return res.status(400).json({
+        status: 'error',
+        error: { code: 'VALIDATION_ERROR', message: `Invalid leadType. Must be one of: ${validTypes.join(', ')}` },
+      });
+    }
+
+    const viabilityDeadline = new Date();
+    viabilityDeadline.setDate(viabilityDeadline.getDate() + viabilityDays);
+
+    const lead = await prisma.lead.create({
+      data: {
+        firstName,
+        lastName,
+        email: email.toLowerCase(),
+        phone: phone || null,
+        companyName: companyName || null,
+        state: state || null,
+        leadType,
+        source: source || null,
+        notes: notes || null,
+        viabilityDays,
+        viabilityDeadline,
+        ipAddress: ipAddress || null,
+        deviceFingerprint: deviceFingerprint || null,
+      },
+    });
+
+    res.status(201).json({ status: 'success', data: lead });
+  } catch (error) {
+    console.error('Error creating lead:', error);
+    res.status(500).json({
+      status: 'error',
+      error: { code: 'SERVER_ERROR', message: 'Failed to create lead' },
+    });
+  }
+});
+
+/**
+ * PATCH /admin/leads/:id - Update a lead
+ */
+router.patch('/leads/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const {
+      firstName, lastName, email, phone, companyName, state,
+      leadType, status, source, notes, viabilityDays, organizationId,
+    } = req.body;
+
+    const validTypes = ['DEMO_REQUEST', 'TRIAL_REQUEST', 'QUESTION', 'CALLBACK'];
+    const validStatuses = ['NEW', 'CONTACTED', 'DEMO_SENT', 'TRIAL', 'SUBSCRIBED', 'EXPIRED', 'DISQUALIFIED'];
+
+    if (leadType && !validTypes.includes(leadType)) {
+      return res.status(400).json({
+        status: 'error',
+        error: { code: 'VALIDATION_ERROR', message: `Invalid leadType. Must be one of: ${validTypes.join(', ')}` },
+      });
+    }
+
+    if (status && !validStatuses.includes(status)) {
+      return res.status(400).json({
+        status: 'error',
+        error: { code: 'VALIDATION_ERROR', message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
+      });
+    }
+
+    const existing = await prisma.lead.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({
+        status: 'error',
+        error: { code: 'NOT_FOUND', message: 'Lead not found' },
+      });
+    }
+
+    const updateData: Record<string, unknown> = {};
+    if (firstName !== undefined) updateData.firstName = firstName;
+    if (lastName !== undefined) updateData.lastName = lastName;
+    if (email !== undefined) updateData.email = email.toLowerCase();
+    if (phone !== undefined) updateData.phone = phone || null;
+    if (companyName !== undefined) updateData.companyName = companyName || null;
+    if (state !== undefined) updateData.state = state || null;
+    if (leadType !== undefined) updateData.leadType = leadType;
+    if (status !== undefined) updateData.status = status;
+    if (source !== undefined) updateData.source = source || null;
+    if (notes !== undefined) updateData.notes = notes || null;
+    if (organizationId !== undefined) updateData.organizationId = organizationId || null;
+
+    if (viabilityDays !== undefined) {
+      updateData.viabilityDays = viabilityDays;
+      const deadline = new Date();
+      deadline.setDate(deadline.getDate() + viabilityDays);
+      updateData.viabilityDeadline = deadline;
+    }
+
+    const lead = await prisma.lead.update({
+      where: { id },
+      data: updateData,
+    });
+
+    res.json({ status: 'success', data: lead });
+  } catch (error) {
+    console.error('Error updating lead:', error);
+    res.status(500).json({
+      status: 'error',
+      error: { code: 'SERVER_ERROR', message: 'Failed to update lead' },
+    });
+  }
+});
+
+/**
+ * DELETE /admin/leads/:id - Delete a lead
+ */
+router.delete('/leads/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const existing = await prisma.lead.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({
+        status: 'error',
+        error: { code: 'NOT_FOUND', message: 'Lead not found' },
+      });
+    }
+
+    await prisma.lead.delete({ where: { id } });
+
+    res.json({
+      status: 'success',
+      data: { message: 'Lead deleted successfully' },
+    });
+  } catch (error) {
+    console.error('Error deleting lead:', error);
+    res.status(500).json({
+      status: 'error',
+      error: { code: 'SERVER_ERROR', message: 'Failed to delete lead' },
     });
   }
 });

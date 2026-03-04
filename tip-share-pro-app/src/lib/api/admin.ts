@@ -12,7 +12,10 @@ export interface Organization {
   id: string;
   name: string;
   subscriptionStatus: 'DEMO' | 'TRIAL' | 'ACTIVE' | 'SUSPENDED' | 'CANCELLED';
+  subscriptionPlan?: 'MONTHLY' | 'ANNUAL' | null;
   trialEndsAt?: string;
+  subscriptionStartedAt?: string;
+  subscriptionRenewsAt?: string;
   createdAt: string;
   updatedAt: string;
   _count?: {
@@ -36,7 +39,7 @@ export interface Organization {
 export interface User {
   id: string;
   email: string;
-  role: 'ADMIN' | 'MANAGER' | 'VIEWER';
+  role: 'ADMIN' | 'MANAGER' | 'DATA';
   organizationId: string;
   locationId?: string;
   lastLoginAt?: string;
@@ -45,9 +48,26 @@ export interface User {
   location?: { name: string };
 }
 
+export interface SubscriptionDetail {
+  id: string;
+  name: string;
+  subscriptionPlan: 'MONTHLY' | 'ANNUAL' | null;
+  subscriptionStartedAt: string | null;
+  subscriptionRenewsAt: string | null;
+  _count: { locations: number; users: number };
+}
+
 export interface AdminStats {
   totalOrganizations: number;
   organizationsByStatus: Record<string, number>;
+  subscriptions: {
+    total: number;
+    monthly: number;
+    annual: number;
+    details: SubscriptionDetail[];
+  };
+  openLeads: number;
+  urgentLeads: number;
   totalUsers: number;
   totalLocations: number;
   recentLogins: Array<{
@@ -55,6 +75,14 @@ export interface AdminStats {
     lastLoginAt: string;
     organization: { name: string };
   }>;
+}
+
+export interface AutopilotSettings {
+  autopilotDemo: boolean;
+  autopilotTrial: boolean;
+  clockDateFormat: string;
+  clockTimeFormat: string;
+  clockTimeZone: string;
 }
 
 // Admin key management
@@ -247,4 +275,119 @@ export async function extendAccount(
 // Stats
 export async function getAdminStats(): Promise<AdminStats> {
   return adminRequest<AdminStats>('/admin/stats');
+}
+
+// ============================================================================
+// LEADS PIPELINE
+// ============================================================================
+
+export type LeadType = 'DEMO_REQUEST' | 'TRIAL_REQUEST' | 'QUESTION' | 'CALLBACK';
+export type LeadStatusType = 'NEW' | 'CONTACTED' | 'DEMO_SENT' | 'TRIAL' | 'SUBSCRIBED' | 'EXPIRED' | 'DISQUALIFIED';
+
+export interface Lead {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  companyName?: string | null;
+  state?: string | null;
+  leadType: LeadType;
+  status: LeadStatusType;
+  source?: string | null;
+  notes?: string | null;
+  viabilityDays: number;
+  viabilityDeadline: string;
+  organizationId?: string | null;
+  ipAddress?: string | null;
+  deviceFingerprint?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LeadStats {
+  totalLeads: number;
+  byStatus: Record<string, number>;
+  byType: Record<string, number>;
+  urgentCount: number;
+}
+
+export async function getLeads(filters?: {
+  status?: string;
+  type?: string;
+  search?: string;
+  sort?: string;
+}): Promise<Lead[]> {
+  const params = new URLSearchParams();
+  if (filters?.status) params.set('status', filters.status);
+  if (filters?.type) params.set('type', filters.type);
+  if (filters?.search) params.set('search', filters.search);
+  if (filters?.sort) params.set('sort', filters.sort);
+  const query = params.toString() ? `?${params.toString()}` : '';
+  return adminRequest<Lead[]>(`/admin/leads${query}`);
+}
+
+export async function getLeadStats(): Promise<LeadStats> {
+  return adminRequest<LeadStats>('/admin/leads/stats');
+}
+
+export async function createLead(data: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  companyName?: string;
+  state?: string;
+  leadType: LeadType;
+  source?: string;
+  notes?: string;
+  viabilityDays?: number;
+}): Promise<Lead> {
+  return adminRequest<Lead>('/admin/leads', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateLead(
+  id: string,
+  data: Partial<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    companyName: string;
+    state: string;
+    leadType: LeadType;
+    status: LeadStatusType;
+    source: string;
+    notes: string;
+    viabilityDays: number;
+    organizationId: string;
+  }>
+): Promise<Lead> {
+  return adminRequest<Lead>(`/admin/leads/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteLead(id: string): Promise<void> {
+  return adminRequest<void>(`/admin/leads/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+// Platform Settings (Autopilot)
+export async function getAutopilotSettings(): Promise<AutopilotSettings> {
+  return adminRequest<AutopilotSettings>('/admin/settings');
+}
+
+export async function updateAutopilotSettings(
+  data: Partial<AutopilotSettings>
+): Promise<AutopilotSettings> {
+  return adminRequest<AutopilotSettings>('/admin/settings', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
 }

@@ -7,8 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  url      = env("DATABASE_URL")
 }
 
 // ============================================================================
@@ -23,6 +22,11 @@ enum SubscriptionStatus {
   CANCELLED
 }
 
+enum SubscriptionPlan {
+  MONTHLY
+  ANNUAL
+}
+
 enum LocationStatus {
   ACTIVE
   INACTIVE
@@ -31,7 +35,7 @@ enum LocationStatus {
 enum UserRole {
   ADMIN
   MANAGER
-  DESIGNEE
+  DATA
 }
 
 enum TwoFactorMethod {
@@ -50,6 +54,23 @@ enum PayPeriodStatus {
   ARCHIVED
 }
 
+enum LeadType {
+  DEMO_REQUEST
+  TRIAL_REQUEST
+  QUESTION
+  CALLBACK
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  DEMO_SENT
+  TRIAL
+  SUBSCRIBED
+  EXPIRED
+  DISQUALIFIED
+}
+
 // ============================================================================
 // ORGANIZATION & MULTI-TENANCY
 // ============================================================================
@@ -58,19 +79,23 @@ model Organization {
   id                 String             @id @default(uuid()) @db.Uuid
   name               String
   subscriptionStatus SubscriptionStatus @default(DEMO) @map("subscription_status")
+  subscriptionPlan   SubscriptionPlan?  @map("subscription_plan")
   stripeCustomerId   String?            @unique @map("stripe_customer_id")
   trialEndsAt        DateTime?          @map("trial_ends_at")
+  subscriptionStartedAt DateTime?       @map("subscription_started_at")
+  subscriptionRenewsAt  DateTime?       @map("subscription_renews_at")
   settings           Json               @default("{}")
   createdAt          DateTime           @default(now()) @map("created_at")
   updatedAt          DateTime           @updatedAt @map("updated_at")
 
   // Relations
-  locations     Location[]
-  users         User[]
-  employees     Employee[]
-  jobCategories JobCategory[]
-  payPeriods    PayPeriod[]
-  auditLogs     AuditLog[]
+  locations          Location[]
+  users              User[]
+  employees          Employee[]
+  jobCategories      JobCategory[]
+  payPeriods         PayPeriod[]
+  auditLogs          AuditLog[]
+  authorizedContacts AuthorizedContact[]
 
   @@map("organizations")
 }
@@ -103,9 +128,12 @@ model User {
   id               String          @id @default(uuid()) @db.Uuid
   organizationId   String          @map("organization_id") @db.Uuid
   locationId       String?         @map("location_id") @db.Uuid
+  firstName        String?         @map("first_name")
+  lastName         String?         @map("last_name")
   email            String
   passwordHash     String          @map("password_hash")
-  role             UserRole        @default(DESIGNEE)
+  role             UserRole        @default(DATA)
+  mustChangePassword Boolean       @default(true) @map("must_change_password")
   twoFactorEnabled Boolean         @default(false) @map("two_factor_enabled")
   twoFactorMethod  TwoFactorMethod? @map("two_factor_method")
   phone            String?
@@ -301,4 +329,66 @@ model AuditLog {
   @@index([organizationId, createdAt])
   @@index([entityType, entityId])
   @@map("audit_logs")
+}
+
+// ============================================================================
+// LEADS PIPELINE (Command Center CRM)
+// ============================================================================
+
+model Lead {
+  id                  String     @id @default(uuid()) @db.Uuid
+  firstName           String     @map("first_name")
+  lastName            String     @map("last_name")
+  email               String
+  phone               String?
+  companyName         String?    @map("company_name")
+  state               String?
+  leadType            LeadType   @map("lead_type")
+  status              LeadStatus @default(NEW)
+  source              String?
+  notes               String?
+  viabilityDays       Int        @default(14) @map("viability_days")
+  viabilityDeadline   DateTime   @map("viability_deadline")
+  organizationId      String?    @map("organization_id") @db.Uuid
+  ipAddress           String?    @map("ip_address")
+  deviceFingerprint   String?    @map("device_fingerprint")
+  createdAt           DateTime   @default(now()) @map("created_at")
+  updatedAt           DateTime   @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([leadType])
+  @@index([email])
+  @@index([viabilityDeadline])
+  @@map("leads")
+}
+
+// ============================================================================
+// AUTHORIZED CONTACTS (for email reports)
+// ============================================================================
+
+model AuthorizedContact {
+  id             String       @id @default(uuid()) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  name           String
+  company        String?
+  email          String
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@map("authorized_contacts")
+}
+
+// ============================================================================
+// PLATFORM SETTINGS (key-value store for Command Center config)
+// ============================================================================
+
+model PlatformSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("platform_settings")
 }

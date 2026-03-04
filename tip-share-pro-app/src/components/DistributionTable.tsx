@@ -6,7 +6,10 @@ import { CONTRIBUTION_METHOD_LABELS, HELP_TEXT, CategoryColor, CATEGORY_COLOR_MA
 import { InlineCategoryDot } from './CategoryBadge';
 import HelpTooltip from './HelpTooltip';
 import PrintDialog from './PrintDialog';
-import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock, GripVertical, Trash2, LogOut } from 'lucide-react';
+import { Plus, Minus, Printer, ChevronLeft, RotateCcw, Mail, Lock, GripVertical, Trash2, LogOut, Loader2, Send } from 'lucide-react';
+import { getAuthorizedContacts, sendReport } from '@/lib/api/authorizedContacts';
+import type { AuthorizedContact } from '@/lib/api/authorizedContacts';
+import { jsPDF } from 'jspdf';
 
 // Editable number input that properly handles backspace and typing
 interface EditableNumberInputProps {
@@ -85,6 +88,8 @@ function EditableNumberInput({ value, onChange, decimals = 2, className }: Edita
 // Stat Card Component
 interface StatCardProps {
   label: string;
+  sublabel?: string;
+  centerLabel?: boolean;
   value: string | number;
   isDemo?: boolean;
   helpText?: string;
@@ -96,7 +101,7 @@ interface StatCardProps {
   className?: string;
 }
 
-function StatCard({ label, value, isDemo, helpText, helpPdfLink, helpPdfTitle, editable, onChange, prefix, className }: StatCardProps) {
+function StatCard({ label, sublabel, centerLabel, value, isDemo, helpText, helpPdfLink, helpPdfTitle, editable, onChange, prefix, className }: StatCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(typeof value === 'number' ? value : 0);
 
@@ -109,10 +114,21 @@ function StatCard({ label, value, isDemo, helpText, helpPdfLink, helpPdfTitle, e
 
   return (
     <div className={`stat-card ${className || ''}`}>
-      <div className="stat-card-label">
-        {label}
-        {helpText && <HelpTooltip text={helpText} pdfLink={helpPdfLink} pdfTitle={helpPdfTitle} />}
-      </div>
+      {centerLabel ? (
+        <div className="stat-card-label-centered">
+          <span />
+          <span className="label-text">{label}</span>
+          <span className="label-help">
+            {helpText && <HelpTooltip text={helpText} pdfLink={helpPdfLink} pdfTitle={helpPdfTitle} />}
+          </span>
+        </div>
+      ) : (
+        <div className="stat-card-label">
+          {label}
+          {helpText && <HelpTooltip text={helpText} pdfLink={helpPdfLink} pdfTitle={helpPdfTitle} />}
+        </div>
+      )}
+      {sublabel && <div className="stat-card-sublabel"><span className="demo-label">{sublabel}</span></div>}
       {editable && isEditing ? (
         <div className="stat-card-input-wrapper">
           {prefix && <span className="stat-card-prefix">{prefix}</span>}
@@ -381,8 +397,8 @@ function ArchivedDistributionTable() {
   );
 }
 
-// Help text for distribution table
-const DISTRIBUTION_HELP = `The Distribution Table shows how the tip pool is divided among employees.
+// Help text for distribution table (Demo mode)
+const DISTRIBUTION_HELP_DEMO = `The Distribution Table shows how the tip pool is divided among employees.
 
 Each employee's share is calculated based on:
 • Hours worked during the pay period
@@ -390,9 +406,24 @@ Each employee's share is calculated based on:
 • Category weight (set in Settings)
 • Individual weight adjustments (up to +0.75)
 
-A person in a category with weight 3.0 can be bumped up to 3.75, then back down to 3.0, but never below the category weight.
+A person in a category with weight 3.0 can be "experience bumped" up to 3.75, then back down to 3.0, but not out of the whole number category weight. That way a ten year veteran may be distinguished from someone who started yesterday.
 
 Print the table for transparency posting or email to payroll (full version).`;
+
+// Help text for distribution table (Full version)
+const DISTRIBUTION_HELP_FULL = `For initial entries Follow the Numbered Steps - Use the "?" for tips in each box. The Distribution Table is how the tip pool is divided among recipient employees. Standard rounding to the nearest $ is used in the final column.
+
+Each employee's share is calculated based on:
+• Hours worked during the pay period
+• Hourly wage rate
+• Category weight (set in Settings)
+• Individual weight adjustments (up to +0.75)
+
+A person in a category with weight 3.0 can be "experience bumped" up to 3.75, then back down to 3.0, but not out of the whole number category weight. That way a ten-year veteran may be distinguished from someone who started yesterday.
+
+The ability to "Experience Bump" is reserved for Manager and Admin permissions.
+
+Print the table for transparency posting and email to payroll.`;
 
 export default function DistributionTable() {
   const {
@@ -411,14 +442,293 @@ export default function DistributionTable() {
     clearSamples,
   } = useDemo();
 
-  const { settings, employees, distributionResults, projectedPool, prePaidAmount, netPool, printIncludeSharePerHour } = state;
+  const { settings, employees, distributionResults, projectedPool, prePaidAmount, netPool, printIncludeSharePerHour, locations, activeLocationId, selectedLocationName } = state;
   const isDemo = state.subscriptionStatus === 'DEMO';
+  const userRole = state.user?.role;
+  const canBumpWeight = isDemo || userRole === 'ADMIN' || userRole === 'MANAGER';
 
   // Mode detection for real accounts
   const isArchivedViewMode = !isDemo && !!state.activePayPeriod && state.activePayPeriod.status === 'ARCHIVED' && !!state.calculationResult;
 
   // Print dialog state
   const [showPrintDialog, setShowPrintDialog] = useState(false);
+
+  // Email dropdown state
+  const [emailDropdownOpen, setEmailDropdownOpen] = useState(false);
+  const [emailContacts, setEmailContacts] = useState<AuthorizedContact[]>([]);
+  const [emailContactsLoading, setEmailContactsLoading] = useState(false);
+  const [selectedEmailIds, setSelectedEmailIds] = useState<Set<string>>(new Set());
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailSent, setEmailSent] = useState<string | null>(null);
+  const emailDropdownRef = useRef<HTMLDivElement>(null);
+
+  const toggleEmailContact = (id: string) => {
+    setSelectedEmailIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const buildPdfNative = () => {
+    const includeDolPerHr = printIncludeSharePerHour;
+    const isLandscape = includeDolPerHr;
+    const pageW = isLandscape ? 279.4 : 215.9;
+    const pageMargin = 15;
+    const contentW = pageW - pageMargin * 2;
+
+    const findJob = (jobCatId: string) => {
+      for (const jc of settings.jobCategories) { if (jc.id === jobCatId) return jc; }
+      return null;
+    };
+
+    const catHexMap: Record<string, [number, number, number]> = {
+      boh: [232, 93, 4], foh: [142, 68, 173], bar: [53, 160, 210], support: [130, 181, 54], custom: [241, 196, 15],
+    };
+
+    const pdf = new jsPDF({ orientation: isLandscape ? 'landscape' : 'portrait', unit: 'mm', format: 'letter' });
+    let y = pageMargin;
+
+    pdf.setFontSize(16);
+    pdf.setTextColor(251, 146, 60);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('TipSharePro.com', pageW / 2, y + 6, { align: 'center' });
+    y += 8;
+    pdf.setFontSize(6);
+    pdf.setTextColor(200, 120, 40);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('TRACKABLE \u2022 TRUSTED \u2022 TRANSPARENT', pageW / 2, y + 3, { align: 'center' });
+    y += 6;
+
+    const activeLocation = locations?.find((l: { id: string; name: string }) => l.id === activeLocationId);
+    const locationName = selectedLocationName || activeLocation?.name || settings.companyName || '';
+    if (locationName) {
+      pdf.setFontSize(12);
+      pdf.setTextColor(50);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(locationName, pageW / 2, y + 4, { align: 'center' });
+      y += 8;
+    }
+
+    pdf.setDrawColor(200);
+    pdf.line(pageMargin, y, pageW - pageMargin, y);
+    y += 4;
+
+    const dateStr = new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+    const timeStr = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    pdf.setFontSize(7);
+    pdf.setTextColor(100);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Tip Distribution Report', pageMargin, y + 2);
+    pdf.text(dateStr + ' \u2014 ' + timeStr, pageW - pageMargin, y + 2, { align: 'right' });
+    y += 6;
+
+    const stats = [
+      { label: 'PAY PERIOD', value: '\u2014' },
+      { label: 'GROSS POOL', value: '$' + Math.round(projectedPool).toLocaleString('en-US') },
+      { label: 'PRE-PAID', value: '$' + prePaidAmount.toLocaleString('en-US') },
+      { label: 'NET POOL', value: '$' + Math.round(netPool).toLocaleString('en-US') },
+    ];
+    const cardW = 32;
+    const cardH = 12;
+    const cardGap = 3;
+    let cx = pageMargin;
+    stats.forEach(s => {
+      pdf.setDrawColor(37, 99, 235);
+      pdf.setFillColor(239, 246, 255);
+      pdf.roundedRect(cx, y, cardW, cardH, 1, 1, 'FD');
+      pdf.setFontSize(5);
+      pdf.setTextColor(100);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(s.label, cx + cardW / 2, y + 4, { align: 'center' });
+      pdf.setFontSize(10);
+      pdf.setTextColor(0);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(s.value, cx + cardW / 2, y + 10, { align: 'center' });
+      cx += cardW + cardGap;
+    });
+    y += cardH + 6;
+
+    const headers = ['NAME', 'HOURS', 'WEIGHT', 'SHARE %', 'SHARE $'];
+    if (includeDolPerHr) headers.push('$/HR');
+    const nameColW = contentW * 0.34;
+    const dataColW = (contentW - nameColW) / (headers.length - 1);
+    const colWidths = headers.map((_, i) => i === 0 ? nameColW : dataColW);
+
+    const rowH = 8;
+    const headerH = 6;
+
+    pdf.setFillColor(30, 64, 138);
+    pdf.setDrawColor(30, 64, 138);
+    pdf.rect(pageMargin, y, contentW, headerH, 'FD');
+
+    pdf.setFontSize(7);
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    let hx = pageMargin;
+    headers.forEach((h, i) => {
+      pdf.text(h, hx + colWidths[i] / 2, y + headerH / 2 + 2, { align: 'center' });
+      hx += colWidths[i];
+    });
+    y += headerH;
+
+    sortedResults.forEach(r => {
+      const job = findJob(r.jobCategoryId);
+      const catColor = catHexMap[r.categoryColor] || [200, 200, 200];
+      let rx = pageMargin;
+
+      pdf.setDrawColor(150);
+      colWidths.forEach((w) => {
+        pdf.rect(rx, y, w, rowH);
+        rx += w;
+      });
+
+      pdf.setFillColor(catColor[0], catColor[1], catColor[2]);
+      pdf.rect(pageMargin, y, 1.5, rowH, 'F');
+
+      const dotX = pageMargin + 4;
+      const dotY = y + (job ? 3 : rowH / 2);
+      pdf.setFillColor(catColor[0], catColor[1], catColor[2]);
+      pdf.circle(dotX, dotY, 1.2, 'F');
+
+      pdf.setFontSize(7);
+      pdf.setTextColor(0);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(r.employeeName, pageMargin + 7, y + (job ? 4 : rowH / 2 + 1.5));
+      if (job) {
+        pdf.setFontSize(5);
+        pdf.setTextColor(100);
+        pdf.text(job.name, pageMargin + 7, y + 7);
+      }
+
+      const vals = [
+        r.hoursWorked.toFixed(2),
+        r.effectiveWeight.toFixed(2),
+        r.sharePercentage.toFixed(2) + '%',
+        '$' + r.receivedAmount.toLocaleString('en-US'),
+      ];
+      if (includeDolPerHr) vals.push('$' + r.dollarsPerHour.toFixed(2));
+
+      pdf.setFontSize(7);
+      pdf.setTextColor(0);
+      pdf.setFont('helvetica', 'normal');
+      let vx = pageMargin + nameColW;
+      vals.forEach((v, i) => {
+        pdf.text(v, vx + colWidths[i + 1] / 2, y + rowH / 2 + 1.5, { align: 'center' });
+        vx += colWidths[i + 1];
+      });
+
+      y += rowH;
+    });
+
+    pdf.setFillColor(243, 244, 246);
+    pdf.setDrawColor(150);
+    let tx = pageMargin;
+    colWidths.forEach((w) => {
+      pdf.rect(tx, y, w, rowH, 'FD');
+      tx += w;
+    });
+    pdf.setFontSize(7);
+    pdf.setTextColor(0);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Totals', pageMargin + 4, y + rowH / 2 + 1.5);
+    const totVals = [
+      totalHours.toFixed(2),
+      '\u2014',
+      totalSharePercent.toFixed(2) + '%',
+      '$' + totalShareDollars.toLocaleString('en-US'),
+    ];
+    if (includeDolPerHr) totVals.push('\u2014');
+    let tvx = pageMargin + nameColW;
+    totVals.forEach((v, i) => {
+      pdf.text(v, tvx + colWidths[i + 1] / 2, y + rowH / 2 + 1.5, { align: 'center' });
+      tvx += colWidths[i + 1];
+    });
+    y += rowH + 4;
+
+    let kx = pageMargin;
+    Object.entries(catHexMap).forEach(([key, rgb]) => {
+      const label = settings.categoryNames?.[key as CategoryColor] || CATEGORY_COLOR_MAP[key as CategoryColor]?.name || key;
+      pdf.setFillColor(rgb[0], rgb[1], rgb[2]);
+      pdf.circle(kx + 1.5, y + 1, 1.2, 'F');
+      pdf.setFontSize(5.5);
+      pdf.setTextColor(60);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(label, kx + 4, y + 2);
+      kx += pdf.getTextWidth(label) + 8;
+    });
+    y += 8;
+
+    pdf.setDrawColor(220);
+    pdf.line(pageMargin, y, pageW - pageMargin, y);
+    y += 3;
+    pdf.setFontSize(6);
+    pdf.setTextColor(150);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('TipSharePro', pageMargin, y + 2);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(dateStr + ' ' + timeStr, pageW - pageMargin, y + 2, { align: 'right' });
+
+    return pdf;
+  };
+
+  const handleSendEmail = async () => {
+    if (selectedEmailIds.size === 0) return;
+    try {
+      setEmailSending(true);
+
+      const pdf = buildPdfNative();
+      const pdfBase64 = pdf.output('datauristring').split(',')[1];
+
+      const activeLoc = locations?.find((l: { id: string; name: string }) => l.id === activeLocationId);
+      const locationName = selectedLocationName || activeLoc?.name || settings.companyName || 'Restaurant';
+      const fileDateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).replace(/[^a-zA-Z0-9]/g, '_');
+      const pdfFilename = 'TipSharePro_Distribution_' + fileDateStr + '.pdf';
+      const subject = 'TipSharePro - Distribution Report - ' + locationName;
+
+      const result = await sendReport({
+        contactIds: Array.from(selectedEmailIds),
+        reportType: 'distribution',
+        subject,
+        pdfBase64,
+        pdfFilename,
+      });
+      setEmailDropdownOpen(false);
+      setEmailSent('Sent to ' + result.sent + ' recipient' + (result.sent !== 1 ? 's' : ''));
+      setTimeout(() => setEmailSent(null), 3000);
+    } catch (err) {
+      setEmailSent('Failed to send');
+      setTimeout(() => setEmailSent(null), 3000);
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
+  const openEmailDropdown = async () => {
+    setEmailDropdownOpen(true);
+    setSelectedEmailIds(new Set());
+    try {
+      setEmailContactsLoading(true);
+      const contacts = await getAuthorizedContacts();
+      setEmailContacts(contacts);
+    } catch {
+      setEmailContacts([]);
+    } finally {
+      setEmailContactsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!emailDropdownOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (emailDropdownRef.current && !emailDropdownRef.current.contains(e.target as Node)) {
+        setEmailDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [emailDropdownOpen]);
 
   // Drag-and-drop state
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -610,7 +920,7 @@ export default function DistributionTable() {
       <div className="distribution-header no-print">
         <h2 className="section-title">
           Distribution Table
-          <HelpTooltip text={DISTRIBUTION_HELP} />
+          <HelpTooltip text={isDemo ? DISTRIBUTION_HELP_DEMO : DISTRIBUTION_HELP_FULL} />
         </h2>
         <div className="distribution-actions">
           <button
@@ -639,29 +949,94 @@ export default function DistributionTable() {
               <Lock size={12} className="lock-icon" />
             </button>
           ) : (
-            <button className="btn btn-outline btn-sm" title="Email distribution report">
-              <Mail size={16} />
-              Email
-            </button>
+            <>
+            {emailSent && (
+              <span style={{ color: emailSent.startsWith('Failed') ? '#ef4444' : '#22c55e', fontWeight: 700, fontSize: '0.7rem', marginRight: '0.25rem' }}>{emailSent}</span>
+            )}
+            <div ref={emailDropdownRef} style={{ position: 'relative', display: 'inline-block' }}>
+              <button
+                className={`btn btn-outline btn-sm${emailDropdownOpen ? ' btn-active' : ''}`}
+                title="Email distribution report"
+                onClick={() => emailDropdownOpen ? setEmailDropdownOpen(false) : openEmailDropdown()}
+                data-testid="email-distribution-btn"
+              >
+                <Mail size={16} />
+                Email
+              </button>
+              {emailDropdownOpen && (
+                <div style={{
+                  position: 'absolute', top: '100%', right: 0, marginTop: '0.25rem',
+                  background: 'var(--bg-surface)', border: '1px solid var(--bg-border)',
+                  borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-lg)',
+                  minWidth: '240px', zIndex: 50, overflow: 'hidden'
+                }}>
+                  <div style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid var(--bg-border)', fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    Select Recipients
+                  </div>
+                  {emailContactsLoading && (
+                    <div style={{ padding: '0.75rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.7rem' }}>
+                      <Loader2 size={14} style={{ display: 'inline-block', animation: 'spin 1s linear infinite', marginRight: '0.25rem' }} /> Loading...
+                    </div>
+                  )}
+                  {!emailContactsLoading && emailContacts.length === 0 && (
+                    <div style={{ padding: '0.75rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.7rem' }}>
+                      No authorized contacts. Add them in Settings Card 5.
+                    </div>
+                  )}
+                  {!emailContactsLoading && emailContacts.map((contact) => (
+                    <label
+                      key={contact.id}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '0.5rem',
+                        padding: '0.4rem 0.75rem', cursor: 'pointer', fontSize: '0.7rem',
+                        borderBottom: '1px solid var(--bg-border)',
+                        background: selectedEmailIds.has(contact.id) ? 'var(--bg-elevated)' : 'transparent',
+                      }}
+                      data-testid={`email-contact-${contact.id}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedEmailIds.has(contact.id)}
+                        onChange={() => toggleEmailContact(contact.id)}
+                        style={{ accentColor: '#fb923c', width: '0.9rem', height: '0.9rem', flexShrink: 0 }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contact.name}</div>
+                        {contact.company && <div style={{ color: 'var(--text-muted)', fontSize: '0.6rem' }}>{contact.company}</div>}
+                        <div style={{ color: '#fb923c', fontSize: '0.6rem' }}>{contact.email}</div>
+                      </div>
+                    </label>
+                  ))}
+                  {!emailContactsLoading && emailContacts.length > 0 && (
+                    <div style={{ padding: '0.5rem 0.75rem', display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
+                      <button
+                        className="btn btn-outline btn-xs"
+                        style={{ fontSize: '0.6rem' }}
+                        onClick={() => setEmailDropdownOpen(false)}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="btn btn-primary btn-xs"
+                        style={{ fontSize: '0.6rem', opacity: (selectedEmailIds.size > 0 && !emailSending) ? 1 : 0.4, cursor: (selectedEmailIds.size > 0 && !emailSending) ? 'pointer' : 'not-allowed' }}
+                        disabled={selectedEmailIds.size === 0 || emailSending}
+                        onClick={handleSendEmail}
+                        data-testid="send-email-btn"
+                      >
+                        {emailSending ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Send size={12} />}
+                        {emailSending ? 'Sending...' : `Send (${selectedEmailIds.size})`}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            </>
           )}
         </div>
       </div>
 
-      {/* Sample Data Banner */}
-      {state.hasSampleEmployees && !isDemo && (
-        <div className="sample-data-banner">
-          <span className="sample-data-banner-icon">i</span>
-          <span className="sample-data-banner-text">
-            You&apos;re viewing sample employees. Edit them to explore, or clear them to start fresh.
-          </span>
-          <button
-            onClick={clearSamples}
-            className="btn btn-outline btn-sm sample-data-banner-btn"
-          >
-            Clear All Samples
-          </button>
-        </div>
-      )}
+
 
       {/* Stat Cards Row */}
       <div className="stat-cards-container">
@@ -676,12 +1051,15 @@ export default function DistributionTable() {
           />
           <StatCard
             label="Gross Pool"
+            centerLabel
             value={Math.round(projectedPool)}
             prefix="$"
             helpText={HELP_TEXT.grossPool}
           />
           <StatCard
             label="Pre-Paid"
+            sublabel="Demo"
+            centerLabel
             value={prePaidAmount}
             prefix="$"
             editable
@@ -694,6 +1072,7 @@ export default function DistributionTable() {
             label="Net Pool"
             value={Math.round(netPool)}
             prefix="$"
+            className="stat-card-drop-label"
           />
           {isDemo && (
             <StatCard
@@ -775,12 +1154,16 @@ export default function DistributionTable() {
                       />
                     </td>
                     <td className="col-weight">
-                      <WeightAdjuster
-                        baseWeight={result.variableWeight}
-                        adjustment={result.weightAdjustment}
-                        effectiveWeight={result.effectiveWeight}
-                        onAdjust={(delta) => adjustIndividualWeight(result.employeeId, delta)}
-                      />
+                      {canBumpWeight ? (
+                        <WeightAdjuster
+                          baseWeight={result.variableWeight}
+                          adjustment={result.weightAdjustment}
+                          effectiveWeight={result.effectiveWeight}
+                          onAdjust={(delta) => adjustIndividualWeight(result.employeeId, delta)}
+                        />
+                      ) : (
+                        <span className="weight-adjuster-value">{result.effectiveWeight.toFixed(2)}</span>
+                      )}
                     </td>
                     <td className="col-share-percent">
                       {result.sharePercentage.toFixed(2)}%

@@ -11,6 +11,12 @@
     "db:setup": "npm run db:push && npm run db:seed"
   },
   "dependencies": {
-    "concurrently": "^9.1.0"
+    "@prisma/client": "^5.22.0",
+    "concurrently": "^9.1.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.0",
+    "prisma": "^5.22.0",
+    "resend": "^6.9.3",
+    "stripe": "^20.4.0"
   }
 }

@@ -339,10 +339,15 @@ export const CONTRIBUTION_METHOD_LABELS: Record<ContributionMethod, string> = {
 
 // Help PDFs available in the help library
 export const HELP_PDFS = [
-  { id: 'sales-factor', title: 'Why Use Sales as the Contribution Factor', description: 'IRS alignment & accuracy', file: '/help/why-sales-contribution-factor.pdf' },
+  { id: 'sales-factor', title: 'Why Use Sales as the Contribution Factor', description: 'IRS alignment', file: '/help/why-sales-contribution-factor.pdf' },
+  { id: 'reporting-tip-income', title: 'A Word on Reporting Tip Income', description: 'Tips from the Trenches', file: '/help/a-word-on-reporting-tip-income.pdf' },
   { id: 'category-weights', title: 'Category Weights', description: 'Setting up categories & weights', file: '/help/category-weights.pdf' },
-  { id: 'pre-paid', title: 'What Does Pre-Paid Mean', description: 'Handling terminated employees', file: '/help/what-does-pre-paid-mean.pdf' },
+  { id: 'scenario-sandbox', title: 'Scenario Sand Box', description: 'How SSB and Full Version work together', file: '/help/scenario-sand-box.pdf', fullOnly: true as const },
+  { id: 'pre-paid-demo', title: 'What Does Pre-Paid Mean', description: 'Handling terminated employees', file: '/help/what-does-pre-paid-mean-demo.pdf', demoOnly: true as const },
+  { id: 'pre-paid', title: 'What Does Pre-Paid Mean', description: 'Handling terminated employees', file: '/help/what-does-pre-paid-mean.pdf', fullOnly: true as const },
   { id: 'full-version', title: 'What to Expect in Full Version', description: 'Features beyond the demo', file: '/help/what-to-expect-full-version.pdf', demoOnly: true as const },
+  { id: 'admin-role', title: 'The Admin Role', description: 'Responsibilities, trust & compliance', file: '/The_Admin_Role.pdf', fullOnly: true as const },
+  { id: 'owners-managers-supervisors', title: 'Owners, Managers and Supervisors', description: 'Who may be in the pool & who is prohibited', file: '/Owners_Managers_and_Supervisors.pdf', fullOnly: true as const },
 ];
 
 // Demo welcome dialog text (from Demo Welcome Pop Up 2-16-26)
@@ -353,3 +358,11 @@ The example table displayed assumes your distribution of employees' data is up t
 Enter Hours, Double Check for Errors, Print for Transparency and Email to Payroll.
 
 That being said, you can change any data you wish in this demo and return to original settings by pressing Reset Settings, Reset Dist. Table or Reset All.`;
+
+// Full version welcome dialog text
+export const FULL_WELCOME_TEXT = `If you did not start with the Demo, it is highly recommended you begin in the Scenario Sand Box.`;
+
+export const FULL_WELCOME_BODY = `If you are ready to go and do not wish to start in Scenario Sand Box then let\u2019s get started. We have all the steps ready to go. You can change anything you want before Launch Date. Launch Date is the first day you begin collecting contributions from Tipped Employees.
+
+Follow the Numbered Steps - Use the ? for tips in each box.
+For more detail click links to pdf information within "?" or see the library`;

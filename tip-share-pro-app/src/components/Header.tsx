@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useDemo } from '@/lib/DemoContext';
 import { canAccess } from '@/lib/permissions';
-import { LogOut, User, HelpCircle, BookOpen, MapPin, Menu, Users, Calculator, FlaskConical, Shield, CreditCard } from 'lucide-react';
+import { LogOut, User, HelpCircle, BookOpen, MapPin, Menu, Users, Shield, CreditCard } from 'lucide-react';
 import Image from 'next/image';
 import type { PanelType } from '@/app/page';
 
@@ -56,12 +56,6 @@ export default function Header({ onOpenPanel }: HeaderProps) {
     if (canAccess(userRole, 'locations')) {
       menuItems.push({ id: 'locations', label: 'Locations', icon: <MapPin size={16} /> });
     }
-    if (canAccess(userRole, 'settings.rounding')) {
-      menuItems.push({ id: 'rounding', label: 'Rounding Mode', icon: <Calculator size={16} /> });
-    }
-    if (canAccess(userRole, 'scenarioSandbox')) {
-      menuItems.push({ id: 'sandbox', label: 'Scenario Sandbox', icon: <FlaskConical size={16} /> });
-    }
     menuItems.push({ id: '2fa', label: 'Two-Factor Auth', icon: <Shield size={16} /> });
     if (canAccess(userRole, 'billing')) {
       menuItems.push({ id: 'billing', label: 'Billing', icon: <CreditCard size={16} /> });
@@ -73,23 +67,19 @@ export default function Header({ onOpenPanel }: HeaderProps) {
       <div className="header-container">
         {/* Logo and Branding */}
         <div className="header-brand">
-          <Image
-            src="/logo-icon.png"
-            alt="TipSharePro"
-            width={48}
-            height={36}
-            className="header-logo-image"
-          />
           <div className="header-text">
             <h1 className="header-title">TipSharePro</h1>
             {subtitle && <p className="header-subtitle">{subtitle}</p>}
           </div>
-        </div>
-
-        {/* User Info and Actions */}
-        <div className="header-actions">
+          <Image
+            src="/icon-logo.png"
+            alt="TipSharePro Icon"
+            width={67}
+            height={67}
+            className="header-icon-logo"
+          />
           {state.user && (
-            <div className="header-user-info">
+            <div className="header-user-info header-user-info-left">
               <User size={16} className="header-user-icon" />
               <span className="header-user-welcome">
                 Welcome, <strong>{state.user.name}</strong>
@@ -101,11 +91,27 @@ export default function Header({ onOpenPanel }: HeaderProps) {
               )}
               {userRole && userRole !== 'ADMIN' && (
                 <span className="header-role-badge" data-role={userRole}>
-                  {userRole === 'MANAGER' ? 'Manager' : 'Designee'}
+                  {userRole === 'MANAGER' ? 'Manager' : 'Data'}
                 </span>
               )}
             </div>
           )}
+        </div>
+
+        {/* Centered Logo */}
+        <div className="header-center-logo">
+          <Image
+            src="/textlogo.png"
+            alt="TipSharePro.com - Trackable * Transparent * Trusted"
+            width={300}
+            height={60}
+            className="header-full-logo"
+            priority
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="header-actions">
 
           {/* Location Switcher — shown when multiple locations and admin/manager */}
           {state.locations && state.locations.length > 1 && canAccess(userRole, 'locations') && (

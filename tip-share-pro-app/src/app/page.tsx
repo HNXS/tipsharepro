@@ -8,7 +8,6 @@ import SubscriptionBanner from '@/components/SubscriptionBanner';
 import LoginPage from '@/components/LoginPage';
 import SettingsPage from '@/components/SettingsPage';
 import DistributionTable from '@/components/DistributionTable';
-import PayPeriodBar from '@/components/PayPeriodBar';
 import WelcomeDialog from '@/components/WelcomeDialog';
 import HelpLibraryDialog from '@/components/HelpLibraryDialog';
 import UserManagement from '@/components/UserManagement';
@@ -17,6 +16,7 @@ import ScenarioSandbox from '@/components/ScenarioSandbox';
 import TwoFactorSetup from '@/components/TwoFactorSetup';
 import BillingPage from '@/components/BillingPage';
 import DailyEntryModal from '@/components/DailyEntryModal';
+import SessionMonitor from '@/components/SessionMonitor';
 import { X, Calculator, AlertCircle } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 
@@ -52,6 +52,7 @@ export default function Home() {
   // Main app: Settings + Distribution Table on same page
   return (
     <div className="app-container">
+      <SessionMonitor />
       <SubscriptionBanner />
       <Header onOpenPanel={setActivePanel} />
       <main className="main-content">
@@ -70,9 +71,6 @@ export default function Home() {
         <section id="settings-section">
           <SettingsPage />
         </section>
-
-        {/* Pay Period Bar (real accounts only) */}
-        <PayPeriodBar />
 
         {/* Divider */}
         <div className="section-divider" />

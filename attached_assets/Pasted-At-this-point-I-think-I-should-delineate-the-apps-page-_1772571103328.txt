@@ -1,0 +1,59 @@
+At this point I think I should delineate the apps “page” flow chart. What I call pages are destinations within the app with definable characteristics. Keep these page definitions handy (was that insensitive?) as I call out the work we will do on each.
+ 
+Demo – Demo is mostly complete and sits in Replit now. It is free and requestable by email with a default time limit of 14 days, but that time is adjustable by Tip Share Pro within the command center. It is a single page amalgamation (simple scroll down) of 2 separate pages, Settings (page 3) and Distribution (page 7), both of which will be further defined below. In Demo it gives an example of what a pool will net recipients using the establishments experimental settings. There is a little work left to be done on printing and such. I don’t want to send Demo out on request until the Free/Full App is very near ready to Launch.
+Free/Full Version
+Page 1 – Sign In Page – The designated Admin receives the Free/Full App from Tip Share Pro via Email after request and being verified as a viable restaurant. 
+•	When the designated Admin first logs In they enter their own password and F2A. A pop up asks if they would permit a Tip Share Pro shortcut Icon to be installed on their desktop/laptop/tablet. I don’t see functionality on mobile phones for the full app. Limited functionality eventually. 
+•	The sign in page will have a check box that when checked allows expert sign in- That’s Tip Share Pro Access Only if company requests assistance.
+•	Sign ins determine first destination. Admin (and Expert) will go to Page 3 (Settings). All other log ins go to Page 2 (Data Hub). 
+•	Admin sets up as many team members as they want or just one manager who can then set up the rest of the team with Name and Log in within the Data Hub. Managers can designate Manager or Data role permissions only. Team members set their own passwords when log in is recognized. Managers set F2A. 
+•	Feel Free to make recommendations to Sign In Page or functions. 
+
+
+Page 2 – Data Hub – All permissions have access. All logins that are not Admin or Expert land here first and determine next destination.  
+•	Basically, a list of Clickable cards, organized by permissions, some of which will open other pages and some that will have immediately fillable data, ie: Team names and logins that managers can set for their “permission grade” and below etc.
+Page 3 – Settings – Only Admin Has permission to Page 3 Settings.
+We are already working on Page3. This is where Admin sets parameters for their program. Most of the elements are already in place though some need more definition. A lot, but not all of the settings are in the Demo (and SSB - see below) version.
+Page 4 – Scenario Sand Box – Both Admin and Manager permissions have 
+access to SSB because its functionality is experimental.
+This is a replication of DEMO with a little more usefulness. It is the same single page amalgamation (simple scroll down) of 2 separate pages, Settings (page 3) and Distribution (page 7). In Demo and here in SSB it gives an example of what a pool will net recipients using the establishments experimental settings. 
+•	In Free/Full Version it will do the same as Demo UNTIL Launch Day. Launch Day is set up by Admin in Settings and represents the first day of a pay period that contributions to the pool are collected. Once Launch is achieved, it can only be recalled by “Expert” assistance. “Expert” needs the ability to reset Launch date (from command center?) or by logging in if it can’t be done by command center. 
+•	Before Launch Date the Settings and any Employees the Admin has entered into the Distribution table may be uploaded to the “Live” pages (page 3 Settings and page 7 Distribution). There needs to be an
+ *Upload To Live Tables* Tab. This can be done as many times as the Admin would like Before Launch Day. Every “upload” will erase prior “specific” entries in Settings and Distribution. After Launch the Upload button will cease to function. If Expert resets Launch day the Upload button will regain its functionality.
+•	After Launch Day the SSB becomes a testing ground for Admin in case changes in overall strategy is required. For that reason, the SSB will have its current data filled automatically from Page 3 Settings and Page 7 Distribution on Archive Day. Old data will be erased and new data filled in. Archive day is always the day after pay day.
+That way, any experimentation is using current data for a real-world picture. Any experimenting cannot be uploaded to live tables after Launch has occurred. Settings and changes will need to be noted and re-entered on the respective “Live Tables” 
+Page 5 – Daily Contributions Log – All permissions have access. 
+This is where a tipped Employees daily Tip Pool contribution is logged along with the sales data attributed to it. 
+•	I have an excel spread sheet with the basic layout when the time comes but it will have the look and feel of the Page 7 Distribution Table. 
+•	Data entry every few days will suffice and then concentrated effort near the end and immediately after the Pay Period ends.
+•	This data archives the day after pay day.
+Page 6 – Pay Period Contributions Log – All permissions have access. 
+This is where the Pay Period daily entries are accumulated in real time. 
+•	I have an excel spread sheet with the basic layout when the time comes but it will have the look and feel of the Page 5 Daily Table. A few Column heading changes. Mostly auto fill from the Daily Entries. 
+•	A final Gross Pool number is now available to be exported to the Distribution table. 
+•	This data archives the day after pay day. Its data accumulates in the Contributors YTD table (Page 8) And in the EOY table (Page 9, Allocations) either in real time or when archived. At this time, I don’t perceive an advantage of one way or the other.  
+•	This is a report that is Printed for Transparency Posting on the employee Bulletin board and sent via email to the payroll department. 
+•	When we work on this page, I would like to see what the feasibility is to have this report available to appropriate Employee mobile devices. At least Every contributor should be able to have the math that went into the pool contribution calculations. Two top contributors are noted for recognition at the top of the Distribution (Page 7) report on a stat card. 
+
+
+Page 7 – Distribution Table – All permissions have access. Though not to every bit as I will delineate. We are already working on Page7 in the Free/Full Version. This is where Employees are entered for the Distribution side of the Program. 
+•	Most of the elements are already in place though need more definition. A lot, though not all, of the settings are in the Demo (and SSB) version. 
+•	This Table is Printed for Transparency Posting on the employee Bulletin board and sent via email to the payroll department. 
+•	The + and – experience bump on category weight within the table requires a manager or admin permission if this is feasible. 
+•	When we work on this page I would like to see what the feasibility is to have this report available to appropriate Employee mobile devices. At least Every recipient should be able to have the math that went into the pool distribution calculations. 
+•	When we work on this page I would like to see what the feasibility is to have a thumbnail picture of the 2 Top contributors on the stat card? 
+Page 8 – YTD Pool Data – All permissions have access. 2 Separate tables. One for Contribution Employees and One for Distribution Side Employees. 
+•	The YTD Contribution side table will look very much like the Pay Period Contribution Table with different column headings. It will auto accumulate for each employee in real time from the Pay Period Contribution table. 
+•	The YTD Distribution side table will be a scaled down accumulation table because all we need at this point is a column of Auto Accumulated Tips from the pool. 
+•	Both of These YTD tables Archive on the First Day of the New Year.
+The data on these tables auto accumulate for each employee to the EOY tables (Page 9, Allocations) either in real time or when archived. At this time, I don’t perceive an advantage of one way or the other.
+•	This Table is Printable and sent via email to the payroll department if needed. It’s really the next tables that payroll needs.  
+
+
+Page 9 – EOY Allocations – All permissions have access. 2 Separate tables. One for Contribution Employees and One for Distribution Side Employees. 
+•	The EOY Contribution side table will require some sales data entry to complete, but a lot of the data will auto accumulate either from the Pay Period Contribution table or the YTD Contribution table.
+•	I have an excel spread sheet with the basic layout when the time comes but it will have the look and feel of an expanded Page 7 Distribution Table.
+
+Page 10 – Command Center – Expert access Only.
+•	Not sure if this is a page or a separate standalone program
+We have begun work here but I’m anticipating a lot more as I become aware of its capabilities. 

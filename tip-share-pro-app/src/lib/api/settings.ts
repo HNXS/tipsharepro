@@ -13,6 +13,23 @@ import { get, put } from './client';
 export type ContributionMethod = 'CC_SALES' | 'CC_TIPS' | 'ALL_TIPS' | 'ALL_SALES';
 export type PayPeriodType = 'WEEKLY' | 'BIWEEKLY' | 'SEMIMONTHLY' | 'MONTHLY';
 
+export interface DisplayPreferences {
+  dateFormat?: 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD' | 'Mon DD, YYYY';
+  timeFormat?: '12h' | '24h';
+  timeZone?: string;
+}
+
+export interface PayPeriodConfig {
+  periodStartDate?: string;
+  periodEndDate?: string;
+  payFrequency?: 'weekly' | 'biweekly' | 'bimonthly';
+  payDayType?: 'dayOfWeek' | 'datesOfMonth';
+  payDayOfWeek?: number;
+  payDayDate1?: number;
+  payDayDate2?: number;
+  payPeriodsConfigured?: boolean;
+}
+
 export interface OrganizationSettings {
   contributionMethod: ContributionMethod;
   contributionRate: number;
@@ -20,6 +37,9 @@ export interface OrganizationSettings {
   estimatedMonthlySales: number;
   autoArchiveDays: number;
   roundingMode: 'NEAREST' | 'DOWN';
+  displayPreferences?: DisplayPreferences;
+  payPeriodConfig?: PayPeriodConfig;
+  currentLocationId?: string | null;
 }
 
 export interface SettingsResponse {

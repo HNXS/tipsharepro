@@ -201,4 +201,82 @@ router.get(
   }
 );
 
+/**
+ * POST /auth/change-password
+ * Change password (used for first-login password reset)
+ */
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(6),
+});
+
+router.post(
+  '/change-password',
+  authenticate,
+  validate(changePasswordSchema),
+  async (req: Request, res: Response<ApiResponse>, next: NextFunction) => {
+    try {
+      const user = (req as AuthenticatedRequest).user;
+      const { currentPassword, newPassword } = req.body;
+
+      const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+      if (!dbUser) {
+        res.status(404).json({ status: 'error', error: { code: 'NOT_FOUND', message: 'User not found' } });
+        return;
+      }
+
+      const isValid = await bcrypt.compare(currentPassword, dbUser.passwordHash);
+      if (!isValid) {
+        res.status(401).json({ status: 'error', error: { code: 'UNAUTHORIZED', message: 'Current password is incorrect' } });
+        return;
+      }
+
+      const newHash = await bcrypt.hash(newPassword, 10);
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { passwordHash: newHash, mustChangePassword: false },
+      });
+
+      res.status(200).json({ status: 'success', data: { message: 'Password changed successfully' } });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /auth/refresh
+ * Refresh the JWT token (extends session)
+ */
+router.post(
+  '/refresh',
+  authenticate,
+  async (req: Request, res: Response<ApiResponse>, next: NextFunction) => {
+    try {
+      const authUser = (req as AuthenticatedRequest).user;
+      const user = await prisma.user.findUnique({ where: { id: authUser.id } });
+      if (!user) {
+        res.status(401).json({ status: 'error', error: { code: 'UNAUTHORIZED', message: 'User not found' } });
+        return;
+      }
+      const payload = {
+        sub: user.id,
+        org: user.organizationId,
+        loc: user.locationId,
+        role: user.role,
+        email: user.email,
+      };
+      const token = jwt.sign(payload, config.jwt.secret, {
+        expiresIn: config.jwt.accessExpiry,
+      } as jwt.SignOptions);
+      res.status(200).json({
+        status: 'success',
+        data: { token, expiresIn: config.jwt.accessExpiry },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 export default router;

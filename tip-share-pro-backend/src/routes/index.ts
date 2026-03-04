@@ -18,6 +18,7 @@ import userRoutes from './user.routes';
 import locationRoutes from './location.routes';
 import twoFactorRoutes from './twoFactor.routes';
 import billingRoutes from './billing.routes';
+import authorizedContactsRoutes from './authorized-contacts.routes';
 import { enforceSubscription } from '../middleware/subscription.middleware';
 
 const router = Router();
@@ -83,6 +84,9 @@ protectedRoutes.use('/users', userRoutes);
 
 // Location management (org-scoped)
 protectedRoutes.use('/locations', locationRoutes);
+
+// Authorized contacts (Admin only)
+protectedRoutes.use('/authorized-contacts', authorizedContactsRoutes);
 
 router.use(protectedRoutes);
 

@@ -49,7 +49,7 @@ router.get(
     try {
       const user = (req as AuthenticatedRequest).user;
 
-      // Manager/Designee with locationId only see their own location
+      // Manager/Data with locationId only see their own location
       const where: Record<string, unknown> = { organizationId: user.organizationId };
       if (user.role !== 'ADMIN' && user.locationId) {
         where.id = user.locationId;

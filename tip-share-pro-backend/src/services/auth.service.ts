@@ -25,6 +25,7 @@ export interface LoginResult {
     companyName: string;
     locationId: string | null;
     locationName: string | null;
+    mustChangePassword: boolean;
   };
   organization: {
     id: string;
@@ -96,11 +97,12 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        name: this.extractNameFromEmail(user.email),
+        name: this.extractNameFromEmail(user.email, user.firstName, user.lastName),
         role: user.role,
         companyName: user.organization.name,
         locationId: user.locationId || null,
         locationName: user.location?.name || null,
+        mustChangePassword: user.mustChangePassword,
       },
       organization: {
         id: user.organization.id,
@@ -195,6 +197,7 @@ export class AuthService {
           email: normalizedEmail,
           passwordHash,
           role: 'ADMIN',
+          mustChangePassword: false,
           lastLoginAt: new Date(),
         },
         include: {
@@ -212,11 +215,12 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        name: this.extractNameFromEmail(user.email),
+        name: this.extractNameFromEmail(user.email, user.firstName, user.lastName),
         role: user.role,
         companyName: user.organization.name,
         locationId: user.locationId || null,
         locationName: user.location?.name || null,
+        mustChangePassword: false,
       },
       organization: {
         id: user.organization.id,
@@ -247,7 +251,7 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        name: this.extractNameFromEmail(user.email),
+        name: this.extractNameFromEmail(user.email, user.firstName, user.lastName),
         role: user.role,
         companyName: user.organization.name,
         locationId: user.locationId || null,
@@ -285,9 +289,11 @@ export class AuthService {
    * Extract display name from email
    * e.g., "demo@tipsharepro.com" -> "Demo"
    */
-  private extractNameFromEmail(email: string): string {
+  private extractNameFromEmail(email: string, firstName?: string | null, lastName?: string | null): string {
+    if (firstName || lastName) {
+      return [firstName, lastName].filter(Boolean).join(' ');
+    }
     const localPart = email.split('@')[0];
-    // Capitalize first letter
     return localPart.charAt(0).toUpperCase() + localPart.slice(1);
   }
 

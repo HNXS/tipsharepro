@@ -26,6 +26,8 @@ export {
   logout,
   getSession,
   validateSession,
+  changePassword,
+  refreshToken,
 } from './auth';
 export type { LoginRequest, RegisterRequest, LoginResponse, TwoFactorRequiredResponse, SessionResponse } from './auth';
 

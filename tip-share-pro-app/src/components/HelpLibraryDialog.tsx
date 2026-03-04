@@ -11,7 +11,11 @@ interface HelpLibraryDialogProps {
 export default function HelpLibraryDialog({ onClose }: HelpLibraryDialogProps) {
   const { state } = useDemo();
   const isDemo = state.subscriptionStatus === 'DEMO';
-  const visiblePdfs = HELP_PDFS.filter(pdf => !pdf.demoOnly || isDemo);
+  const visiblePdfs = HELP_PDFS.filter(pdf => {
+    if ('demoOnly' in pdf && pdf.demoOnly && !isDemo) return false;
+    if ('fullOnly' in pdf && pdf.fullOnly && isDemo) return false;
+    return true;
+  });
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal help-library-dialog" onClick={(e) => e.stopPropagation()}>

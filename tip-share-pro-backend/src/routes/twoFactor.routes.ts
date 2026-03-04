@@ -16,6 +16,7 @@ import { prisma } from '../utils/prisma';
 import { config } from '../config/index';
 import { emailService } from '../services/email.service';
 import { smsService } from '../services/sms.service';
+import { send2FACodeEmail } from '../services/notifications.service';
 import { logAudit } from '../services/audit.service';
 import { ApiResponse, AuthenticatedRequest, AuthenticatedUser, JwtPayload } from '../types/index';
 import { logger } from '../utils/logger';
@@ -40,12 +41,7 @@ async function hashCode(code: string): Promise<string> {
 
 async function sendCode(method: 'EMAIL' | 'SMS', recipient: string, code: string): Promise<void> {
   if (method === 'EMAIL') {
-    await emailService.sendEmail({
-      to: recipient,
-      subject: 'TipSharePro - Verification Code',
-      html: `<p>Your TipSharePro verification code is: <strong>${code}</strong></p><p>This code expires in ${CODE_EXPIRY_MINUTES} minutes.</p>`,
-      text: `Your TipSharePro verification code is: ${code}. This code expires in ${CODE_EXPIRY_MINUTES} minutes.`,
-    });
+    await send2FACodeEmail(recipient, code);
   } else {
     await smsService.sendSms({
       to: recipient,

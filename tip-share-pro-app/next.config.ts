@@ -1,16 +1,14 @@
 import type { NextConfig } from "next";
 
-// In Docker Compose, backend service is always at http://backend:3001
-// For local dev without Docker, use localhost:3001
-const BACKEND_URL = process.env.NODE_ENV === 'production'
-  ? 'http://backend:3001'
-  : (process.env.BACKEND_INTERNAL_URL || 'http://localhost:3001');
+const BACKEND_URL = process.env.BACKEND_INTERNAL_URL || 'http://localhost:3002';
 
 const nextConfig: NextConfig = {
-  // Enable standalone output for Docker deployment
-  output: 'standalone',
-
-  // Proxy /api/* requests to the backend service
+  allowedDevOrigins: [
+    process.env.REPLIT_DEV_DOMAIN || '*.riker.replit.dev',
+    '*.replit.dev',
+    '127.0.0.1',
+    'localhost',
+  ],
   async rewrites() {
     return [
       {

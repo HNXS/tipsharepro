@@ -191,7 +191,7 @@ export async function sendUserInviteEmail(
   inviterName: string
 ): Promise<void> {
   try {
-    const roleLabel = role === 'ADMIN' ? 'Administrator' : role === 'MANAGER' ? 'Manager' : 'Designee';
+    const roleLabel = role === 'ADMIN' ? 'Administrator' : role === 'MANAGER' ? 'Manager' : 'Data';
     const html = buildEmail('user-invite', { companyName, roleLabel, inviterName });
     await emailService.sendEmail({
       to,

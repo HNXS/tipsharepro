@@ -9,3 +9,36 @@
 # Docker volumes (local development)
 postgres_data/
 pgadmin_data/
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+.next/
+dist/
+*.tsbuildinfo
+
+# Replit
+.local/
+.agents/
+.config/configstore/
+.cache/
+
+# IDE
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Screenshots & temp files from dev sessions
+*.png
+nul
+
+# Playwright MCP logs
+.playwright-mcp/
+
+# Dev artifacts
+generate_guide.py
+TipSharePro-Command-Center-Guide.pdf
+SECURITY_AUDIT.md

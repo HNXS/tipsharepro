@@ -4,7 +4,7 @@
  * Authentication-related API calls.
  */
 
-import { post, get, setToken, clearToken } from './client';
+import { post, get, setToken, clearToken, getToken } from './client';
 
 // ============================================================================
 // Types
@@ -32,6 +32,7 @@ export interface LoginResponse {
     companyName: string;
     locationId: string | null;
     locationName: string | null;
+    mustChangePassword?: boolean;
   };
   organization: {
     id: string;
@@ -121,6 +122,13 @@ export async function getSession(): Promise<SessionResponse> {
 }
 
 /**
+ * Change password (first-login or voluntary)
+ */
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  await post('/auth/change-password', { currentPassword, newPassword });
+}
+
+/**
  * Check if current session is valid
  */
 export async function validateSession(): Promise<boolean> {
@@ -129,6 +137,20 @@ export async function validateSession(): Promise<boolean> {
     return true;
   } catch {
     clearToken();
+    return false;
+  }
+}
+
+/**
+ * Refresh the JWT token (extends session)
+ */
+export async function refreshToken(): Promise<boolean> {
+  if (!getToken()) return false;
+  try {
+    const result = await post<{ token: string }>('/auth/refresh');
+    setToken(result.token);
+    return true;
+  } catch {
     return false;
   }
 }

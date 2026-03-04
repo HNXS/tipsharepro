@@ -1,7 +1,7 @@
 'use client';
 
-import { DEMO_WELCOME_TEXT } from '@/lib/types';
-import { X, ArrowRight, Info } from 'lucide-react';
+import { DEMO_WELCOME_TEXT, FULL_WELCOME_TEXT, FULL_WELCOME_BODY } from '@/lib/types';
+import { X, ArrowRight, Info, FlaskConical } from 'lucide-react';
 
 interface WelcomeDialogProps {
   onClose: () => void;
@@ -10,7 +10,7 @@ interface WelcomeDialogProps {
 
 export default function WelcomeDialog({ onClose, subscriptionStatus = 'DEMO' }: WelcomeDialogProps) {
   const isDemo = subscriptionStatus === 'DEMO';
-  const title = isDemo ? 'Welcome to TipSharePro Demo' : 'Welcome to TipSharePro';
+  const title = isDemo ? 'Welcome to TipSharePro Demo' : 'Welcome Administrator';
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -32,38 +32,70 @@ export default function WelcomeDialog({ onClose, subscriptionStatus = 'DEMO' }: 
 
         {/* Content */}
         <div className="modal-body">
-          {isDemo && (
+          {isDemo ? (
+            <>
+              <div className="welcome-text">
+                {DEMO_WELCOME_TEXT.split('\n\n').map((paragraph, index) => (
+                  <p key={index}>{paragraph}</p>
+                ))}
+              </div>
+
+              <div className="welcome-highlights">
+                <h3>Quick Tips:</h3>
+                <ul>
+                  <li>
+                    <strong>Settings</strong> - Use the ? for tips in each box.
+                  </li>
+                  <li>
+                    <strong>Distribution Table</strong> &ndash; Click on hours or wages to modify values to any 2 decimal places.
+                  </li>
+                  <li>
+                    <strong>Edit inline</strong> - Add or Subtract Employees for a fair representation of your restaurant whenever you&apos;re ready.
+                  </li>
+                  <li>
+                    <strong>Weight adjustment</strong> - Use +/- buttons to fine-tune individual weights. We call this the experience bump.
+                  </li>
+                  <li>
+                    <strong>Print ready</strong> - Print the distribution table (wages are hidden on print). Check the box to add a $/Hr. column so workers know how much the pool is netting them in terms they understand.
+                  </li>
+                </ul>
+              </div>
+            </>
+          ) : (
             <div className="welcome-text">
-              {DEMO_WELCOME_TEXT.split('\n\n').map((paragraph, index) => (
+              <p>
+                {FULL_WELCOME_TEXT}
+              </p>
+              <p>
+                <a
+                  href="/help/scenario-sand-box.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="welcome-sandbox-link"
+                  data-testid="link-sandbox-pdf"
+                >
+                  See PDF Details on Scenario Sand Box
+                </a>
+              </p>
+              {FULL_WELCOME_BODY.split('\n\n').map((paragraph, index) => (
                 <p key={index}>{paragraph}</p>
               ))}
             </div>
           )}
-
-          <div className="welcome-highlights">
-            <h3>Quick Tips:</h3>
-            <ul>
-              <li>
-                <strong>Settings</strong> - Use the ? for tips in each box.
-              </li>
-              <li>
-                <strong>Distribution Table</strong> &ndash; Click on hours or wages to modify values to any 2 decimal places.
-              </li>
-              <li>
-                <strong>Edit inline</strong> - Add or Subtract Employees for a fair representation of your restaurant whenever you&apos;re ready.
-              </li>
-              <li>
-                <strong>Weight adjustment</strong> - Use +/- buttons to fine-tune individual weights. We call this the experience bump.
-              </li>
-              <li>
-                <strong>Print ready</strong> - Print the distribution table (wages are hidden on print). Check the box to add a $/Hr. column so workers know how much the pool is netting them in terms they understand.
-              </li>
-            </ul>
-          </div>
         </div>
 
         {/* Footer */}
         <div className="modal-footer">
+          {!isDemo && (
+            <button
+              className="btn btn-secondary btn-lg"
+              onClick={() => {}}
+              data-testid="button-scenario-sandbox"
+            >
+              <FlaskConical size={18} />
+              Scenario Sand Box
+            </button>
+          )}
           <button onClick={onClose} className="btn btn-primary btn-lg">
             Get Started
             <ArrowRight size={18} />

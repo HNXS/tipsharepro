@@ -23,6 +23,23 @@ const router = Router();
 const contributionMethodSchema = z.enum(['CC_SALES', 'CC_TIPS', 'ALL_TIPS', 'ALL_SALES']);
 const payPeriodTypeSchema = z.enum(['WEEKLY', 'BIWEEKLY', 'SEMIMONTHLY', 'MONTHLY']);
 
+const displayPreferencesSchema = z.object({
+  dateFormat: z.enum(['MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD', 'Mon DD, YYYY']).optional(),
+  timeFormat: z.enum(['12h', '24h']).optional(),
+  timeZone: z.string().max(50).optional(),
+}).optional();
+
+const payPeriodConfigSchema = z.object({
+  periodStartDate: z.string().optional(),
+  periodEndDate: z.string().optional(),
+  payFrequency: z.enum(['weekly', 'biweekly', 'bimonthly']).optional(),
+  payDayType: z.enum(['dayOfWeek', 'datesOfMonth']).optional(),
+  payDayOfWeek: z.number().int().min(0).max(6).optional(),
+  payDayDate1: z.number().int().min(1).max(31).optional(),
+  payDayDate2: z.number().int().min(1).max(31).optional(),
+  payPeriodsConfigured: z.boolean().optional(),
+}).optional();
+
 const updateSettingsSchema = z.object({
   contributionMethod: contributionMethodSchema.optional(),
   contributionRate: z.number().min(1).max(25).optional(),
@@ -30,6 +47,9 @@ const updateSettingsSchema = z.object({
   estimatedMonthlySales: z.number().int().min(0).max(99999999).optional(),
   autoArchiveDays: z.number().int().min(0).max(30).optional(),
   roundingMode: z.enum(['NEAREST', 'DOWN']).optional(),
+  displayPreferences: displayPreferencesSchema,
+  payPeriodConfig: payPeriodConfigSchema,
+  currentLocationId: z.string().uuid().nullable().optional(),
 });
 
 // ============================================================================

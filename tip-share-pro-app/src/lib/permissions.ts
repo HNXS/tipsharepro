@@ -2,10 +2,10 @@
  * Role-Based Permissions
  *
  * Centralized permission checks for UI feature gating.
- * Roles: ADMIN > MANAGER > DESIGNEE
+ * Roles: ADMIN > MANAGER > DATA
  */
 
-export type UserRole = 'ADMIN' | 'MANAGER' | 'DESIGNEE';
+export type UserRole = 'ADMIN' | 'MANAGER' | 'DATA';
 
 export type Feature =
   | 'settings.method'
@@ -39,10 +39,10 @@ const PERMISSION_MAP: Record<Feature, UserRole[]> = {
   'payPeriod.create':     ['ADMIN', 'MANAGER'],
   'payPeriod.finalize':   ['ADMIN', 'MANAGER'],
   'payPeriod.archive':    ['ADMIN', 'MANAGER'],
-  'dailyEntry':           ['ADMIN', 'MANAGER', 'DESIGNEE'],
+  'dailyEntry':           ['ADMIN', 'MANAGER', 'DATA'],
   'viewArchived':         ['ADMIN', 'MANAGER'],
   'scenarioSandbox':      ['ADMIN', 'MANAGER'],
-  'twoFactorSetup':       ['ADMIN', 'MANAGER', 'DESIGNEE'],
+  'twoFactorSetup':       ['ADMIN', 'MANAGER', 'DATA'],
   'auditLogs':            ['ADMIN'],
 };
 
@@ -60,7 +60,7 @@ export function canAccess(role: string | undefined, feature: Feature): boolean {
  */
 export function isAtLeast(role: string | undefined, minRole: UserRole): boolean {
   if (!role) return false;
-  const hierarchy: UserRole[] = ['DESIGNEE', 'MANAGER', 'ADMIN'];
+  const hierarchy: UserRole[] = ['DATA', 'MANAGER', 'ADMIN'];
   const userLevel = hierarchy.indexOf(role as UserRole);
   const minLevel = hierarchy.indexOf(minRole);
   return userLevel >= minLevel;

@@ -12,8 +12,12 @@ import { get, post, put, del } from './client';
 
 export interface OrgUser {
   id: string;
+  firstName: string | null;
+  lastName: string | null;
   email: string;
-  role: 'ADMIN' | 'MANAGER' | 'DESIGNEE';
+  role: 'ADMIN' | 'MANAGER' | 'DATA';
+  mustChangePassword: boolean;
+  twoFactorEnabled: boolean;
   locationId: string | null;
   location: { id: string; name: string } | null;
   lastLoginAt: string | null;
@@ -21,15 +25,21 @@ export interface OrgUser {
 }
 
 export interface CreateUserRequest {
+  firstName?: string;
+  lastName?: string;
   email: string;
   password: string;
-  role: 'ADMIN' | 'MANAGER' | 'DESIGNEE';
+  role: 'ADMIN' | 'MANAGER' | 'DATA';
   locationId?: string;
 }
 
 export interface UpdateUserRequest {
-  role?: 'ADMIN' | 'MANAGER' | 'DESIGNEE';
+  firstName?: string;
+  lastName?: string;
+  role?: 'ADMIN' | 'MANAGER' | 'DATA';
   locationId?: string | null;
+  twoFactorEnabled?: boolean;
+  adminAcknowledgment?: boolean;
 }
 
 // ============================================================================

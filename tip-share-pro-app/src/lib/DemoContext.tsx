@@ -109,6 +109,7 @@ interface ExtendedDemoState extends DemoState {
   locations: Array<{ id: string; name: string }>;
   activeLocationId: string | null;
   switchLocation?: (locationId: string) => void;
+  selectedLocationName: string | null;
 }
 
 // Internal state that includes demo/real tracking
@@ -185,6 +186,8 @@ interface DemoContextType {
   // Loading state
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  // Location name
+  setSelectedLocationName: (name: string | null) => void;
 }
 
 const DemoContext = createContext<DemoContextType | undefined>(undefined);
@@ -244,6 +247,7 @@ const initialState: InternalState = {
   hasSampleEmployees: false,
   // Multi-location
   locations: [],
+  selectedLocationName: null,
   activeLocationId: null,
 };
 
@@ -296,6 +300,11 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         console.error('Failed to load pay periods:', err);
       }
 
+      const currentLocIdFromSettings = (settingsResp.settings as Record<string, unknown>)?.currentLocationId as string | null | undefined;
+      const currentLoc = currentLocIdFromSettings
+        ? locationsList.find(l => l.id === currentLocIdFromSettings)
+        : locationsList[0] || null;
+
       setState(prev => ({
         ...prev,
         settings: frontendSettings,
@@ -311,6 +320,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         activePayPeriod: currentPeriod,
         locations: locationsList,
         activeLocationId: stateRef.current.locationId || (locationsList.length > 0 ? locationsList[0].id : null),
+        selectedLocationName: currentLoc?.name || null,
       }));
     } catch (err) {
       console.error('Failed to load user data:', err);
@@ -423,7 +433,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       isExpired: isSubscriptionExpired(subStatus, trialEnd),
       daysRemaining: getDaysRemaining(trialEnd),
       isReadOnly: isSubscriptionExpired(subStatus, trialEnd),
-      showWelcomeDialog: subStatus !== 'ACTIVE',
+      showWelcomeDialog: true,
     }));
 
     if (!isDemo) {
@@ -450,6 +460,10 @@ export function DemoProvider({ children }: { children: ReactNode }) {
 
   const setError = useCallback((error: string | null) => {
     setState(prev => ({ ...prev, error }));
+  }, []);
+
+  const setSelectedLocationName = useCallback((name: string | null) => {
+    setState(prev => ({ ...prev, selectedLocationName: name }));
   }, []);
 
   // ============================================================================
@@ -1455,6 +1469,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
         // Loading/Error
         setLoading,
         setError,
+        setSelectedLocationName,
       }}
     >
       {children}

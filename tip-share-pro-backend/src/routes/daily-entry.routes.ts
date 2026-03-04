@@ -9,7 +9,7 @@
  *
  * Authorization:
  * - GET endpoints: All authenticated users
- * - PUT (upsert): Designee+ role
+ * - PUT (upsert): Data+ role
  * - DELETE: Manager+ role
  */
 

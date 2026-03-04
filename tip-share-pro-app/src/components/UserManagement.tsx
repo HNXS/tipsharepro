@@ -10,13 +10,13 @@ import { UserPlus, Trash2, X, Loader2, AlertCircle, Shield, MapPin } from 'lucid
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Admin',
   MANAGER: 'Manager',
-  DESIGNEE: 'Designee',
+  DATA: 'Data',
 };
 
 const ROLE_COLORS: Record<string, string> = {
   ADMIN: 'var(--accent-primary)',
   MANAGER: 'var(--accent-info)',
-  DESIGNEE: 'var(--text-tertiary)',
+  DATA: 'var(--text-tertiary)',
 };
 
 export default function UserManagement() {
@@ -43,7 +43,7 @@ export default function UserManagement() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const handleRoleChange = async (userId: string, role: 'ADMIN' | 'MANAGER' | 'DESIGNEE') => {
+  const handleRoleChange = async (userId: string, role: 'ADMIN' | 'MANAGER' | 'DATA') => {
     try {
       await updateUser(userId, { role });
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, role } : u));
@@ -120,9 +120,14 @@ export default function UserManagement() {
             </tr>
           </thead>
           <tbody>
-            {users.map(user => (
+            {users.map(user => {
+              const displayName = [user.firstName, user.lastName].filter(Boolean).join(' ');
+              return (
               <tr key={user.id}>
-                <td className="user-management-email">{user.email}</td>
+                <td className="user-management-email">
+                  {displayName && <span style={{ fontWeight: 600, marginRight: '0.3rem' }}>{displayName}</span>}
+                  {user.email}
+                </td>
                 <td>
                   <select
                     className="form-select user-management-role-select"
@@ -131,7 +136,7 @@ export default function UserManagement() {
                   >
                     <option value="ADMIN">Admin</option>
                     <option value="MANAGER">Manager</option>
-                    <option value="DESIGNEE">Designee</option>
+                    <option value="DATA">Data</option>
                   </select>
                 </td>
                 <td>
@@ -172,7 +177,8 @@ export default function UserManagement() {
                   )}
                 </td>
               </tr>
-            ))}
+            );
+            })}
           </tbody>
         </table>
       </div>
@@ -206,7 +212,7 @@ function InviteUserModal({
 }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'ADMIN' | 'MANAGER' | 'DESIGNEE'>('DESIGNEE');
+  const [role, setRole] = useState<'ADMIN' | 'MANAGER' | 'DATA'>('DATA');
   const [locationId, setLocationId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -276,7 +282,7 @@ function InviteUserModal({
                 value={role}
                 onChange={e => setRole(e.target.value as typeof role)}
               >
-                <option value="DESIGNEE">Designee (Shift Lead)</option>
+                <option value="DATA">Data (Shift Lead)</option>
                 <option value="MANAGER">Manager</option>
                 <option value="ADMIN">Admin</option>
               </select>

@@ -23,15 +23,21 @@ const router = Router();
 // ============================================================================
 
 const createUserSchema = z.object({
+  firstName: z.string().min(1).optional(),
+  lastName: z.string().min(1).optional(),
   email: z.string().email(),
   password: z.string().min(6),
-  role: z.enum(['ADMIN', 'MANAGER', 'DESIGNEE']),
+  role: z.enum(['ADMIN', 'MANAGER', 'DATA']),
   locationId: z.string().uuid().optional(),
 });
 
 const updateUserSchema = z.object({
-  role: z.enum(['ADMIN', 'MANAGER', 'DESIGNEE']).optional(),
+  firstName: z.string().min(1).optional(),
+  lastName: z.string().min(1).optional(),
+  role: z.enum(['ADMIN', 'MANAGER', 'DATA']).optional(),
+  adminAcknowledgment: z.boolean().optional(),
   locationId: z.string().uuid().nullable().optional(),
+  twoFactorEnabled: z.boolean().optional(),
 });
 
 const userIdParamsSchema = z.object({
@@ -58,8 +64,12 @@ router.get(
         where: { organizationId: user.organizationId },
         select: {
           id: true,
+          firstName: true,
+          lastName: true,
           email: true,
           role: true,
+          mustChangePassword: true,
+          twoFactorEnabled: true,
           locationId: true,
           location: { select: { id: true, name: true } },
           lastLoginAt: true,
@@ -90,7 +100,7 @@ router.post(
   async (req: Request, res: Response<ApiResponse>, next: NextFunction) => {
     try {
       const caller = (req as AuthenticatedRequest).user;
-      const { email, password, role, locationId } = req.body;
+      const { firstName, lastName, email, password, role, locationId } = req.body;
 
       // Verify location belongs to this org if provided
       if (locationId) {
@@ -111,15 +121,22 @@ router.post(
       const newUser = await prisma.user.create({
         data: {
           organizationId: caller.organizationId,
+          firstName: firstName || null,
+          lastName: lastName || null,
           email,
           passwordHash,
           role,
+          mustChangePassword: true,
           locationId: locationId || null,
         },
         select: {
           id: true,
+          firstName: true,
+          lastName: true,
           email: true,
           role: true,
+          mustChangePassword: true,
+          twoFactorEnabled: true,
           locationId: true,
           location: { select: { id: true, name: true } },
           createdAt: true,
@@ -187,17 +204,56 @@ router.put(
         return;
       }
 
+      if (req.body.role === 'ADMIN' && existing.role !== 'ADMIN') {
+        if (!req.body.adminAcknowledgment) {
+          res.status(400).json({
+            status: 'error',
+            error: { code: 'ACKNOWLEDGMENT_REQUIRED', message: 'Admin privilege acknowledgment is required' },
+          });
+          return;
+        }
+        await logAudit({
+          orgId: caller.organizationId,
+          userId: caller.id,
+          action: 'ADMIN_PRIVILEGE_ACKNOWLEDGED',
+          entityType: 'User',
+          entityId: id,
+          after: {
+            assignee: existing.email,
+            assigneeName: [existing.firstName, existing.lastName].filter(Boolean).join(' ') || existing.email,
+            acknowledgment: 'I understand assigning Admin privileges requires trust and knowledge of Tip Pooling laws and ethics',
+            acknowledgedBy: caller.email,
+            acknowledgedAt: new Date().toISOString(),
+          },
+          req,
+        });
+      }
+
       const updates: Record<string, unknown> = {};
+      if (req.body.firstName !== undefined) updates.firstName = req.body.firstName;
+      if (req.body.lastName !== undefined) updates.lastName = req.body.lastName;
       if (req.body.role !== undefined) updates.role = req.body.role;
       if (req.body.locationId !== undefined) updates.locationId = req.body.locationId;
+      if (req.body.twoFactorEnabled !== undefined) {
+        updates.twoFactorEnabled = req.body.twoFactorEnabled;
+        if (req.body.twoFactorEnabled) {
+          updates.twoFactorMethod = 'EMAIL';
+        } else {
+          updates.twoFactorMethod = null;
+        }
+      }
 
       const updated = await prisma.user.update({
         where: { id },
         data: updates,
         select: {
           id: true,
+          firstName: true,
+          lastName: true,
           email: true,
           role: true,
+          mustChangePassword: true,
+          twoFactorEnabled: true,
           locationId: true,
           location: { select: { id: true, name: true } },
           lastLoginAt: true,

@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { LogIn, UserPlus, AlertCircle, Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { login, register, ApiError } from '@/lib/api';
-import type { TwoFactorRequiredResponse } from '@/lib/api';
+import { login, register, changePassword, ApiError } from '@/lib/api';
+import type { TwoFactorRequiredResponse, LoginResponse } from '@/lib/api';
 import TwoFactorVerify from './TwoFactorVerify';
 
 interface LoginPageProps {
@@ -30,12 +30,22 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [twoFactorData, setTwoFactorData] = useState<TwoFactorRequiredResponse | null>(null);
+  const [mustChangeData, setMustChangeData] = useState<{ loginResponse: LoginResponse; tempPassword: string } | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [changeLoading, setChangeLoading] = useState(false);
+  const [changeError, setChangeError] = useState<string | null>(null);
+  const [inactivityMsg, setInactivityMsg] = useState(false);
 
   // Check URL param for signup mode (campaign links)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('signup') === 'true') {
       setMode('signup');
+    }
+    if (sessionStorage.getItem('tsp_inactivity_logout')) {
+      setInactivityMsg(true);
+      sessionStorage.removeItem('tsp_inactivity_logout');
     }
   }, []);
 
@@ -111,6 +121,13 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
       // Normal login success
       const loginResponse = response as Exclude<typeof response, TwoFactorRequiredResponse>;
+
+      if (loginResponse.user.mustChangePassword) {
+        setMustChangeData({ loginResponse, tempPassword: password });
+        setIsLoading(false);
+        return;
+      }
+
       onLoginSuccess({
         name: loginResponse.user.name,
         companyName: loginResponse.user.companyName,
@@ -129,6 +146,114 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
       setIsLoading(false);
     }
   };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mustChangeData) return;
+
+    if (newPassword.length < 6) {
+      setChangeError('Password must be at least 6 characters.');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setChangeError('Passwords do not match.');
+      return;
+    }
+    if (newPassword === mustChangeData.tempPassword) {
+      setChangeError('New password must be different from the temporary password.');
+      return;
+    }
+
+    try {
+      setChangeLoading(true);
+      setChangeError(null);
+      await changePassword(mustChangeData.tempPassword, newPassword);
+
+      onLoginSuccess({
+        name: mustChangeData.loginResponse.user.name,
+        companyName: mustChangeData.loginResponse.user.companyName,
+        role: mustChangeData.loginResponse.user.role,
+        email: mustChangeData.loginResponse.user.email,
+        locationId: mustChangeData.loginResponse.user.locationId,
+        organization: mustChangeData.loginResponse.organization,
+      });
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setChangeError(err.message);
+      } else {
+        setChangeError('Failed to change password. Please try again.');
+      }
+    } finally {
+      setChangeLoading(false);
+    }
+  };
+
+  if (mustChangeData) {
+    return (
+      <div className="login-page">
+        <div className="login-bg-pattern" />
+        <div className="login-container">
+          <div className="login-card">
+            <div className="login-header">
+              <Image src="/logo-icon.png" alt="TipShare Pro" width={64} height={64} style={{ width: 64, height: 'auto' }} />
+              <h1 className="login-title">Set Your Password</h1>
+              <p className="login-subtitle">
+                Welcome! Please set a new password to continue.
+              </p>
+            </div>
+            <form onSubmit={handleChangePassword} className="login-form">
+              {changeError && (
+                <div className="login-error" data-testid="change-password-error">
+                  <AlertCircle size={16} />
+                  <span>{changeError}</span>
+                </div>
+              )}
+              <div className="form-group">
+                <label className="form-label">New Password</label>
+                <input
+                  type="password"
+                  className="form-input"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder="Min 6 characters"
+                  required
+                  minLength={6}
+                  autoFocus
+                  data-testid="new-password-input"
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Confirm New Password</label>
+                <input
+                  type="password"
+                  className="form-input"
+                  value={confirmNewPassword}
+                  onChange={e => setConfirmNewPassword(e.target.value)}
+                  placeholder="Confirm your password"
+                  required
+                  minLength={6}
+                  data-testid="confirm-new-password-input"
+                />
+              </div>
+              <button
+                type="submit"
+                className="btn btn-primary login-btn"
+                disabled={changeLoading || newPassword.length < 6 || confirmNewPassword.length < 6}
+                data-testid="set-password-btn"
+              >
+                {changeLoading ? (
+                  <Loader2 size={18} className="loading-spinner" />
+                ) : (
+                  <LogIn size={18} />
+                )}
+                {changeLoading ? 'Setting Password...' : 'Set Password & Continue'}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Show 2FA verification screen
   if (twoFactorData) {
@@ -177,6 +302,17 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
         {/* Login Card */}
         <div className="login-card">
+          {inactivityMsg && (
+            <div data-testid="inactivity-logout-msg" style={{
+              background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '0.4rem',
+              padding: '0.5rem 0.75rem', marginBottom: '0.75rem',
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
+              fontSize: '0.8rem', color: '#92400e',
+            }}>
+              <AlertCircle size={14} style={{ flexShrink: 0 }} />
+              <span>You were logged out due to inactivity.</span>
+            </div>
+          )}
           <h2 className="login-card-title">
             {mode === 'signin' ? 'Sign in to continue' : 'Create your account'}
           </h2>

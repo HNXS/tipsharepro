@@ -1,18 +1,50 @@
 run = "npm start"
 entrypoint = "package.json"
-modules = ["nodejs-20"]
+modules = ["nodejs-20", "postgresql-16"]
 
 [nix]
 channel = "stable-24_05"
 
 [[ports]]
-localPort = 3000
-externalPort = 80
-
-[[ports]]
 localPort = 3001
 externalPort = 3001
+
+[[ports]]
+localPort = 3002
+externalPort = 3002
+
+[[ports]]
+localPort = 5000
+externalPort = 80
 
 [deployment]
 build = ["sh", "-c", "npm run install:all && npm run build"]
 run = ["sh", "-c", "npm start"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd /home/runner/workspace/tip-share-pro-backend && PORT=3002 ./node_modules/.bin/tsx src/index.ts & cd /home/runner/workspace/tip-share-pro-app && BACKEND_INTERNAL_URL=http://localhost:3002 ./node_modules/.bin/next dev -p 5000 -H 0.0.0.0"
+waitForPort = 5000
+
+[userenv]
+
+[userenv.shared]
